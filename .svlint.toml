@@ -1,0 +1,5 @@
+[option]
+exclude_paths = ["ip/.*"]
+
+[rules]
+case_default = true

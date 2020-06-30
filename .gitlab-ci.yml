@@ -1,0 +1,10 @@
+stages:
+ - cpu_test
+
+cpu_simulation:
+ image: vivado:2019.2
+ tags:
+  - vivado
+ stage: cpu_test
+ script:
+  - 
