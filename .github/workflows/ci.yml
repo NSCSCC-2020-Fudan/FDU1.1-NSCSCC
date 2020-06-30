@@ -8,6 +8,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: SystemVerilog Linter
+    - name: Set up svlint
       uses: dalance/svlint-action@v1.0.2
     - run: svlint svlint/* --config .svlint.toml
