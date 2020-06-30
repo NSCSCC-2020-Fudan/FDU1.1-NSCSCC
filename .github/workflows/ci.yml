@@ -10,4 +10,4 @@ jobs:
     steps:
     - name: SystemVerilog Linter
       uses: dalance/svlint-action@v1.0.2
-    - run: svlint ./* --config .svlint.toml
+    - run: svlint svlint/* --config .svlint.toml
