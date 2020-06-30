@@ -10,4 +10,4 @@ jobs:
     steps:
     - name: Set up svlint
       uses: dalance/svlint-action@v1.0.2
-    - run: svlint ../../svlint/* --config .svlint.toml --github-actions
+    - run: svlint svlint/case_default.sv --config .svlint.toml --github-actions
