@@ -15,4 +15,4 @@ jobs:
       with:
         files: |
           svlint/*
-        continue-on-error: true
+      continue-on-error: true
