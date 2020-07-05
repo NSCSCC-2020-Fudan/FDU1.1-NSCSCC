@@ -44,6 +44,7 @@ module CP0 (
             5'd12: rd <= cp0.Status;
             5'd13: rd <= cp0.Cause;
             5'd14: rd <= cp0.EPC;
+            default: rd <= '0;
         endcase
     end
 
