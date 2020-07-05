@@ -1,4 +1,4 @@
-`include "MIPS.h"
+`include "MIPS.svh"
 
 module BiMux #(
         parameter WIDTH = 32

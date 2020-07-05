@@ -1,4 +1,4 @@
-`include "MIPS.h"
+`include "MIPS.svh"
 
 module Fetch(
         input logic clk,

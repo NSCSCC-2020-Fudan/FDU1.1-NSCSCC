@@ -1,4 +1,4 @@
-`include "MIPS.h"
+`include "MIPS.svh"
 
 module Decode(
         input logic clk, stall, reset,
