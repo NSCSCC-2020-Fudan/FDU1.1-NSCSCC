@@ -18,6 +18,7 @@ typedef struct packed {
     logic [4:0]ExcCode; // [6:2]
     logic zero_2; // [1:0]
 } CP0_CAUSE;
+
 typedef struct packed {
     logic [31:0] EPC; // 14
     CP0_CAUSE Cause; // 13
@@ -48,7 +49,7 @@ module CP0 (
 
     // BadVAddr
     always_ff @(posedge clk, posedge reset) begin
-        
+        // TODO:
     end
 
     // Count
@@ -60,6 +61,36 @@ module CP0 (
         end else begin
             cp0.Count <= cp0.Count + count_sup;
             count_sup <= ~count_sup;
+        end
+    end
+
+    // Status
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin
+            cp0.Status <= 32'b00000000_01000000_00000000_00000000;
+        end
+        else begin
+            
+        end
+    end
+
+    // Cause
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin
+            cp0.Cause <= '0;
+        end
+        else begin
+            
+        end
+    end
+
+    // EPC
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin
+            cp0.EPC <= '0;
+        end
+        else begin
+            
         end
     end
 endmodule
