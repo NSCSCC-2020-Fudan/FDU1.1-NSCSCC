@@ -19,6 +19,8 @@ typedef struct packed {
     logic [1:0] zero_2; // [1:0]
 } CP0_CAUSE;
 
+
+
 typedef struct packed {
     logic [3:0] CU;     // [31:28], access to cp unit 3 to 0. Always 0 in this work.
     logic RP;           // 27, Reduced Rower mode. Always 0 in this work.
@@ -79,5 +81,40 @@ typedef struct packed {
     random,     // 01, Randomly generated index into the TLB array
     index,      // 00, Index into the TLB array
 } CP0_REGS;
+
+`define CP0_INIT {                                      \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0000_0100_0000_0000_0000_0000_0000_0000,        \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0,                                              \
+    32'b0                                               \
+}
 
 `endif
