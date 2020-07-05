@@ -36,3 +36,12 @@ typedef struct packed {
     logic [31:0]va;
     logic isbranch;
 } Exception;
+
+
+`def EXMODE_INT = 0
+`def EXMODE_ADEL = 4
+`def EXMODE_ADES = 5
+`def EXMODE_OV = 4'hc
+`def EXMODE_SYS = 8
+`def EXMODE_BP = 9
+`def EXMODE_RI = 10
