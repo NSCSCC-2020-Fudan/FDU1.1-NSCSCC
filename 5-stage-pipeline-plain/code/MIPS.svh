@@ -24,6 +24,7 @@ typedef struct packed {
     logic [31:0] EPC; // 14
     CP0_CAUSE Cause; // 13
     CP0_STATUS Status; // 12
+    logic [31:0] Compare; // 11
     logic [31:0] Count, BadVAddr; // 9, 8
 } CP0_REG;
 

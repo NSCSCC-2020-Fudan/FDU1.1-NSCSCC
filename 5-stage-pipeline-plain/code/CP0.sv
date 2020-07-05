@@ -26,6 +26,7 @@ module CP0 (
         case (ra)
             5'd8: rd <= cp0.BadVAddr;
             5'd9: rd <= cp0.Count;
+            5'd11: rd <= cp0.Compare;
             5'd12: rd <= cp0.Status;
             5'd13: rd <= cp0.Cause;
             5'd14: rd <= cp0.EPC;
@@ -87,6 +88,12 @@ module CP0 (
                 cp0.Cause.ExcCode <= exception.mode;
                 cp0.Cause.BD <= exception.isbranch;
             end
+            // Timer Interrupt
+            if (cp0.Compare != 0 && cp0.Compare == cp0.Count) begin
+                cp0.Cause.TI <= 1'b1;
+            if (w_en && wa == 5'd11 && wd != cp0.Compare)
+                cp0.Cause.TI <= 1'b0;
+            end
         end
     end
 
@@ -106,5 +113,15 @@ module CP0 (
             cp0.EPC <= wd;
         end
     end
+
+    // Compare
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin
+            cp0.Compare <= '0;
+        else if(w_en & (wa == 5'd11)) begin
+            cp0.Compare <= wd;
+        end
+    end
+
 
 endmodule
