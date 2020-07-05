@@ -14,5 +14,5 @@ jobs:
       uses: dalance/svlint-action@master
       with:
         files: |
-          svlint/*
+          5-stage-pipeline-plain/code/*
       continue-on-error: true
