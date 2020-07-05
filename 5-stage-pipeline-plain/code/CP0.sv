@@ -1,38 +1,4 @@
-typedef struct packed {
-    logic [8:0] zero_0; // [31:23], always 0
-    logic Bev; // [22], always 1
-    logic [5:0] zero_1; // [21:16], always 0
-    logic IM7, IM6, IM5, IM4, IM3, IM2, IM1, IM0; // [15:8]
-    logic [5:0] zero_2; // [7:2]
-    logic EXL; // [1]
-    logic IE; // [0]
-} CP0_STATUS; // CP0 register 12, select 0
-
-typedef struct packed {
-    logic BD; // [31]
-    logic TI; // [30]
-    logic [14:0]zero_0; // [29:16], always 0
-    logic [7:0]IP; // [15:8]
-    logic zero_1; // [7]
-    logic [4:0]ExcCode; // [6:2]
-    logic zero_2; // [1:0]
-} CP0_CAUSE;
-
-typedef struct packed {
-    logic [31:0] EPC; // 14
-    CP0_CAUSE Cause; // 13
-    CP0_STATUS Status; // 12
-    logic [31:0] Count, BadVAddr; // 9, 8
-} CP0_REG;
-
-
-typedef struct packed {
-    logic valid;
-    logic [31:0]pc;
-    logic [3:0]mode;
-    logic [31:0]va;
-    logic isbranch;
-} Except;
+`include "MIPS.svh"
 
 module CP0 (
     input logic clk, reset,
@@ -46,8 +12,8 @@ module CP0 (
     input logic [4:0]wa,
     input logic [31:0]wd,
 
-    // except
-    input Except except,
+    // exception
+    input Exception exception,
 
     // interrupt
     input logic [7:0] interrupt,
@@ -72,8 +38,8 @@ module CP0 (
         if (reset) begin
             cp0.BadVAddr <= '0;
         end
-        else if(except.valid & (except.mode == /*TODO*/)) begin
-            cp0.BadVAddr <= except.va;
+        else if(exception.valid & (exception.mode == /*TODO*/)) begin
+            cp0.BadVAddr <= exception.va;
         end
     end
 
@@ -101,7 +67,7 @@ module CP0 (
             if (we & (wa == 5'd12)) begin
                 {cp0.Status[15:8], cp0.Status[1:0]} <= {wd[15:8], wd[1:0]};
             end
-            if (except.valid) begin
+            if (exception.valid) begin
                 cp0.Status.EXL <= 1'b1;
             end
         end
@@ -117,9 +83,9 @@ module CP0 (
             if(w_en & (wa == 5'd13)) begin
                 cp0.Cause.IP[1:0] <= wd[1:0];
             end
-            if(except.valid) begin
-                cp0.Cause.ExcCode <= except.mode;
-                cp0.Cause.BD <= except.isbranch;
+            if(exception.valid) begin
+                cp0.Cause.ExcCode <= exception.mode;
+                cp0.Cause.BD <= exception.isbranch;
             end
         end
     end
@@ -129,12 +95,12 @@ module CP0 (
         if (reset) begin
             cp0.EPC <= '0;
         end
-        else if(except.valid & cp0.Status.EXL) begin // note: different from ntm
-            if (except.isbranch) begin
-                cp0.EPC <= except.pc - 32'd4;
+        else if(exception.valid & cp0.Status.EXL) begin // note: different from ntm
+            if (exception.isbranch) begin
+                cp0.EPC <= exception.pc - 32'd4;
             end
             else begin
-                cp0.EPC <= except.pc;
+                cp0.EPC <= exception.pc;
             end
         end else if (w_en & (wa == 5'd14)) begin
             cp0.EPC <= wd;
