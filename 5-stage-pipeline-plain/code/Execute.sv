@@ -14,6 +14,7 @@ module Execute(
 		input logic [2: 0] Move, 
 		input logic [4: 0] Memory,
 		input logic [5: 0] Machine,
+        output logic HILOWrite,
         output logic [2: 0] TypeOut,
         output logic [2: 0] MoveOut,
         output logic [4: 0] MemoryOut,
@@ -39,6 +40,7 @@ module Execute(
             ALUOutH, ALUOutL,
             OverflowException
             );
+    assign HILOWrite = ((ALUCtrl[4: 1] == 4'b0100) || (ALUCtrl[4: 1] == 4'b0011));
     assign AddressException = (Memory[4]) & ((ALUOutH[0] != 0) | (ALUOutH[1] != 0 && Memory[0] == 1) | (ALUOutH[2] != 0 && Memory[1] == 1));
     
     assign ExRegisterEn = Move[2];

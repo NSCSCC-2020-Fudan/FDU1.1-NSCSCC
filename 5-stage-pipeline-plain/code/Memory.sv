@@ -5,6 +5,9 @@ module Memory(
         input logic [31: 0] RegRs,
         output logic [4: 0] RtOut, RdOut,
         
+        input logic HILOWrite,
+        output logic HILOWriteOut,
+
         input logic [2: 0] Type,
         input logic [3: 0] Move,
         input logic [4: 0] Memory,

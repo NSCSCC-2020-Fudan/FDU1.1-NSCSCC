@@ -2,8 +2,8 @@
 
 module Fetch(
         input logic clk,
-        input logic [31: 0] PCJumpReg, PCBranch, PCJump,
-        input logic JumpReg, Branch, Jump,
+        input logic Branch, JumpReg, Jump,
+        input logic [31: 0] PCBranch, PCJumpReg, PCJump,
         output logic [31: 0] PC,
         output logic [31: 0] PCPlus4
     );
