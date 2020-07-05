@@ -2,9 +2,9 @@
     Branch:     Branch_ContidionMode_Store                  
                 00 =; 01 !=; 10 <(0 <=; 1 <); 11: >(0 >=; 1>);
                 5_bit
-    Jump:       Jump_Store                              
-                2_bit
     JumpReg:    JumpReg_Store                           
+                2_bit
+    Jump:       Jump_Store                              
                 2_bit
     Exception:  Exception_Mode
                 0: SystemCall; 1:Break

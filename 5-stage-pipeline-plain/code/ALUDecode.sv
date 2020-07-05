@@ -42,7 +42,7 @@ module ALUDec(
                         6'b001010: ALUSig = 5'b0010_0;
                         6'b001011: ALUSig = 5'b0010_1;//<
                         6'b001100: ALUSig = 5'b0101_0;//&
-                        6'b001111: ALUSig = 5'b1111_0;//
+                        6'b001111: ALUSig = 5'b1111_0;//LUI
                         6'b001101: ALUSig = 5'b0110_0;//|
                         6'b001110: ALUSig = 5'b1000_0;//^
                         default: ALUSig = 5'b1111_0;

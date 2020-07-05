@@ -8,24 +8,40 @@ module Decode(
         output logic Branch, JumpReg, Jump,
         output logic [31: 0] PCBranch, PCJumpReg, PCJump,
         
+        output logic [4: 0] RegR1, RegR2,
+		input logic [31: 0] Reg
     );
 
-    MainDec(Instr,
-            ALUCtrl, ALUMode,
-            BranchInstr, JumpReg, Jump
-            );
+    MainDec MainDec(Instr,
+                	ALUCtrl, ALUMode,
+		            Branch, JumpReg, Jump,
+        		    Exception, 
+             		Move, Memory,
+             		Machine,
+					Type
+             		);
+    ALUDec ALUDec(Type, 
+				  Instr,
+				  ALUCtrl, ALUMode
+				 );
 
-    logic [31: 0] ZeroExt, SignExt;
-
-    Extend ZeroExtend(Insrt[25: 0], 0, ZeroExt);
-    Extend SignExtend(Instr[25: 0], 1, ZeroExt);
+    logic [31: 0] ZeroExt, SignExt, ImmExt;
+	assign Imm16 = Instr[15: 0];
+	Extend SignExtend(Imm16, 0, SignExt);
+    Extend ZeroExtend(Imm16, 1, ZeroExt);
+	BiMux BiMuxExt(SignExt, ZeroExt, ((Type == 3'b001) & ((ALUCtrl == 4'b0101) | (ALUCtrl == 4'b0110) | (ALUCtrl == 4'b1000))), ImmExt);
+	BiMux BiMuxLeft({Imm16, 16'b0}, ImmExt, ((Type == 3'b001) & (ALUCtrl == 4'b1111)), Imm32);
+	
+	assign Rs = Instr[25, 21];
+	assign Rt = Instr[20, 16];
+	assign Rd = Instr[15, 11];
     
-    logic [31: 0] BranchOffset;
-    assign PCJump = {PC[31, 28], Instr[25, 0], 2'b00};
-    assign JumpReg = {};
-
-    Extend BranchExtend({Instr, 2'b00}, 1, Offsetset);
-    Adder BranchAdder(PCPlus4, BranchOffset);
+    BranchPrecesser BranchProcessor(Instr,
+									RdRs, 
+									Branch, JumpReg, Jump,
+									BranchF, JumpRegF, JumpF, 
+									PCBranch, PCJump, PCJumpReg,
+									);
 
 
     
