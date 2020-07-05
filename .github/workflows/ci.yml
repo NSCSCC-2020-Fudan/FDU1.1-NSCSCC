@@ -14,4 +14,4 @@ jobs:
       uses: dalance/svlint-action@master
       with:
         files: |
-          5-stage-pipeline-plain/code/*
+          svlint/*
