@@ -1,6 +1,6 @@
 /*                
     Branch:     Branch_ContidionMode_Store                  
-                00 =; 01 !=; 10 <(0 <=; 1 <); 11: >(0 >=; 1>);
+                00 ==; 01 !=; 10 <(0 <=; 1 <); 11: >(0 >=; 1>);
                 5_bit
     JumpReg:    JumpReg_Store                           
                 2_bit
