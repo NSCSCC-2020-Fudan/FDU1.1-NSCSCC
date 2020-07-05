@@ -38,10 +38,10 @@ typedef struct packed {
 } Exception;
 
 
-`def EXMODE_INT = 0
-`def EXMODE_ADEL = 4
-`def EXMODE_ADES = 5
-`def EXMODE_OV = 4'hc
-`def EXMODE_SYS = 8
-`def EXMODE_BP = 9
-`def EXMODE_RI = 10
+`define EXMODE_INT = 0
+`define EXMODE_ADEL = 4
+`define EXMODE_ADES = 5
+`define EXMODE_OV = 4'hc
+`define EXMODE_SYS = 8
+`define EXMODE_BP = 9
+`define EXMODE_RI = 10
