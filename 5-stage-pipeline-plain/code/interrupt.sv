@@ -1,4 +1,0 @@
-module interrupt(
-);
-
-endmodule

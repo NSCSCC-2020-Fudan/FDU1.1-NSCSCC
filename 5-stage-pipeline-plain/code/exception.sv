@@ -1,0 +1,4 @@
+module exception(
+);
+
+endmodule
