@@ -109,4 +109,11 @@ typedef struct packed {
 `define F_BREAK         6'b001101
 `define F_SYSCALL       6'b001100
 
+typedef enum logic [3:0] { 
+    ADDI, ADDIU, SLTI, SLTIU, ANDI, LUI, ORI, XORI, BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
+    ADD, ADDU, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL
+} decoded_op_t;
+
+
+
 `endif
