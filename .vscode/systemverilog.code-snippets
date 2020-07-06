@@ -28,5 +28,9 @@
 	"modport": {
 		"prefix": "modport_my",
 		"body": "modport in();\nmodport out();"
+	},
+	"define": {
+		"prefix": "define",
+		"body": "`define "
 	}
 }

@@ -9,13 +9,28 @@ module Decode (
 endmodule
 
 module MainDec (
-    
+    input op_t op,
+    output control_t ctl
 );
-    
+    always_comb begin
+        ctl = '0;
+        case (op)
+            
+            default: begin
+                pass
+            end
+        endcase
+    end
 endmodule
 
 module ALUDec (
-    
+    input func_t func,
+    input aluop_t aluop,
+    output alufunc_t alufunc
 );
-    
+    always_comb begin
+        case (aluop)
+            
+        endcase
+    end
 endmodule
