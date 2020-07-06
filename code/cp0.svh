@@ -1,10 +1,8 @@
-`ifndef __SHARED_SVH
-`define __SHARED_SVH
+`ifndef __CP0_SVH
+`define __CP0_SVH
 
+`include "global.svh"
 typedef logic [4:0] cp0_addr_t;
-typedef logic [31:0] word_t;
-typedef logic [11:0] exception_offset_t;
-typedef logic [8:0] interrupt_info_t;
 
 typedef struct packed {
     logic BD;           // 31, Branch Delay Slot. Updated only if status.exl is 0. R
@@ -63,7 +61,7 @@ word_t
     watchhi,    // 19, Watchpoint control
     watchlo,    // 18, Watchpoint address
     lladdr,     // 17, Load linked address
-    config_,     // 16, Configuration register
+    config_,    // 16, Configuration register
     prid,       // 15, Processor identification and revision
     epc,        // 14, Program counter at last exception, R/W
 cp0_cause_t
@@ -78,7 +76,7 @@ word_t
     hwrena,     // 07, Enables access via the RDHWR instruction to selected hardware registers
     wired,      // 06, Controls the number of fixed (“wired”) TLB entries
     pagemask,   // 05, Control for variable page size in TLB entries
-    context_,    // 04, Pointer to page table entry in memory
+    context_,   // 04, Pointer to page table entry in memory
     entrylo1,   // 03, Low-order portion of the TLB entry for odd-numbered virtual pages
     entrylo0,   // 02, Low-order portion of the TLB entry for even-numbered virtual pages
     random,     // 01, Randomly generated index into the TLB array
@@ -119,29 +117,5 @@ word_t
     32'b0,                                              \
     32'b0                                               \
 }
-
-`define EXC_BASE 32'hbfc0_0000;
-
-typedef struct packed {
-    logic valid;
-    word_t location;
-    word_t pc;
-    logic in_delay_slot;
-    exc_code_t code;
-    word_t badvaddr;
-} exception_t;
-
-`define CODE_INT   5'h00  // Interrupt
-`define CODE_MOD   5'h01  // TLB modification exception
-`define CODE_TLBL  5'h02  // TLB exception (load or instruction fetch)
-`define CODE_TLBS  5'h03  // TLB exception (store)
-`define CODE_ADEL  5'h04  // Address exception (load or instruction fetch)
-`define CODE_ADES  5'h05  // Address exception (store)
-`define CODE_SYS   5'h08  // Syscall
-`define CODE_BP    5'h09  // Breakpoint
-`define CODE_RI    5'h0a  // Reserved Instruction exception
-`define CODE_CPU   5'h0b  // CoProcesser Unusable exception
-`define CODE_OV    5'h0c  // OVerflow
-`define CODE_TR    5'h0d  // TRap
 
 `endif
