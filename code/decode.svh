@@ -1,5 +1,5 @@
-`ifndef __CONTROL_SVH
-`define __CONTROL_SVH
+`ifndef __DECODE_SVH
+`define __DECODE_SVH
 
 `include "global.svh"
 typedef logic[5:0] op_t;
