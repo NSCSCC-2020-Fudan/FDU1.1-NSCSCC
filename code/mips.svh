@@ -5,6 +5,7 @@
 `include "cp0.svh"
 `include "exception.svh"
 `include "pipregs.svh"
+`include "pcsource.svh"
 
 `endif
 
