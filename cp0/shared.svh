@@ -1,9 +1,12 @@
 `ifndef __SHARED_SVH
 `define __SHARED_SVH
 
+typedef logic [4:0] cp0_addr_t;
+typedef logic [31:0] word_t;
+
 typedef struct packed {
     logic BD;           // 31, Branch Delay Slot. Updated only if status.exl is 0. R
-    logic TI;           // 30, Timer Interrupt. R/W
+    logic TI;           // 30, Timer Interrupt. R
     logic [1:0] CE;     // [29:28], cp number when the coprocessor is unusable. Always 0 in this work.
     logic DC;           // 27, Disable Count register. Always 0 in this work.
     logic PCI;          // 26, Performance Counter Interrupt. Always 0 in this work.
@@ -17,9 +20,7 @@ typedef struct packed {
     logic zero_1;       // 7
     logic [4:0] exccode;// [6:2], Exception Code. R
     logic [1:0] zero_2; // [1:0]
-} CP0_CAUSE;
-
-
+} cp0_cause_t;
 
 typedef struct packed {
     logic [3:0] CU;     // [31:28], access to cp unit 3 to 0. Always 0 in this work.
@@ -41,10 +42,10 @@ typedef struct packed {
     logic ERL;          // 2, Error Level. Always 0 in this work.
     logic EXL;          // 1, Exception Level. R/W
     logic IE;           // 0, Interrupt Enable. R/W
-} CP0_STATUS;
+} cp0_status_t;
 
 typedef struct packed {
-    logic [31:0] 
+word_t 
     desave,     // 31, EJTAG debug exception save register
     errorepc,   // 30, Program counter at last error
     taghi,      // 29, High-order portion of cache tag interface
@@ -60,18 +61,18 @@ typedef struct packed {
     watchhi,    // 19, Watchpoint control
     watchlo,    // 18, Watchpoint address
     lladdr,     // 17, Load linked address
-    config,     // 16, Configuration register
+    config_,     // 16, Configuration register
     prid,       // 15, Processor identification and revision
-    epc,        // 14, Program counter at last exception
-    CP0_CAUSE
+    epc,        // 14, Program counter at last exception, R/W
+cp0_cause_t
     cause,      // 13, Cause of last general exception
-    CP0_STATUS
+cp0_status_t
     status,     // 12, Processor status and control
-    logic [31:0]
-    compare,    // 11, Timer interrupt control
+word_t
+    compare,    // 11, Timer interrupt control, R/W, normally write only
     entryhi,    // 10, High-order portion of the TLB entry
-    count,      // 09, Processor cycle count
-    badvaddr,   // 08, Reports the address for the most recent address-related exception
+    count,      // 09, Processor cycle count, R/W
+    badvaddr,   // 08, Reports the address for the most recent address-related exception, R
     hwrena,     // 07, Enables access via the RDHWR instruction to selected hardware registers
     wired,      // 06, Controls the number of fixed (“wired”) TLB entries
     pagemask,   // 05, Control for variable page size in TLB entries
@@ -80,7 +81,7 @@ typedef struct packed {
     entrylo0,   // 02, Low-order portion of the TLB entry for even-numbered virtual pages
     random,     // 01, Randomly generated index into the TLB array
     index,      // 00, Index into the TLB array
-} CP0_REGS;
+} cp0_regs_t;
 
 `define CP0_INIT {                                      \
     32'b0,                                              \
@@ -116,5 +117,7 @@ typedef struct packed {
     32'b0,                                              \
     32'b0                                               \
 }
+
+
 
 `endif
