@@ -15,7 +15,9 @@ module MainDec (
     always_comb begin
         ctl = '0;
         case (op)
-            
+            `OP_RT: begin
+                
+            end
             default: begin
                 pass
             end
