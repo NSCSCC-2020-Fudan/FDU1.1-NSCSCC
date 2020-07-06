@@ -1,6 +1,7 @@
 `ifndef __CONTROL_SVH
 `define __CONTROL_SVH
 
+`include "global.svh"
 typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;
 typedef logic[3:0] alufunc_t;

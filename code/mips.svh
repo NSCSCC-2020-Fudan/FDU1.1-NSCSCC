@@ -6,6 +6,8 @@
 `include "exception.svh"
 `include "pipregs.svh"
 `include "pcsource.svh"
+`include "regfile.svh"
+`include "control.svh"
 
 `endif
 
