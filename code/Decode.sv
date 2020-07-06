@@ -7,3 +7,15 @@ module Decode (
 );
     
 endmodule
+
+module MainDec (
+    
+);
+    
+endmodule
+
+module ALUDec (
+    
+);
+    
+endmodule
