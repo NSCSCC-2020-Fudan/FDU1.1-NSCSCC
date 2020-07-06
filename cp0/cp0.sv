@@ -14,6 +14,7 @@ module CP0(
 
     // exception
     input exception_t exception,
+    input logic eret,
 
     output cp0_regs_t cp0
 );
@@ -74,12 +75,30 @@ module CP0(
         // exception
         if (exception.valid) begin
             if (~cp0.status.EXL) begin
-                if (condition) begin
-                    pass
+                if (exception.in_delay_slot) begin
+                    cp0_new.status.bd = 1'b1;
+                    cp0_new.epc = exception.pc - 32'd4;
+                end else begin
+                    cp0_new.status.bd = 1'b0;
+                    cp0_new.epc = exception.pc;
                 end
-            end else begin
-                pass
             end
+
+            cp0_new.cause.exccode = exception.code;
+
+            cp0_new.status.EXL = 1'b1;
+            if (exception.code == `CODE_ADEL || exception.code == `CODE_ADES) begin
+                cp0_new.badvaddr = exception.badvaddr;
+            end
+        end
+
+        if (eret) begin
+            if (cp0.status.ERL) begin
+                cp0_new.status.ERL = 1'b0;
+            end else begin
+                cp0_new.status.EXL = 1'b0;
+            end
+            // llbit = 1'b0;
         end
     end
 
