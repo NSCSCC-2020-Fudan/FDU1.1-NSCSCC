@@ -12,6 +12,9 @@ module CP0(
     input cp0_addr_t wa,
     input word_t wd,
 
+    // exception
+    input exception_t exception,
+
     output cp0_regs_t cp0
 );
     CP0_REGS cp0_new;
@@ -68,7 +71,16 @@ module CP0(
             endcase
         end
 
-        
+        // exception
+        if (exception.valid) begin
+            if (~cp0.status.EXL) begin
+                if (condition) begin
+                    pass
+                end
+            end else begin
+                pass
+            end
+        end
     end
 
 endmodule

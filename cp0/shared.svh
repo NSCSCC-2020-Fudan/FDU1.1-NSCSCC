@@ -3,6 +3,7 @@
 
 typedef logic [4:0] cp0_addr_t;
 typedef logic [31:0] word_t;
+typedef logic [8:0] exception_offset_t; 
 
 typedef struct packed {
     logic BD;           // 31, Branch Delay Slot. Updated only if status.exl is 0. R
@@ -118,6 +119,13 @@ word_t
     32'b0                                               \
 }
 
+`define EXC_BASE 32'hbfc0_0000;
 
+typedef struct packed {
+    logic valid;
+    word_t location;
+    word_t pc;
+    logic in_delay_slot;
+} exception_t;
 
 `endif
