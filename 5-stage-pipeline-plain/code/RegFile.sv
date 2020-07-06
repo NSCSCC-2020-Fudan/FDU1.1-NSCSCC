@@ -4,7 +4,8 @@ module RegFile(
         input logic [4: 0] R1, R2,
         output logic [31: 0] R1Read, R2Read,
 
-        input logic WriteEn,
+        input logic WriteEn, 
+        
         input logic [4: 0] WriteReg,
         input logic [31: 0] WriteData,
 

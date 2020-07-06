@@ -55,7 +55,7 @@ module ALUDec(
                         6'b001010: ALUCtrl = 5'b0010_0;
                         6'b001011: ALUCtrl = 5'b0010_1;//<
                         6'b001100: ALUCtrl = 5'b0101_0;//&
-                        6'b001111: ALUCtrl = 5'b1111_0;//LUI
+                        6'b001111: ALUCtrl = 5'b0000_0;//LUI
                         6'b001101: ALUCtrl = 5'b0110_0;//|
                         6'b001110: ALUCtrl = 5'b1000_0;//^
                         default: ALUCtrl = 5'b1111_0;
