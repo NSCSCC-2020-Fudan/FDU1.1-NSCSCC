@@ -1,10 +1,8 @@
 `ifndef __MEMORY_SVH
 `define __MEMORY_SVH
 
-interface RAM(output m_r_t read, output m_w_t write);
+typedef struct packed {
     
-    modport in(output );
-    modport out(input );
-endinterface
+} mem_data_t;
 
 `endif

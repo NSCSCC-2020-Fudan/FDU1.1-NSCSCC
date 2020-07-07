@@ -4,6 +4,7 @@
 `include "global.svh"
 typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;
+typedef logic[4:0] shamt_t;
 // typedef logic[3:0] alufunc_t;
 // typedef logic[2:0] aluop_t;
 
@@ -118,6 +119,7 @@ typedef enum logic[3:0] {
 `define C_MTC0          5'b00100
 
 typedef enum logic { IMM, REG } alusrc_t;
+typedef enum logic { RD, RT } regdst_t;
 typedef struct packed {
     // logic memtoreg, memwrite;
     // logic branch, alusrc;
@@ -128,6 +130,7 @@ typedef struct packed {
     logic memread, memwrite;
     logic regwrite;
     alusrc_t alusrc;
+    regdst_t regdst;
 } control_t;
 
 typedef enum logic [5:0] { 
@@ -144,6 +147,12 @@ typedef struct packed {
     decoded_op_t op;
     word_t extended_imm;
     control_t ctl;
+    shamt_t shamt;
 } decoded_instr_t;
+
+typedef struct packed {
+    decoded_instr_t decoded_instr;
+    
+} decode_data_t;
 
 `endif

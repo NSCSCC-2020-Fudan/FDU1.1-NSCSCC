@@ -3,7 +3,7 @@ module alu (
     input alufunc_t alufunc,
     output word_t c
 );
-    logic[5:0] shamt;
+    shamt_t shamt;
     assign shamt = b[5:0];
     always_comb begin
         case (alufunc)
@@ -32,7 +32,7 @@ module alu (
                 c = ((signed)a < (signed)b) ? 32'b1 : 32'b0; 
             end
             NOR: begin
-                c = ~(a ^ b);
+                c = ~(a & b);
             end
             XOR: begin
                 c = a ^ b;
