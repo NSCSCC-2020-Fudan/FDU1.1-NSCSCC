@@ -28,7 +28,7 @@ typedef logic[5:0] func_t;
 // `define ALU_USLT 4'b1111
 
 typedef enum logic[3:0] {
-    AND, OR, ADD, SLL, SRL, SRA, SYB, SLT, NOR, XOR, 
+    AND, OR, ADD, SLL, SRL, SRA, SUB, SLT, NOR, XOR, 
     ADDU, SUBU, SLTU
 } alufunc_t;
 
