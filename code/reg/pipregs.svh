@@ -4,7 +4,7 @@
 `include "global.svh"
 `include "decode.svh"
 
-interface Freg_intf(output word_t pc);
+interface Freg_intf(input logic clk, reset, output word_t pc);
     modport in(output pc);
     modport out(input pc);
 endinterface

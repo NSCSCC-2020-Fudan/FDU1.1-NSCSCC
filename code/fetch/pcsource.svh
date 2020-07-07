@@ -26,10 +26,4 @@ interface Pcselect_intf(input word_t pcexception, input logic exception);
     modport fetch(output pcplus4F);
 endinterface
 
-interface Pcreg_intf(input logic clk, reset, stall);
-    word_t pcnext;
-    modport in(output pcnext);
-    modport out(input pcnext, clk, reset, stall);
-endinterface
-
 `endif
