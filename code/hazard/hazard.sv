@@ -1,0 +1,5 @@
+module hazard (
+    ports
+);
+    
+endmodule
