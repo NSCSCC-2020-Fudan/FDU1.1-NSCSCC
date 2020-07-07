@@ -2,10 +2,15 @@
 
 /*
     HILOWriteEn: HI/LO register write enable
-    
+
 */
 
 module Memory(
+        input logic WriteRegEn,
+        input logic [4: 0] WriteReg,
+        output logic WriteRegEnOut,
+        output logic [4: 0] WriteRegOut,
+
         input logic HIWriteEn, LOWriteEn,
         output logic HIWriteEnOut, LOWriteEnOut,
         input logic PrivilegeWrite,
