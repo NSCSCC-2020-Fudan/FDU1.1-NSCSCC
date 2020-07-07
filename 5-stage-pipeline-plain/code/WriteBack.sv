@@ -1,4 +1,15 @@
 `include "MIPS.h"
+/*
+    PrivilegeWrite: CP0 write enable
+    CP0RegWrite: CP0 reg
+    CP0SelWrite: CP0 sel
+    Result: the data write back to register
+    WriteRegEn: registers write enable
+    HIWriteEn: HI register write enable
+    LOWriteEn: LO register write enable
+    ALUHI: HI comes from ALU
+    ALULO: LO comes from ALU
+*/
 
 module WriteBack(
         input logic PrivilegeWrite,

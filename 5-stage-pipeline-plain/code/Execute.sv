@@ -1,5 +1,30 @@
 `include "MiPS.svh"
 
+/*
+    Rs: register rs
+    Rt: register rt
+    RegRd1: data read from register 1
+    RegRd2: data read from register 2
+    Imm32: immediate number extended in 32 bits signed_extend/unsigned_extend
+    Type: instruction type --MainDec.sv
+    ALUCtrl: ALU controller --ALUDec.sv
+    Exception: exception instruction --MainDec.sv
+    Memory: memory instruction --MainDec.sv
+    Machine: machine instruction --MainDec.sv
+    OverflowException: overflow exception of signed operation in ALU
+    AddressException: address can't devided by 2/4
+    ALUOut: 32-bits data from ALU
+    ALUOutHI: HI data from ALU
+    ALUOutLO: LO data from ALU
+    WriteReg: general retister to write
+    WriteRegEn: general retister write enable
+    HIWriteEn: HI register write enable
+    LOWriteEn: LO register write enable
+    PrivilegeWrite: CP0 register write enable
+    CP0RegWrite: Cp0 reg
+    CP0SelWrite: CP0 sel
+*/
+
 module Execute(
         input logic [4: 0] Rs, Rt,
         input logic [31: 0] RegRd1, RegRd2,
@@ -43,7 +68,13 @@ module Execute(
     BiMux BiMuxHL(CP0Read, RegRd2, Machine[3], CP0);
     BiMux BiMuxSCCP0(SourceAHL, CP0, Machine[5], SourceA);
     BiMux BiMuxImm(RegRt, Imm32, (Type == 3'b001 || Type == 3'b100), SourceB);
-    
+    /*
+        R-type: SourceA <-- RegRd1, SourceB <-- RegRd2
+        I-type: SourceA <-- RegRd1, SourceB <-- Imm32
+        Branch/J/JR: SourceA <-- Imm32, SouceB <-- ??
+        
+    */
+
     ALU ALU(SourceA, 
             SourceB,
             ALUCtrl,

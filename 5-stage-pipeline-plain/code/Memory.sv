@@ -1,8 +1,25 @@
 `include "MIPS.h"
 
 /*
-    HILOWriteEn: HI/LO register write enable
-
+    WriteRegEn: write 32 registers enable
+    WriteReg: register in 32 registers to write
+    HIWriteEn: HI register write enable
+    LOWriteEn: LO register write enable
+    PrivilegeWrite: CP0 register write enable
+    CP0RegWrite: CP0 reg
+    CP0SelWrite: CP0 sel
+    RegRd1: data in register1
+    Memory: memory instruction
+    ALUOut: data feom ALU
+    ALUHI: HI data from ALU
+    ALULO: LO data from ALU
+    MemoryEn: memory enable
+    Mode: memory running_mode 00-1byte/ 01-2byte 11-4byte
+    Addr: memory address
+    MemoryWriteEn: memory write enable
+    MrmoryWrite: data write to memory
+    MemoryRead: data read from memory
+    Result: data write to 32 registers
 */
 
 module Memory(

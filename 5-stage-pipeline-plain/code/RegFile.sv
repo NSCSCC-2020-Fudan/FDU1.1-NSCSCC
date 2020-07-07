@@ -1,11 +1,26 @@
 `include "MIPS.svh"
+/*
+    R1: register1 to read
+    R2: register2 to read
+    R1Read: the data in register1
+    R2Read: the data in register2
+    WriteEn: 32 registers write enable
+    WrtiteReg: register in 32 registers to write
+    WrtiteData: register in 32 registers to write
+    HIWriteEn: HI register write enable
+    LOWriteEn: LO register write enable
+    HIWriteData: Data write to HI register
+    LOWriteData: Data write to LO register
+    HIRead: Data in HI Register
+    LORead: Data in LO Register
+*/
+
 module RegFile(
         input logic clk, reset,
         input logic [4: 0] R1, R2,
         output logic [31: 0] R1Read, R2Read,
 
         input logic WriteEn, 
-        
         input logic [4: 0] WriteReg,
         input logic [31: 0] WriteData,
 

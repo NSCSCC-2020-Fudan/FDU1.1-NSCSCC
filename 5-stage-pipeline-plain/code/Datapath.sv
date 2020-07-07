@@ -55,9 +55,9 @@ module Datapath(
                   );
     
     ExecuteReg ExecuteReg(clk, reset, stallE, flushEm
-                          RsEIn, RtEIn,
+                          RsDOut, RtDOut,
                           RegRd1DOut, RegRd2DOut, Imm32DOut,
-                          TypeEDOut, ALUCtrlDOut, 
+                          TypeDOut, ALUCtrlDOut, 
                           ExceptionDOut, MemoryDOut, MachineDOut,
                           WriteRegDOut, WriteRegEnDOut,
                           HIWriteEnDOut, LOWriteEnDOut,
@@ -68,7 +68,7 @@ module Datapath(
                           ExceptionEIn, MemoryEIn, MachineEIn,
                           WriteRegEIn, WriteRegEnEIn,
                           HIWriteEnEIn, LOWriteEnEIn,
-                          PrivilegeWriteEIn, CP0RegWriteEIn, CP0SelWriteEIn,
+                          PrivilegeWriteEIn, CP0RegWriteEIn, CP0SelWriteEIn
                           );
     Execute Execute(RsEIn, RtEIn,
                     RegRd1EIn, RegRd2EIn, Imm32EIn,
@@ -118,7 +118,7 @@ module Datapath(
                   );
     
     WriteBackReg WriteBackReg(clk, reset,
-                              PrivilegeWriteWIn,
+                              PrivilegeWriteMOut,
                               CP0RegWriteMOut, CP0SelWriteMOut, ResultMOut,
                               WriteRegEnMOut, WriteRegMOut,
 		                      HIWriteEnMOut, LOWriteEnMOut,
