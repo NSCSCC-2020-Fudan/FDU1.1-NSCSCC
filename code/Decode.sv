@@ -11,7 +11,11 @@ module Decode (
     func_t func;
     assign func = in.instr[5:0];
 
-    decoded_instr_t di;
+	decoded_instr_t di;
+	assign di.rs = in.instr[25:21];
+	assign di.rt = in.instr[20:16];
+	assign di.rd = in.instr[15:11];
+
     always_comb begin
         case (op)
             `OP_ADDI:   di.op = ADD;
@@ -65,7 +69,28 @@ module Decode (
                     `F_SUBU:    di.op = SUBU;
                     `F_SLT:     di.op = SLT;
                     `F_SLTU:    di.op = SLTU;
-
+                    `F_DIV:     di.op = DIV;
+                    `F_DIVU:    di.op = DIVU;
+                    `F_MULT:    di.op = MULT;
+					`F_MULTU:	di.op = MULTU;
+					`F_AND:		di.op = AND;
+					`F_NOR:		di.op = NOR;
+					`F_OR:		di.op = OR;
+					`F_XOR:		di.op = XOR;
+					`F_SLLV:	di.op = SLLV;
+					`F_SLL:		di.op = SLL;
+					`F_SRAV:	di.op = SRAV;
+					`F_SRA:		di.op = SRA;
+					`F_SRLV:	di.op = SRLV;
+					`F_SRL:		di.op = SRL;
+					`F_JR:		di.op = JR;
+					`F_JALR:	di.op = JALR;
+					`F_MFHI:	di.op = MFHI;
+					`F_MFLO:	di.op = MFLO;
+					`F_MTHI:	di.op = MTHI;
+					`F_MTLO:	di.op = MTLO;
+					`F_BREAK:	di.op = BREAK;
+					`F_SYSCALL:	di.op = SYSCALL;
                     default: begin
                         // reserved instruction exception
                     end
@@ -75,7 +100,9 @@ module Decode (
                 // reserved instruction exception;
             end
         endcase
-    end
+	end
+	
+	aludec alude(di.op, di.ctl.alufunc);
 endmodule
 
 // module MainDec (
@@ -98,14 +125,30 @@ endmodule
 //     end
 // endmodule
 
-// module ALUDec (
-//     input func_t func,
-//     input aluop_t aluop,
-//     output alufunc_t alufunc
-// );
-//     always_comb begin
-//         case (aluop)
-            
-//         endcase
-//     end
-// endmodule
+module aludec (
+	input decoded_op_t op,
+	output alufunc_t alufunc
+);
+    always_comb begin
+        case (op)
+			ADD:		alufunc = ADD;
+			ADDU:		alufunc = ADDU;
+			SUB:		alufunc = SUB;
+			SUBU:		alufunc = SUBU;
+			SLT:		alufunc = SLT;
+			SLTU:		alufunc = SLTU;
+			AND:		alufunc = AND;
+			NOR:		alufunc = NOR;
+			OR:			alufunc = OR;
+			XOR:		alufunc = XOR;
+			SLLV:		alufunc = SLL;
+			SLL:		alufunc = SLL;
+			SRAV:		alufunc = SRA;
+			SRA:		alufunc = SRA;
+			SRLV:		alufunc = SRL;
+			SRL:		alufunc = SRL;
+			LUI:		alufunc = SLL;
+			default: 	alufunc = ADDU;
+        endcase
+    end
+endmodule
