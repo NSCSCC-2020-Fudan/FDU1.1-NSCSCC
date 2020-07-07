@@ -13,6 +13,7 @@ module Datapath(
         output logic DWriteEN,
         output logic [31: 0] DWrite,
 
+        output logic PrivilegeRead,
         output logic [4: 0] CP0RegRead, 
         output logic [2: 0] CP0SelRead,
         input logic [31: 0] CP0Read,
@@ -20,7 +21,7 @@ module Datapath(
         output logic PrivilegeWrite,
         output logic [4: 0] CP0RegWrite, 
         output logic [2: 0] CP0SelRead,
-        output logic [31: 0] CP0Write,
+        output logic [31: 0] CP0Write
     );
     
     Fetch Fetch(clk, reset, stallF,
@@ -37,7 +38,8 @@ module Datapath(
                         PCDIn, PCPlus4DIn
                         );
     Decode Decode(clk, reset,
-		          PCDIn, PCPlus4DIn, PCPlus4DOut,
+		          PCDIn, PCPlus4DIn, InstrDIn,
+                  PCPlus4DOut,
                   IRead, 
                   BranchF, JumpRegF, JumpF,
                   PCBranch, PCJumpReg, PCJump,
@@ -49,10 +51,12 @@ module Datapath(
 		          HIWriteEnDOut, LOWriteEnDOut, HIReadEnDOut, LOReadEnDOut,
 		          WriteRegEnWOut, WriteRegWOut, ResultWOut,
 		          HIWriteEnWOut, LOWriteEnWOut, ALUHIWOut, ALULOWOut,
-		          PrivilegeWriteWOut, CP0RegWriteWOut, CP0SelWriteWOut, CP0WriteWOut,
-                  PrivilegeReadDOut, CP0RegReadDOut, CP0SelReadDOut, CP0ReadDOut,
-		          PrivilegeWriteDOut, CP0RegWriteDOut, CP0SelWriteDOut, CP0WriteDOut
+                  PrivilegeWriteDOut, 
+                  PrivilegeReadD, CP0RegD, CP0SelD, CP0Read
                   );
+    assign PrivilegeRead = PrivilegeReadD;
+    assign CP0RegRead = CP0RegD;
+    assign CP0SelRead = CP0SelD;
     
     ExecuteReg ExecuteReg(clk, reset, stallE, flushEm
                           RsDOut, RtDOut,
@@ -61,7 +65,7 @@ module Datapath(
                           ExceptionDOut, MemoryDOut, MachineDOut,
                           WriteRegDOut, WriteRegEnDOut,
                           HIWriteEnDOut, LOWriteEnDOut,
-                          PrivilegeWriteDOut, CP0RegWriteDOut, CP0SelWriteDOut,
+                          PrivilegeWriteDOut, CP0RegD, CP0SelD,
                           RsEIn, RtEIn,
                           RegRd1EIn, RegRd2EIn, Imm32EIn,
                           TypeEIn, ALUCtrlEIn, 
@@ -131,8 +135,8 @@ module Datapath(
                               );
     WriteBack WriteBack(PrivilegeWriteWIn,
 		                CP0RegWriteWIn, CP0SelWriteWIn, ResultWIn,
-                        PrivilegeWriteWOut,
-                        CP0RegWriteWOut, CP0SelWriteWOut, ResultWOut,
+                        PrivilegeWrite,
+                        CP0RegWrite, CP0SelWrite, CP0Write,
                         WriteRegEnWIn, WriteRegWIn,
 		                HIWriteEnWIn, LOWriteEnWIn,
                         ALUHIWIn, ALULOWIn,

@@ -1,14 +1,45 @@
 `include "MIPS.svh"
 
 /*
+	PCPlus4: PC + 4
+	Instr: instruction to decode
+	BranchF: branch or not
+	JumpRegF: jr/jalr or not
+	JumpF: j/jal or not
+	PCBranch: branch target
+	PCJumpReg: jr/jalr target
+	PCJump: j/jal target
+	Rs: register rs
+	Rt: register rt
+	Rd: register rd
+	RegRd1: data in register 1
+	RegRd2: data in register 2
+	Imm32: immediate number / PC + 8
+	Type: instruction type --MainDec.sv
+	ALU Ctrl: ALU controller --ALUDec.sv
+	Exception: exception instruction --MainDec.sv
+	Move: exception instruction --MainDec.sv
+	Memory: memory instruction --MainDec.sv
+	Machine: machine instruction --MainDec.sv
+	WriteRegEn: general register wirte enable
+	WriteReg: general register to write
+	HIWriteEn: HI register write enable
+	LOWriteEn: LO register write enable
+	HIReadEn: HI register read enable
+	LOReadEn: LO register read enable
+	PrivilegeRead: CP0 register read enable
+	PrivilegeWrite: CP0 register write enable
+	CP0Reg: CP0 reg to read
+	CP0Sel: CP0 sel to read
+	CP0Read: data read from CP0
 */
 
 module Decode(
         input logic clk, reset,
 		input logic [31: 0] PC,
         input logic [31: 0] PCPlus4,
-		output logic [31: 0] PCPlus4Out,
 		input logic [31: 0] Instr,
+		output logic [31: 0] PCPlus4Out,
         
         output logic BranchF, JumpRegF, JumpF,
         output logic [31: 0] PCBranch, PCJumpReg, PCJump,
@@ -34,26 +65,18 @@ module Decode(
 		input logic [31: 0] WeiteDataW,
 		input logic HIWriteEnW, LOWriteEnW,
         input logic [31: 0] HIWriteDataW, LOWriteDataW,
-		output logic PrivilegeWriteW,
-		output logic [4: 0] CP0RegWriteW,
-		output logic [2: 0] CP0SelWriteW,
-		output logic [31: 0] CP0WriteW,
 
 		output logic PrivilegeRead,
-		output logic [4: 0] CP0RegRead,
-		output logic [2: 0] CP0SelRead,
-		input logic [31: 0] CP0Read,
 		output logic PrivilegeWrite,
-		output logic [4: 0] CP0RegWrite,
-		output logic [2: 0] CP0SelWrite,
-		output logic [31: 0] CP0Write
+		output logic [4: 0] CP0Reg,
+		output logic [2: 0] CP0Sel,
+		input logic [31: 0] CP0Read
     );
 
 	logic [31: 0] HIRead, LORead, RegRds, RegRdt;
 	RegFile RegFile(clk, reset,
 					Rs, Rt,
 					RegRds, RegRdt,
-					RegWriteEnW,
 					WriteRegEnW, WriteRegW, WeiteDataW,
 					HIWriteEnW, LOWriteEnW,
         			HIWriteDataW, LOWriteDataW,
@@ -70,15 +93,19 @@ module Decode(
     ALUDec ALUDec(Type, 
 				  Instr,
 				  ALUCtrl
-				 );
+				  );
 
-    logic [31: 0] ZeroExt, SignExt, ImmExt, LUI, Imm16;
+    logic [31: 0] ZeroExt, SignExt, ImmExt, Imm16, LUI, PCPlus8;
 	assign Imm16 = Instr[15: 0];
 	Extend SignExtend(Imm16, 0, SignExt);
     Extend ZeroExtend(Imm16, 1, ZeroExt);
 	BiMux BiMuxExt(SignExt, ZeroExt, ((Type == 3'b001) & ((ALUCtrl[3: 1] == 4'b0101) | (ALUCtrl[3: 1] == 4'b0110) | (ALUCtrl[3: 1] == 4'b1000))), ImmExt);
-	BiMux BiMuxLeft({Imm16, 16'b0}, ImmExt, ((Type == 3'b001) & (ALUCtrl[3: 1] == 4'b1111)), LUI);
-	BiMux BiMuxLUI(LUI, {Imm16, 16'b0}, (Instr[31: 26] == 6'b001111), Imm32);
+	//I-type, And, Or, Xor
+	BiMux BiMuxLUI(ImmExt, {Imm16, 16'b0}, (Instr[31: 26] == 6'b001111), LUI);
+	//LUI
+	Adder Adder8(PCPlus4, 3'b100, PCPlus8);
+	BiMux BiMuxPlus8(LUI, PCPlus8, (Type == 3'b010), Imm32);
+	//Imm32 <-- PCPlus8 jal/jalr
 
 	logic [31: 0] RegRd1HI, RegRd1LO;
 	assign Rs = Instr[25, 21];
@@ -88,6 +115,7 @@ module Decode(
 	assign LOReadEn = (Move == 3'b101);
 	BiMux BiMuxHI(RegRds, HIRead, HIReadEn, RegRd1HI);
 	BiMux BiMuxLO(RegRd1HI, LORead, LOReadEn, RegRd1LO);
+	//RegRd1 <-- HI/LO/Rs
 	logic RWriteHL;
 	assign RWriteHL = (Type == 3'b000) && (ALUCtrl[4: 1] == 4'b0011 || ALUCtrl[4: 1] == 4'b0110);
 	assign HIWriteEN = RWriteHL || (Move == 3'b110);
@@ -115,11 +143,5 @@ module Decode(
 	assign CP0RegRead = Rd;
 	assign CP0SelRead = Machine[2: 0];
 	BiMux BiMuxCp0(RegRd1LO, CP0Read, PrivilegeRead, RegRd1);
-	assgin PrivilegeWrite = PrivilegeWriteW,
-	assign CP0RegWrite = CP0RegWriteW,
-	assign CP0SelWrite = CP0SelWriteW,
-	assign CP0Write = CP0WriteW,
-
-	assign PCPlus4Out = PCPlus4;
-	
+	//RegRd1 <-- CP0
 endmodule

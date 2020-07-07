@@ -56,6 +56,6 @@ module ALU(
                 c = a << b[4: 0];
             4'b1010:
                 c = (ALUCtrl[0]) ? (signed(a) >>> b[4: 0]) : (a >> b[4: 0]);
-            default: ;
+            default: c = a;
         endcase
 endmodule

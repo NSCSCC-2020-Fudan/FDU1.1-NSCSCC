@@ -71,8 +71,12 @@ module Execute(
     /*
         R-type: SourceA <-- RegRd1, SourceB <-- RegRd2
         I-type: SourceA <-- RegRd1, SourceB <-- Imm32
-        Branch/J/JR: SourceA <-- Imm32, SouceB <-- ??
-        
+        Branch/J/JR: SourceA <-- Imm32(PC + 8), SouceB <-- ??
+        Move: SourceA <-- HL, SourceB <-- ??
+              SourceA <-- RegRd1, SourceB <-- RegRd2(0)
+        Memory: SourceA <-- RegRd1, SourceB <-- Imm32
+        Machine: SourceA <-- CP0, SourceB <-- ??
+                 SourceA <-- RegRd2, SourceB <-- ??
     */
 
     ALU ALU(SourceA, 
