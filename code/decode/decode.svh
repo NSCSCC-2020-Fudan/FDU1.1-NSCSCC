@@ -1,7 +1,7 @@
 `ifndef __DECODE_SVH
 `define __DECODE_SVH
 
-`include "global.svh"
+`include "mips.svh"
 typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;
 typedef logic[4:0] shamt_t;

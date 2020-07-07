@@ -1,7 +1,7 @@
 `ifndef __EXECUTE_SVH
 `define __EXECUTE_SVH
 
-`include "global.svh"
+`include "mips.svh"
 
 typedef struct packed {
     decoded_instr_t decoded_instr;

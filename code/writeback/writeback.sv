@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module writeback (
     input mem_data_t mem_data,
     output word_t result,
