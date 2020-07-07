@@ -1,8 +1,8 @@
 `include "mips.svh"
 
-module Decode (
-    Dreg.out in,
-    Ereg.in out,
+module decode (
+    Dreg_intf.out in,
+    Ereg_intf.in out,
     rfi.decode rf
 );
     op_t op;
@@ -22,7 +22,7 @@ module Decode (
 							(di.op == LW) ||
 							(di.op == SB) || (di.op == SH);
 	assign di.ctl.memwrite = (di.op == SB) || (di.op == SW) || (di.op == SH);
-	
+
     always_comb begin
         case (op)
             `OP_ADDI:   di.op = ADD;
