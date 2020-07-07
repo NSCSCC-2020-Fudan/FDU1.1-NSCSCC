@@ -1,7 +1,8 @@
 `include "mips.svh"
 module maindec (
     input word_t instr,
-    output decoded_op_t op
+    output decoded_op_t op,
+    output logic exception_ri
 );
     op_t op;
     assign op = instr[31:26];
@@ -9,6 +10,7 @@ module maindec (
     func_t func;
     assign func = instr[5:0];
     always_comb begin
+        exception_ri = 1'b1;
         case (op)
             `OP_ADDI:   op = ADD;
             `OP_ADDIU:  op = ADDU;
@@ -27,7 +29,7 @@ module maindec (
                     `B_BGEZAL:  op = BGEZAL;
                     `B_BLTZAL:  op = BLTZAL;
                     default: begin
-                        // reserved instruction exception;
+                        exception_ri = 1'b1;
                     end
                 endcase
             end
@@ -49,7 +51,7 @@ module maindec (
                     C_MFC0: op = MFC0;
                     C_MTC0: op = MTC0;
                     default: begin
-                        // reserved instruction exception
+                        exception_ri = 1'b1;
                     end
                 endcase
             end
@@ -84,12 +86,12 @@ module maindec (
 					`F_BREAK:	op = BREAK;
 					`F_SYSCALL:	op = SYSCALL;
                     default: begin
-                        // reserved instruction exception
+                        exception_ri = 1'b1;
                     end
                 endcase
             end
             default: begin
-                // reserved instruction exception;
+                exception_ri = 1'b1;
             end
         endcase
 	end

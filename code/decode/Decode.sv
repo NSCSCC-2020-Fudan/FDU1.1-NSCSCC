@@ -47,7 +47,7 @@ module decode (
 						   (di.op == BGEZAL) || (di.op == BLTZAL);
 
 	assign di.ctl.jump = (di.op == J) || (di.op == JAL) || (di.op == JALR) || (di.op == JR);
-	maindec mainde(instr, di.op);
+	maindec mainde(instr, di.op, dataD.exception_ri);
 	aludec alude(di.op, di.ctl.alufunc);
 	
 	logic ext = (di.op == AND) || (di.op == NOR) || (di.op == OR) || (di.op == XOR);
