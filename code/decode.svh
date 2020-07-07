@@ -6,13 +6,7 @@ typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;
 typedef logic[3:0] alufunc_t;
 typedef logic[2:0] aluop_t;
-typedef struct packed {
-    logic memtoreg, memwrite;
-    logic branch, alusrc;
-    logic regdst, regwrite;
-    logic jump;
-    logic [3:0]aluop;
-} control_t;
+
 
 // signed
 `define ALU_AND 4'b0000
@@ -109,11 +103,32 @@ typedef struct packed {
 `define F_BREAK         6'b001101
 `define F_SYSCALL       6'b001100
 
+`define B_BGEZ          5'b00001
+`define B_BLTZ          5'b00000
+`define B_BGEZAL        5'b10001
+`define B_BLTZAL        5'b10000
+
+`define C_ERET          5'b10000
+`define C_MFC0          5'b00000
+`define C_MTC0          5'b00100
+typedef struct packed {
+    logic memtoreg, memwrite;
+    logic branch, alusrc;
+    logic regdst, regwrite;
+    logic jump;
+    logic [3:0]aluop;
+} control_t;
+
 typedef enum logic [3:0] { 
     ADDI, ADDIU, SLTI, SLTIU, ANDI, LUI, ORI, XORI, BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
     ADD, ADDU, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL
 } decoded_op_t;
 
-
+typedef struct packed {
+    creg_addr_t rs, rt, rd;
+    decoded_op_t op;
+    word_t extended_imm;
+    control_t ctl;
+} decoded_instr_t;
 
 `endif

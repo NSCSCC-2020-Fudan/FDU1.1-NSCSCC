@@ -2,6 +2,7 @@
 `define __PIPREGS_SVH
 
 `include "global.svh"
+`include "decode.svh"
 
 interface Freg(output word_t pc);
     modport in(output pc);
@@ -15,8 +16,9 @@ interface Dreg(input word_t instr);
 endinterface
     
 interface Ereg();
-    logic 
-    modport in(output );
-    modport out(input clk, reset, );
+    word_t pcplus4;
+    decoded_inst_t decoded_inst;
+    modport in(output pcplus4, decoded_inst);
+    modport out(input clk, reset, pcplus4, decoded_inst);
 endinterface
 `endif
