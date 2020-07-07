@@ -19,6 +19,12 @@ interface Ereg_intf();
     word_t pcplus4;
     decoded_inst_t decoded_inst;
     modport in(output pcplus4, decoded_inst);
-    modport out(input clk, reset, pcplus4, decoded_inst);
+    modport out(input pcplus4, decoded_inst);
+endinterface
+
+interface Mreg_intf();
+    
+    modport in(output );
+    modport out(input );
 endinterface
 `endif
