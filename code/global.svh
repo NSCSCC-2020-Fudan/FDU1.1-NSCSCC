@@ -6,9 +6,9 @@ typedef logic[4:0] creg_addr_t;
 typedef logic[15:0] halfword_t;
 typedef logic[31:0] m_addr_t;
 typedef logic[7:0] byte_t;
+typedef logic[63:0] dword_t;
 
-`define ZERO_EXT 1'b1
-`define SIGN_EXT 1'b0
+typedef enum logic { ZERO_EXT, SIGN_EXT } ext_mode;
 
 typedef struct packed {
     logic en;

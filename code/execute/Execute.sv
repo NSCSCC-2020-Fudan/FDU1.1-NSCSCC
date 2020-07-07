@@ -9,5 +9,5 @@ module execute (
     wdmux wdmux();
     srcbmux srcbmux();
     alu alu(srca, srcb, dataD.decoded_instr.ctl.alufunc, dataE.aluout, dataE.exception_of);
-
+    mult multdiv(.a(srca), .b(srcb), .op(dataD.decoded_instr.op), .hi(dataE.hi), .lo(dataE.lo));
 endmodule
