@@ -25,12 +25,28 @@
 			"endinterface"
 		]
 	},
+	"interface_2": {
+		"prefix": "interface",
+		"body": [
+			"interface $1();",
+			"\t$0",
+			"endinterface"
+		]
+	},
 	"modport": {
 		"prefix": "modport_my",
-		"body": "modport in();\nmodport out();"
+		"body": "modport $0();"
 	},
 	"define": {
 		"prefix": "define",
 		"body": "`define "
+	},
+	"input": {
+		"prefix": "input",
+		"body": "input "
+	},
+	"output": {
+		"prefix": "output",
+		"body": "output "
 	}
 }
