@@ -1,23 +1,26 @@
 `include "MIPS.h"
 
-module Memory(
-        input logic [4: 0] Rt, Rd,
-        input logic [31: 0] RegRd1, RegRd2,
-        output logic [4: 0] RtOut, RdOut,
-        
-        input logic HILOWrite,
-        output logic HILOWriteOut,
+/*
+    HILOWriteEn: HI/LO register write enable
+    
+*/
 
-        input logic [2: 0] Type,
-        input logic [3: 0] Move,
+module Memory(
+        input logic HIWriteEn, LOWriteEn,
+        output logic HIWriteEnOut, LOWriteEnOut,
+        input logic PrivilegeWrite,
+		input logic [4: 0] CP0RegWrite,
+		input logic [2: 0] CP0SelWrite,
+        output logic PrivilegeWriteOut,
+		output logic [4: 0] CP0RegWriteOut,
+		output logic [2: 0] CP0SelWriteOut,
+ 
+        input logic [31: 0] RegRd1,
         input logic [4: 0] Memory,
-        inout logic [5: 0] Machine,
+
         input logic [31: 0] ALUOut,
-        input logic [31: 0] ALUOutH, ALUOutL,
-        output logic [3: 0] Move,
-        output logic [4: 0] Memory,
-        output logic [5: 0] Machine,
-        output logic [31: 0] HIOut, LOOut,
+        input logic [31: 0] ALUOutHI, ALUOutLO,
+        output logic [31: 0] ALUOutHIOut, ALUOutLOOut,
 
         output logic MemoryEn,
         output logic [1: 0] Mode,
@@ -49,13 +52,13 @@ module Memory(
             endcase
         end
 
-    assign HIOut = ALUOutH;
-    assign LOOut = ALUOutL;
+    assign ALUOutHIOut = ALUOutHI;
+    assign ALUOutLOOut = ALUOutLO;
     assign Result = (Memory[4]) ? (Data) : (ALUOut);
 
-    assign MoveOut = Move;
-    assign MemoryOut = Memory;
-    assign MachineOut = Machine;
-    assign RtOut = Rt;
-    assign RdOut = Rd;
+    assign HIWriteEnOut = HIWriteEn;
+    assign LOWriteEnOut = LOWriteEn;
+    assign PrivilegeWriteOut = PrivilegeWrite;
+    assign CP0SelWriteOut = CP0SelWrite; 
+    assign CP0RegWriteOut = CP0RegWrite; 
 endmodule

@@ -43,7 +43,7 @@ module Decode(
 		output logic PrivilegeWrite,
 		output logic [4: 0] CP0RegWrite,
 		output logic [2: 0] CP0SelWrite,
-		output logic [31: 0] CP0Write,
+		output logic [31: 0] CP0Write
     );
 
 	logic [31: 0] HIRead, LORead, RegRds, RegRdt;

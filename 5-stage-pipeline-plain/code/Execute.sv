@@ -4,32 +4,38 @@ module Execute(
         input logic [4: 0] Rs, Rt,
         input logic [31: 0] RegRd1, RegRd2,
 		input logic [31: 0] Imm32,
-        input logic [4: 0] WriteReg,
-        input logic WriteRegEn,
-        output logic [4: 0] WriteRegOut,
-        output logic WriteRegEnOut,
+        output logic [31: 0] RegRd1Out,
         
         input logic [2: 0] Type, 
 		input logic [4: 0] ALUCtrl,
 		input logic [1: 0] Exception, 
-		input logic [2: 0] Move, 
 		input logic [4: 0] Memory,
 		input logic [5: 0] Machine,
-        output logic HILOWrite,
-        output logic [2: 0] TypeOut,
-        output logic [2: 0] MoveOut,
         output logic [4: 0] MemoryOut,
-        output logic [5: 0] MachineOut,
 
         output logic OverflowException,
         output logic AddressException,
 
         output logic [31: 0] ALUOut,
-        output logic [31: 0] ALUOutH, ALUOutL,
+        output logic [31: 0] ALUOutHI, ALUOutLO,
         
+        input logic [4: 0] WriteReg,
+        input logic WriteRegEn,
+        output logic [4: 0] WriteRegOut,
+        output logic WriteRegEnOut,
+
+        input logic HIWriteEn, LOWriteEn,
+        output logic HIWriteEnOut, LOWriteEnOut,
+
+        input logic PrivilegeWrite,
+        input logic [4: 0] CP0RegWrite,
+        input logic [2: 0] CP0SelWrite,
+        output logic PrivilegeWriteOut,
+        output logic [4: 0] CP0RegWriteOut,
+        output logic [4: 0] CP0SelWriteOut,
     );
     
-    logic [31: 0] ALUOut, ALUOutH, ALUOutL;
+    logic [31: 0] ALUOut;
     logic [31: 0] SourceAPC8, SourceAHL, HL, CP0, SourceA, SourceB;
     BiMux BiMuxPCPlus8(RegRd1, PCPlus8, (Type == 3'b010), SourceAPC8);
     BiMux BiMuxHL(HI, LO, Move[0], HL);
@@ -41,14 +47,19 @@ module Execute(
     ALU ALU(SourceA, 
             SourceB,
             ALUCtrl,
-            ALUOut, ALUOutH, ALUOutL,
+            ALUOut, ALUOutHI, ALUOutLO,
             OverflowException
             );
     assign AddressException = (Memory[4]) & ((ALUOut[0] != 0) | (ALUOut[1] != 0 && Memory[0] == 1) | (ALUOut[2] != 0 && Memory[1] == 1));
     
-    assign RtOut = Rt;
-    assign RdOut = Rd;
-    assign MoveOut = Move;
+    assign RegRd1Out = RegRd1;
     assign MemoryOut = Memory;
-    assign MachineOut = Machine;    
+
+    assign WriteRegOut = WriteReg;
+    assign WriteRegENOut = WriteRegEn;
+    assign HIWriteEnOut = HIWriteEn;
+    assign LOWriteEnOut = LOWriteEn;
+    assign PrivilegeWriteOut = PrivilegeWrite;
+    assign CP0SelWriteOut = CP0SelWrite; 
+    assign CP0RegWriteOut = CP0RegWrite; 
 endmodule

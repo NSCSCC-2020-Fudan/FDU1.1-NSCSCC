@@ -1,32 +1,34 @@
 `include "MIPS.h"
 
 module WriteBack(
-        input logic [4: 0] Rt, Rd,
-        input logic [2: 0] Type, 
-        input logic [2: 0] Move,
-        input logic [4: 0] Memory,
-        inout logic [31: 0] Result,
+        input logic PrivilegeWrite,
+		input logic [4: 0] CP0RegWrite,
+		input logic [2: 0] CP0SelWrite,
+		input logic [31: 0] Result,
+        output logic PrivilegeWriteOut,
+		output logic [4: 0] CP0RegWriteOut,
+		output logic [2: 0] CP0SelWriteOut,
+		output logic [31: 0] ResultOut,
 
-        inout logic HILOWrite,
-        output logic [4: 0] RegWrite,
-        output logic RegWriteEnOut,
-        output logic [31: 0] RegResult,
-        
-        input logic [31: 0] HI, LO,
-        output logic [31: 0] HIOut, LOOut,
-        output logic [1: 0] HILOWriteEN,
-
-        output logic [31: 0] MachineResult,
-        output logic MachineWriteEn
+        input logic WriteRegEn,
+		input logic [4: 0] WriteReg,
+		input logic HIWriteEn, LOWriteEn,
+        input logic [31: 0] ALUHI, ALULO,
+        output logic WriteRegEnOut,
+		output logic [4: 0] WriteRegOut,
+		output logic HIWriteEnOut, LOWriteEnOut,
+        output logic [31: 0] ALUHIOut, ALULOOut
     );
 
-    assign RegWriteEnOut = RegWriteEn;    
-    assign RegWrite = (Type == 3'b000) || (Type == 3'b001) || 
-    assign HIOut = HI;
-    assign LOOut = LO;
-    assign HILOWriteEN[0] = (HILOWrite) || (Move == 3'b110);
-    assign HILOWriteEN[1] = (HILOWrite) || (Move == 3'b111);
+    assign PrivilegeWriteOut = PrivilegeWrite;
+    assign CP0RegWriteOut = CP0RegWrite;
+    assign CP0SelWriteOut = CP0SelWrite;
+    assign ResultOut = Result;
 
-    assign RetResult = Result;
-    assign MachineResult = Result;
+    assign WriteRegEnOut = WriteRegEn;
+    assign WriteRegOut = WriteReg;
+    assign HIWriteEnOut = HIWriteEn;
+    assign LOWriteEnOut = LOWriteEn;
+    assign ALUHIOut = ALUHI;
+    assign ALULOOut = ALULO;
 endmodule
