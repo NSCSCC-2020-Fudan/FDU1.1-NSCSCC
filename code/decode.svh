@@ -117,7 +117,7 @@ typedef enum logic[3:0] {
 `define C_MFC0          5'b00000
 `define C_MTC0          5'b00100
 
-
+typedef enum logic { IMM, REG } alusrc_t;
 typedef struct packed {
     // logic memtoreg, memwrite;
     // logic branch, alusrc;
@@ -125,6 +125,9 @@ typedef struct packed {
     // logic jump;
     // logic [3:0]aluop;
     alufunc_t alufunc;
+    logic memread, memwrite;
+    logic regwrite;
+    alusrc_t alusrc;
 } control_t;
 
 typedef enum logic [5:0] { 

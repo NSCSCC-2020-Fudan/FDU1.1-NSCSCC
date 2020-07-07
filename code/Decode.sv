@@ -15,7 +15,14 @@ module Decode (
 	assign di.rs = in.instr[25:21];
 	assign di.rt = in.instr[20:16];
 	assign di.rd = in.instr[15:11];
-
+	assign di.ctl.alusrc = (op == `OP_RT) ? REG : IMM;
+	assign di.ctl.regwrite = (op == `OP_RT) ? 1'b1 : 1'b0;
+	assign di.ctl.memread = (di.op == LB) || (di.op == LBU) ||
+							(di.op == LH) || (di.op == LHU) ||
+							(di.op == LW) ||
+							(di.op == SB) || (di.op == SH);
+	assign di.ctl.memwrite = (di.op == SB) || (di.op == SW) || (di.op == SH);
+	
     always_comb begin
         case (op)
             `OP_ADDI:   di.op = ADD;
