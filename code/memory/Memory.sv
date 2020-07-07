@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module memory (
     input exec_data_t dataE,
     input word_t rd,
@@ -18,5 +20,5 @@ module memory (
     readdata readdata(._rd(rd), .op(op), .rd(dataM.readdata));
     assign dataM.hi = dataE.hi;
     assign dataM.lo = dataE.lo;
-    assign dataM.decoded_instr
+//    assign dataM.decoded_instr.
 endmodule
