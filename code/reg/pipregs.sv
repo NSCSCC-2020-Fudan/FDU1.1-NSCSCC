@@ -16,35 +16,35 @@ module Freg (
 endmodule
 
 module Dreg (
-    input logic clk, reset, en, clear
-    input word_t instrF, pcplus4F,
-    output word_t instrD, pcplus4D
+    input logic clk, reset, en, clear,
+    input fetch_data_t dataF,
+    output fetch_data_t dataD,
 );
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            {instrD, pcplus4D} <= '0;
+            dataD <= '0;
         end
         else if(en & clear) begin
-            {instrD, pcplus4D} <= '0;
+            dataD <= '0;
         end else if(en) begin
-            {instrD, pcplus4D} <= {instrF, pcplus4F};
+            dataD <= dataF;
         end
     end
 endmodule
 
 module Ereg (
     input logic clk, reset, clear,
-    input decoded_instr_t decoded_instrD,
-    output decoded_instr_t decoded_instrE
+    input decode_data_t dataD,
+    output decode_data_t data_E
 );
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            decoded_instrE <= '0;
+            dataE <= '0;
         end
         else if(clear) begin
-            decoded_instrE <= '0;
+            dataE <= '0;
         end else begin
-            decoded_instrE <= decoded_instrD;
+            dataE <= dataD;
         end
     end
 endmodule
