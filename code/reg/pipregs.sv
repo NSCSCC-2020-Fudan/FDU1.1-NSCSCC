@@ -18,7 +18,7 @@ endmodule
 module Dreg (
     input logic clk, reset, en, clear,
     input fetch_data_t dataF,
-    output fetch_data_t dataD,
+    output fetch_data_t dataD
 );
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin

@@ -1,7 +1,7 @@
 `ifndef __CP0_SVH
 `define __CP0_SVH
 
-`include "global.svh"
+`include "mips.svh"
 typedef logic [4:0] cp0_addr_t;
 
 typedef struct packed {
@@ -63,11 +63,11 @@ word_t
     lladdr,     // 17, Load linked address
     config_,    // 16, Configuration register
     prid,       // 15, Processor identification and revision
-    epc,        // 14, Program counter at last exception, R/W
+    epc;        // 14, Program counter at last exception, R/W
 cp0_cause_t
-    cause,      // 13, Cause of last general exception
+    cause;      // 13, Cause of last general exception
 cp0_status_t
-    status,     // 12, Processor status and control
+    status;     // 12, Processor status and control
 word_t
     compare,    // 11, Timer interrupt control, R/W, normally write only
     entryhi,    // 10, High-order portion of the TLB entry
@@ -80,7 +80,7 @@ word_t
     entrylo1,   // 03, Low-order portion of the TLB entry for odd-numbered virtual pages
     entrylo0,   // 02, Low-order portion of the TLB entry for even-numbered virtual pages
     random,     // 01, Randomly generated index into the TLB array
-    index,      // 00, Index into the TLB array
+    index;       // 00, Index into the TLB array
 } cp0_regs_t;
 
 `define CP0_INIT {                                      \

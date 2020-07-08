@@ -1,7 +1,7 @@
 `ifndef __EXCEPTION_SVH
 `define __EXCEPTION_SVH
 
-`include "global.svh"
+`include "mips.svh"
 
 `define EXC_BASE 32'hbfc0_0000;
 typedef logic [8:0] interrupt_info_t;

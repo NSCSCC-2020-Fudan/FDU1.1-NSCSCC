@@ -11,7 +11,7 @@ module hilo (
             if (w.en_h) begin
                 hi <= w.wd_h;
             end
-            if (w,en_l) begin
+            if (w.en_l) begin
                 lo <= w.wd_l;
             end
         end

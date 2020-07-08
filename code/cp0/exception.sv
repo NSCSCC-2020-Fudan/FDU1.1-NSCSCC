@@ -1,4 +1,4 @@
-`include "shared.svh"
+`include "mips.svh"
 
 module Exception(
     input logic reset,

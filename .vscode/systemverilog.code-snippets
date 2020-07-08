@@ -35,7 +35,7 @@
 	},
 	"modport": {
 		"prefix": "modport_my",
-		"body": "modport $0();"
+		"body": "modport $1();\n$0"
 	},
 	"define": {
 		"prefix": "define",
