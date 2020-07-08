@@ -7,7 +7,7 @@ module srcadmux (
     output word_t srca
 );
     always_comb begin
-        case (sel)
+        case (forward)
             M:srca = m;
             W:srca = w;
             ORI:srca = regfile;

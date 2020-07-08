@@ -2,11 +2,11 @@
 
 module wdmux (
     input word_t e, m, w,
-    input forward_t sel,
+    input forward_t forward,
     output word_t srcb0
 );
     always_comb begin
-        case (sel)
+        case (forward)
             M:srcb0 = m;
             W:srcb0 = w;
             ORI:srcb0 = e;

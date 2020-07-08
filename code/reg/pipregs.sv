@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module Freg_ (
+module Freg (
     input logic clk, reset,
     pcselect_freg_fetch.freg ports,
     hazard_intf hazard
@@ -14,7 +14,7 @@ module Freg_ (
             ports.pc <= ports.pc_new;
         end
     end
-    assign en = ~ports.stallF;
+    assign en = ~hazard.stallF;
     
 endmodule
 
@@ -42,7 +42,7 @@ module Dreg (
     assign ports.dataF = dataF;
 endmodule
 
-module Ereg_ (
+module Ereg (
     input logic clk, reset, 
     decode_ereg_exec.ereg ports,
     hazard_intf.ereg hazard
@@ -66,7 +66,7 @@ module Ereg_ (
     assign ports.dataD = dataD;
 endmodule
 
-module Mreg_ (
+module Mreg (
     input logic clk, reset,
     exec_mreg_memory.mreg ports,
     hazard_intf.mreg hazard
@@ -90,7 +90,7 @@ module Mreg_ (
     assign ports.dataE = dataE;
 endmodule
 
-module Wreg_ (
+module Wreg (
     input logic clk, reset,
     memory_wreg_writeback.wreg ports,
     hazard_intf.wreg hazard

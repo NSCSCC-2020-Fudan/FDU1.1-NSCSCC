@@ -161,4 +161,7 @@ typedef struct packed {
     word_t srca, srcb;
 } decode_data_t;
 
+typedef enum logic { RD1 } srca_source_t;
+typedef enum logic { RD2 } srcb_source_t;
+
 `endif

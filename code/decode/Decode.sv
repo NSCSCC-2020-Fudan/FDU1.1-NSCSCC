@@ -63,7 +63,7 @@ module decode (
 						  (dataD.instr.op == SRAV) || (dataD.instr.op == SRA) ||
 						  (dataD.instr.op == SRLV) || (dataD.instr.op == SRL) ||
 						  (dataD.instr.op == LUI);
-	maindec mainde(dataF.instr, dataD.instr.op, dataD.exception_ri);
+	maindec mainde(dataF.instr_, dataD.instr.op, dataD.exception_ri);
 	aludec alude(dataD.instr.op, dataD.instr.ctl.alufunc);
 
 	assign pcbranch = dataF.pcplus4 + {dataD.instr.extended_imm[29:0], 2'b00};
@@ -82,8 +82,8 @@ module decode (
 	assign dataD.pcplus4 = dataF.pcplus4;
 	assign dataD.exception_instr = dataF.exception_instr;
 
-	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),.sel(hazard.forwardAD),.srca(dataD.srca));
-	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),.sel(hazard.forwardBD),.srcb(dataD.srcb));
+	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),.forward(hazard.forwardAD),.srca(dataD.srca));
+	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),.forward(hazard.forwardBD),.srcb(dataD.srcb));
 
 	// ports
 	// 	fetch_dreg_decode.decode in

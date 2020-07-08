@@ -4,7 +4,7 @@ module execute (
     exec_mreg_memory.exec out,
     hazard_intf.exec hazard
 );
-    word_t alusrcaE, alusrcbE, writedataE;
+    word_t alusrcaE, alusrcbE, writedataE, srcb0;
     exec_data_t dataE;
     decode_data_t dataD;
     word_t srcaE, srcbE;
@@ -17,11 +17,11 @@ module execute (
     wrmux wrmux0(.rt(dataD.instr.rt), .rd(dataD.instr.rd), 
                  .jump(dataD.instr.ctl.jump), .regdst(dataD.instr.ctl.regdst), 
                  .writereg(writeregE));
-    srcaemux srcaemux(.e(srcaE),.m(aluoutM),.w(resultW),.sel(forwardAE),.srca(alusrcaE));
-    wdmux wdmux(.e(dataD.srcb),.m(aluoutM),.w(resultW),.sel(forwardBE),.srcb0);
-    srcbemux srcbemux(.srcb0,.imm(dataD.instr.extended_imm),.shamt(dataD.instr.shamt),.srcb);
+    srcaemux srcaemux(.e(srcaE),.m(aluoutM),.w(resultW),.forward(forwardAE),.srca(alusrcaE));
+    wdmux wdmux(.e(dataD.srcb),.m(aluoutM),.w(resultW),.forward(forwardBE),.srcb0);
+    srcbemux srcbemux(.srcb0, .imm(dataD.instr.extended_imm),.shamt(dataD.instr.shamt),.srcbE);
     alu alu(alusrca, alusrcb, dataD.instr.ctl.alufunc, aluoutE, exception_of);
-    mult multdiv(.a(srca), .b(srcb), .op(dataD.instr.op), .hi(hi), .lo(lo));
+    mult multdiv(.a(alusrcaE), .b(alusrcbE), .op(dataD.instr.op), .hi(hi), .lo(lo));
 
 // typedef struct packed {
 //     decoded_instr_t instr;
@@ -47,7 +47,7 @@ module execute (
     assign dataD = in.dataD;
 
     // exec_mreg_memory.exec out
-    assign out = dataE;
+    assign out.dataE_new = dataE;
     
     // hazard_intf.exec hazard
     assign hazard.dataE = dataE;

@@ -10,9 +10,9 @@ interface pcselect_freg_fetch(output word_t pc);
     modport fetch(input pc);
 endinterface
 
-interface fetch_dreg_decode(input word_t instr);
+interface fetch_dreg_decode(input word_t instr_);
     fetch_data_t dataF_new, dataF;
-    modport fetch(input instr, output dataF_new);
+    modport fetch(input instr_, output dataF_new);
     modport dreg(input dataF_new, output dataF);
     modport decode(input dataF);
 endinterface

@@ -3,24 +3,24 @@
 module srcbemux (
     input word_t srcb0, imm, shamt,
     input decoded_instr_t instr,
-    output word_t srcb
+    output word_t srcbE
 );
 
     always_comb begin
         if (instr.ctl.alusrc) begin
-            srcb = imm;
+            srcbE = imm;
         end else if (instr.ctl.shift) begin
             case (instr.op)
-                LUI: srcb = 32'd16;
-                SLL: srcb = shamt;
-                SRL: srcb = shamt;
-                SRA: srcb = shamt;
+                LUI: srcbE = 32'd16;
+                SLL: srcbE = shamt;
+                SRL: srcbE = shamt;
+                SRA: srcbE = shamt;
                 default: begin
-                    srcb = srcb0;
+                    srcbE = srcb0;
                 end
             endcase
         end else begin
-            srcb = srcb0;
+            srcbE = srcb0;
         end
     end
 endmodule

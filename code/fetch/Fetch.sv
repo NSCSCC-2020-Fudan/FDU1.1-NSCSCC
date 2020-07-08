@@ -17,7 +17,10 @@ module fetch (
 //     word_t pcplus4;
 //     logic exception_instr;
 // } fetch_data_t;    
-    assign dataF = {out.instr_, pcplus4, exception_instr};
+    // assign dataF = {out.instr_, pcplus4, exception_instr};
+    assign dataF.instr_ = out.instr_;
+    assign dataF.pcplus4 = pcplus4;
+    assign dataF.exception_instr = exception_instr;
     assign out.dataF_new = dataF;
-    assign pcselect = pcplus4;
+    assign pcselect.pcplus4F = pcplus4;
 endmodule

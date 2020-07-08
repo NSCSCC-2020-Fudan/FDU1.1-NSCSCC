@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module pcselect_ (
+module pcselect (
     pcselect_freg_fetch.pcselect out,
     pcselect_intf.pcselect in
 );

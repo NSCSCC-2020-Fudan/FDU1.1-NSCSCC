@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module writeback_ (
+module writeback (
     memory_wreg_writeback.writeback in,
     regfile_intf.writeback regfile,
 	hilo_intf.writeback hilo,
@@ -23,6 +23,5 @@ module writeback_ (
     assign hilo.hlwrite.wd_l = (op == MTLO) ? result : in.dataM.lo;
 
     assign hazard.dataW.instr = in.dataM.instr;
-    assign hazard.resultW = result;
     assign hazard.dataW.writereg = in.dataM.writereg;
 endmodule

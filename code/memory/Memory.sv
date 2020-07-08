@@ -49,19 +49,17 @@ module memory (
     };
     // ports
     // exec_mreg_memory.memory in
-    assign dataE = in;
+    assign dataE = in.dataE;
 
     // memory_wreg_writeback.memory out
-    assign out = dataM;
+    assign out.dataM_new = dataM;
 
     // hazard_intf.memory hazard
-    assign hazard = dataM;
+    assign hazard.dataM = dataM;
     // exception_intf.memory exception
 
     // memory_dram.memory dram    
-    assign dram = {
-        mread,
-        mwrite
-    };
+    assign dram.mread = mread;
+    assign dram.mwrite = mwrite;
     
 endmodule
