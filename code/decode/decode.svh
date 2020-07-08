@@ -133,6 +133,8 @@ typedef struct packed {
     regdst_t regdst;
     logic branch;
     logic jump;
+    logic jr;
+    logic shift;
 } control_t;
 
 typedef enum logic [5:0] { 
@@ -157,7 +159,6 @@ typedef struct packed {
     word_t pcplus4;
     logic exception_instr, exception_ri;
     word_t srca, srcb;
-    word_t hi, lo;
 } decode_data_t;
 
 `endif

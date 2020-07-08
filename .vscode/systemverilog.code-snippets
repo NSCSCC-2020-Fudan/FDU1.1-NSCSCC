@@ -48,5 +48,17 @@
 	"output": {
 		"prefix": "output",
 		"body": "output "
+	},
+	"ieee": {
+		"prefix": "ieee",
+		"body": [
+			"if ($1) begin",
+			"\t$2",
+			"end else if ($3) begin",
+			"\t$4",
+			"end else begin",
+			"\t$5",
+			"end\n$6"
+		]
 	}
 }

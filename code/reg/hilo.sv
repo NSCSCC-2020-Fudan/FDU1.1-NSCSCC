@@ -1,18 +1,17 @@
 module hilo (
     input logic clk, reset,
-    input w_lohi_t w,
-    output word_t hi, lo
+    hilo_intf.hilo ports
 );
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            hi <= '0;
-            lo <= '0;
+            ports.hi <= '0;
+            ports.lo <= '0;
         end else begin
-            if (w.en_h) begin
-                hi <= w.wd_h;
+            if (ports.hlwrite.en_h) begin
+                ports.hi <= ports.hlwrite.wd_h;
             end
-            if (w.en_l) begin
-                lo <= w.wd_l;
+            if (ports.hlwrite.en_l) begin
+                ports.lo <= ports.hiwrite.wd_l;
             end
         end
     end

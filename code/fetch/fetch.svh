@@ -2,6 +2,7 @@
 `define __FETCH_SVH
 
 typedef struct packed {
+    word_t instr,
     word_t pcplus4;
     logic exception_instr;
 } fetch_data_t;

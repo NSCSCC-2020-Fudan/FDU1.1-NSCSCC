@@ -5,7 +5,8 @@
 
 typedef struct packed {
     decoded_instr_t decoded_instr;
-    word_t readdata, aluout;
+    word_t rd, aluout;
+    creg_addr_t writereg;
     word_t hi, lo;
 } mem_data_t;
 

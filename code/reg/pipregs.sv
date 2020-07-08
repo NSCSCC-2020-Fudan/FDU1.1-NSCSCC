@@ -2,14 +2,15 @@
 
 module Freg (
     input logic clk, reset,
-    pcselect_freg_fetch.freg ports
+    pcselect_freg_fetch.freg ports,
+    hazard_intf hazard
 );
     word_t pc, pc_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             pc <= '0;
         end
-        else if(~stall) begin
+        else if(~hazard.stallF) begin
             pc <= pc_new;
         end
     end
@@ -26,9 +27,9 @@ module Dreg (
         if (reset) begin
             dataF <= '0;
         end
-        else if(en & clear) begin
+        else if(~hazard.stallD & hazard.flushD) begin
             dataF <= '0;
-        end else if(en) begin
+        end else if(~hazard.stallD) begin
             dataF <= dataF_new;
         end
     end
@@ -44,9 +45,9 @@ module Ereg (
         if (reset) begin
             dataD <= '0;
         end
-        else if(clear) begin
+        else if(~hazard.stallE & hazard.flushE) begin
             dataD <= '0;
-        end else begin
+        end else if(~hazard.stallE) begin
             dataD <= dataD_new;
         end
     end
@@ -62,7 +63,9 @@ module Mreg (
         if (reset) begin
             dataE <= '0;
         end
-        else begin
+        else if(~hazard.stallM & hazard.flushM) begin
+            dataE <= '0;
+        end else if(~hazard.stallM) begin
             dataE <= dataE_new;
         end
     end
@@ -78,7 +81,9 @@ module Wreg (
         if (reset) begin
             dataM <= '0;
         end
-        else begin
+        else if(hazard.flushW)begin
+            dataM <= '0;
+        end else begin
             dataM <= dataM_new;
         end
     end

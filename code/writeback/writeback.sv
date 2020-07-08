@@ -8,12 +8,21 @@ module writeback (
 	hazard_intf.writeback hazard
     output word_t pc
 );
-input mem_data_t mem_data,
-    output word_t result,
-    output creg_addr_t writereg,
     decoded_op_t op;
-    m_addr_t addr;
-    logic regwrite;
-    assign result = mem_data.memread ? mem_data.rd : mem_data.aluout;
-    assign writereg = mem_data.writereg;
+    assign op = in.dataM.decoded_instr.op;
+    assign result = in.dataM.decoded_instr.ctl.memread ? dataM.rd : dataM.aluout;
+    assign pc = in.dataM.decoded_instr.pcplus4 - 32'd4;
+
+    assign regfile.rfwrite.wen = in.dataM.decoded_instr.ctl.regwrite;
+    assign regfile.rfwrite.addr = in.dataM.writereg;
+    assign regfile.rfwrite.wd = result;
+
+    assign hilo.wen_h = (op == MTHI) || (op == MULT) || (op == MULTU) || (op == DIV) || (op == DIVU);
+    assign hilo.wen_l = (op == MTLO) || (op == MULT) || (op == MULTU) || (op == DIV) || (op == DIVU);
+    assign hilo.wd_h = (op == MTHI) ? result : in.dataM.hi;
+    assign hilo.wd_l = (op == MTLO) ? result : in.dataM.lo;
+
+    assign hazard.dataW.decoded_instr = in.dataM.decoded_instr;
+    assign hazard.resultW = result;
+    assign hazard.dataW.writereg = in.dataM.writereg;
 endmodule
