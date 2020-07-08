@@ -70,17 +70,22 @@ interface cp0_intf();
 endinterface
 
 interface hazard_intf();
-
-    modport hazard();
-    modport Freg();
-    modport Dreg();
-    modport Ereg();
-    modport Mreg();
-    modport Wreg();
-    modport decode();
-    modport execute();
-    modport memory();
+    decode_data_t dataD;
+    exec_data_t dataE;
+    memory_data_t dataM;
     
+    logic         flushD, flushE, flushM, flushW;
+    logic stallF, stallD, stallE, stallM;
+    modport hazard(input dataE);
+    modport Freg(input stallF);
+    modport Dreg(input stallD, flushD);
+    modport Ereg(input stallE, flushE);
+    modport Mreg(input stallM, flushM);
+    modport Wreg(input flushW);
+    modport decode(output dataD);
+    modport execute(output dataE);
+    modport memory(output dataM);
+    modport exception();
 endinterface
 
 interface exception_intf();
