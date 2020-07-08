@@ -5,18 +5,20 @@ module Freg_ (
     pcselect_freg_fetch.freg ports,
     hazard_intf hazard
 );
+    logic en;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             ports.pc <= '0;
         end
-        else if(~hazard.stallF) begin
+        else if(en) begin
             ports.pc <= ports.pc_new;
         end
     end
+    assign en = ~ports.stallF;
     
 endmodule
 
-module Dreg_ (
+module Dreg (
     input logic clk, reset,
     fetch_dreg_decode.dreg ports,
     hazard_intf.dreg hazard
@@ -25,14 +27,19 @@ module Dreg_ (
     logic en, clear;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            ports.dataF <= '0;
+            dataF <= '0;
         end
-        else if(~hazard.stallD & hazard.flushD) begin
-            ports.dataF <= '0;
-        end else if(~hazard.stallD) begin
-            ports.dataF <= ports.dataF_new;
+        else if(en & clear) begin
+            dataF <= '0;
+        end else if(en) begin
+            dataF <= dataF_new;
         end
     end
+
+    assign en = ~hazard.stallD;
+    assign clear = hazard.flushD;
+    assign dataF_new = ports.dataF_new;
+    assign ports.dataF = dataF;
 endmodule
 
 module Ereg_ (
@@ -41,16 +48,22 @@ module Ereg_ (
     hazard_intf.ereg hazard
 );
     decode_data_t dataD, dataD_new;
+    logic en, clear;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            ports.dataD <= 0;
+            dataD <= '0;
         end
-        else if(~hazard.stallE & hazard.flushE) begin
-            ports.dataD <= '0;
-        end else if(~hazard.stallE) begin
-            ports.dataD <= ports.dataD_new;
+        else if(en & clear) begin
+            dataD <= '0;
+        end else if(en) begin
+            dataD <= dataD_new;
         end
     end
+
+    assign en = ~hazard.stallE;
+    assign clear = hazard.flushE;
+    assign dataD_new = ports.dataD_new;
+    assign ports.dataD = dataD;
 endmodule
 
 module Mreg_ (
@@ -59,16 +72,22 @@ module Mreg_ (
     hazard_intf.mreg hazard
 );
     exec_data_t dataE, dataE_new;
+    logic en, clear;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            ports.dataE <= '0;
+            dataE <= '0;
         end
-        else if(~hazard.stallM & hazard.flushM) begin
-            ports.dataE <= '0;
-        end else if(~hazard.stallM) begin
-            ports.dataE <= ports.dataE_new;
+        else if(en & clear) begin
+            dataE <= '0;
+        end else if(en) begin
+            dataE <= dataE_new;
         end
     end
+
+    assign en = ~hazard.stallM;
+    assign clear = hazard.flushM;
+    assign dataE_new = ports.dataE_new;
+    assign ports.dataE = dataE;
 endmodule
 
 module Wreg_ (
@@ -77,14 +96,19 @@ module Wreg_ (
     hazard_intf.wreg hazard
 );
     mem_data_t dataM, dataM_new;
+    logic clear;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            ports.dataM <= '0;
+            dataM <= '0;
         end
-        else if(hazard.flushW)begin
-            ports.dataM <= '0;
+        else if(clear) begin
+            dataM <= '0;
         end else begin
-            ports.dataM <= ports.dataM_new;
+            dataM <= dataM_new;
         end
     end
+
+    assign clear = hazard.flushW;
+    assign dataM_new = ports.dataM_new;
+    assign ports.dataM = dataM;
 endmodule

@@ -4,7 +4,7 @@
 `include "mips.svh"
 
 typedef struct packed {
-    decoded_instr_t decoded_instr;
+    decoded_instr_t instr;
     logic exception_instr, exception_ri, exception_of;
     word_t aluout;
     creg_addr_t writereg;

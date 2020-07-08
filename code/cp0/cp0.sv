@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module cp0_(
+module cp0(
     input logic clk, reset,
 
     // read

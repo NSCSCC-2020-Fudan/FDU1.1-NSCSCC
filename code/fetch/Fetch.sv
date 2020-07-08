@@ -1,12 +1,23 @@
 `include "mips.svh"
 
-module fetch_ (
+module fetch (
     pcselect_freg_fetch.fetch in,
     fetch_dreg_decode.fetch out,
     pcselect_intf.fetch pcselect
 );
-    adder#(32) pcadder(in.pc, 32'b100, out.dataF_new.pcplus4);
-    assign out.dataF_new.exception_instr = (out.dataF_new.pcplus4[1:0] != '0);
-    assign out.dataF_new.instr = out.instr;
-    assign pcselect.pcplus4F = out.dataF_new.pcplus4;
+    word_t pcplus4;
+    fetch_data_t dataF;
+    logic exception_instr;
+    adder#(32) pcadder(in.pc, 32'b100, pcplus4);
+    assign exception_instr = (pcplus4[1:0] != '0);
+    
+
+// typedef struct packed {
+//     word_t instr_;
+//     word_t pcplus4;
+//     logic exception_instr;
+// } fetch_data_t;    
+    dataF = {out.instr_, pcplus4, exception_instr};
+    assign out.dataF_new = dataF;
+    assign pcselect = pcplus4;
 endmodule

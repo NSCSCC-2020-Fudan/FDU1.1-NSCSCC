@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module decode_ (
+module decode (
     // input word_t instr,
     // inout fetch_data_t dataF,
 	// output dataD_t dataD,
@@ -15,81 +15,105 @@ module decode_ (
 	hazard_intf.decode hazard,
 	pcselect_intf.decode pcselect
 );
-    op_t op;
-    assign op = in.dataF.instr[31:26];
-
-    func_t func;
-	assign func = in.dataF.instr[5:0];
-	
+	op_t op;
+	func_t func;
 	halfword_t imm;
-	assign imm = in.dataF.instr[15:0];
-	decoded_instr_t di;
-	assign di.rs = in.dataF.instr[25:21];
-	assign di.rt = in.dataF.instr[20:16];
-	assign di.rd = in.dataF.instr[15:11];
-	assign di.shamt = in.dataF.instr[15:11];
-	assign di.ctl.alusrc = (op == `OP_RT) ? REG : IMM;
-	assign di.ctl.regwrite = (di.op == BGEZAL) || (di.op == BLTZAL) ||
-							 (di.op == SB) || (di.op == SH) ||
-							 (di.op == SW) || (di.op == MFC0) ||
-							 (di.op == ADD) || (di.op == ADDU) ||
-							 (di.op == SUB) || (di.op == SUBU) ||
-							 (di.op == SLT) || (di.op == SLTU) ||
-							 (di.op == AND) || (di.op == NOR) ||
-							 (di.op == OR) || (di.op == XOR) ||
-							 (di.op == SLLV) || (di.op == SLL) ||
-							 (di.op == SRAV) || (di.op == SRA) ||
-							 (di.op == SRLV) || (di.op == SRL) ||
-							 (di.op == JAL) || (di.op == JALR) ||
-							 (di.op == MFHI) || (di.op == MFLO);
-	assign di.ctl.memread = (di.op == LB) || (di.op == LBU) ||
-							(di.op == LH) || (di.op == LHU) ||
-							(di.op == LW);
-	assign di.ctl.memwrite = (di.op == SB) || (di.op == SW) || (di.op == SH);
-	assign di.ctl.regdst = (op == `OP_RT) ? RD : RT;
-	assign di.ctl.branch = (di.op == BEQ) || (di.op == BNE) || 
-						   (di.op == BGEZ) || (di.op == BGTZ) ||
-						   (di.op == BLEZ) || (di.op == BLTZ) ||
-						   (di.op == BGEZAL) || (di.op == BLTZAL);
+	decode_data_t dataD;
+	fetch_data_t dataF;
+	logic ext;
+	word_t hi, lo;
+	word_t aluoutM, resultW;
+	forward_t forwardAD, forwardBD;
+    assign op = dataF.instr_[31:26];
+	assign func = dataF.instr_[5:0];
+	assign imm = dataF.instr_[15:0];
+	assign dataD.instr.rs = dataF.instr_[25:21];
+	assign dataD.instr.rt = dataF.instr_[20:16];
+	assign dataD.instr.rd = dataF.instr_[15:11];
+	assign dataD.instr.shamt = dataF.instr_[15:11];
+	assign ext = (dataD.instr.op == AND) || (dataD.instr.op == NOR) || (dataD.instr.op == OR) || (dataD.instr.op == XOR);
+	extend ext1(imm, ext, dataD.instr.extended_imm);
+	assign dataD.instr.ctl.alusrc = (op == `OP_RT) ? REG : IMM;
+	assign dataD.instr.ctl.regwrite = (dataD.instr.op == BGEZAL) || (dataD.instr.op == BLTZAL) ||
+							 (dataD.instr.op == SB) || (dataD.instr.op == SH) ||
+							 (dataD.instr.op == SW) || (dataD.instr.op == MFC0) ||
+							 (dataD.instr.op == ADD) || (dataD.instr.op == ADDU) ||
+							 (dataD.instr.op == SUB) || (dataD.instr.op == SUBU) ||
+							 (dataD.instr.op == SLT) || (dataD.instr.op == SLTU) ||
+							 (dataD.instr.op == AND) || (dataD.instr.op == NOR) ||
+							 (dataD.instr.op == OR) || (dataD.instr.op == XOR) ||
+							 (dataD.instr.op == SLLV) || (dataD.instr.op == SLL) ||
+							 (dataD.instr.op == SRAV) || (dataD.instr.op == SRA) ||
+							 (dataD.instr.op == SRLV) || (dataD.instr.op == SRL) ||
+							 (dataD.instr.op == JAL) || (dataD.instr.op == JALR) ||
+							 (dataD.instr.op == MFHI) || (dataD.instr.op == MFLO);
+	assign dataD.instr.ctl.memread = (dataD.instr.op == LB) || (dataD.instr.op == LBU) ||
+							(dataD.instr.op == LH) || (dataD.instr.op == LHU) ||
+							(dataD.instr.op == LW);
+	assign dataD.instr.ctl.memwrite = (dataD.instr.op == SB) || (dataD.instr.op == SW) || (dataD.instr.op == SH);
+	assign dataD.instr.ctl.regdst = (op == `OP_RT) ? RD : RT;
+	assign dataD.instr.ctl.branch = (dataD.instr.op == BEQ) || (dataD.instr.op == BNE) || 
+						   (dataD.instr.op == BGEZ) || (dataD.instr.op == BGTZ) ||
+						   (dataD.instr.op == BLEZ) || (dataD.instr.op == BLTZ) ||
+						   (dataD.instr.op == BGEZAL) || (dataD.instr.op == BLTZAL);
 
-	assign di.ctl.jump = (di.op == J) || (di.op == JAL) || (di.op == JALR) || (di.op == JR);
-	assign di.ctl.jr = (di.op == JALR) || (di.op == JR);
-	assign di.ctl.shift = (di.op == SLLV) || (di.op == SLL) ||
-						  (di.op == SRAV) || (di.op == SRA) ||
-						  (di.op == SRLV) || (di.op == SRL) ||
-						  (di.op == LUI);
-	maindec mainde(in.dataF.instr, di.op, out.dataD_new.exception_ri);
-	aludec alude(di.op, di.ctl.alufunc);
-	
-	logic ext = (di.op == AND) || (di.op == NOR) || (di.op == OR) || (di.op == XOR);
-	extend ext1(imm, ext, di.extended_imm);
+	assign dataD.instr.ctl.jump = (dataD.instr.op == J) || (dataD.instr.op == JAL) || (dataD.instr.op == JALR) || (dataD.instr.op == JR);
+	assign dataD.instr.ctl.jr = (dataD.instr.op == JALR) || (dataD.instr.op == JR);
+	assign dataD.instr.ctl.shift = (dataD.instr.op == SLLV) || (dataD.instr.op == SLL) ||
+						  (dataD.instr.op == SRAV) || (dataD.instr.op == SRA) ||
+						  (dataD.instr.op == SRLV) || (dataD.instr.op == SRL) ||
+						  (dataD.instr.op == LUI);
+	maindec mainde(dataF.instr, dataD.instr.op, dataD.exception_ri);
+	aludec alude(dataD.instr.op, dataD.instr.ctl.alufunc);
 
-	assign pcbranch = in.dataF.pcplus4 + {di.extended_imm[29:0], 2'b00};
-	assign pcjump = {in.dataF.pcplus4[31:28], in.dataF.instr[25:0], 2'b00};
-	assign branch_taken = di.ctl.branch && (
-		((out.dataD_new.srca == out.dataD_new.srcb) && (di.op == BEQ)) ||
-		((out.dataD_new.srca != out.dataD_new.srcb) && (di.op == BNE)) ||
-		((out.dataD_new.srca[31] == 0) && (di.op == BGEZ)) ||
-		((out.dataD_new.srca[31] == 1'b0 && out.dataD_new.srca != '0) && (di.op == BGTZ)) ||
-		((out.dataD_new.srca[31] == 1'b1 || out.dataD_new.srca == '0) && (di.op == BLEZ)) ||
-		((out.dataD_new.srca[31] == 1'b1) && (di.op == BLTZ)) ||
-		((out.dataD_new.srca[31] == 1'b0) && (di.op == BGEZAL)) ||
-		((out.dataD_new.srca[31] == 1'b1) && (di.op == BLTZAL))
+	assign pcbranch = dataF.pcplus4 + {dataD.instr.extended_imm[29:0], 2'b00};
+	assign pcjump = {dataF.pcplus4[31:28], dataF.instr_[25:0], 2'b00};
+	assign branch_taken = dataD.instr.ctl.branch && (
+		((dataD.srca == dataD.srcb) && (dataD.instr.op == BEQ)) ||
+		((dataD.srca != dataD.srcb) && (dataD.instr.op == BNE)) ||
+		((dataD.srca[31] == 0) && (dataD.instr.op == BGEZ)) ||
+		((dataD.srca[31] == 1'b0 && dataD.srca != '0) && (dataD.instr.op == BGTZ)) ||
+		((dataD.srca[31] == 1'b1 || dataD.srca == '0) && (dataD.instr.op == BLEZ)) ||
+		((dataD.srca[31] == 1'b1) && (dataD.instr.op == BLTZ)) ||
+		((dataD.srca[31] == 1'b0) && (dataD.instr.op == BGEZAL)) ||
+		((dataD.srca[31] == 1'b1) && (dataD.instr.op == BLTZAL))
 	);
-	assign out.dataD_new.decoded_instr = di;
-	assign out.dataD_new.pcplus4 = in.dataF.pcplus4;
-	assign out.dataD_new.exception_instr = in.dataF.exception_instr;
 
-	assign regfile.ra1 = di.rs;
-	assign regfile.ra2 = di.rt;
+	assign dataD.pcplus4 = dataF.pcplus4;
+	assign dataD.exception_instr = dataF.exception_instr;
 
-	assign hazard.dataD = out.dataD_new;
+	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),.sel(hazard.forwardAD),.srca(dataD.srca));
+	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),.sel(hazard.forwardBD),.srcb(dataD.srcb));
+
+	// ports
+	// 	fetch_dreg_decode.decode in
+	assign dataF = in.dataF;
+
+	// decode_ereg_exec.decode out
+	assign out.dataD_new = dataD;
+
+	// regfile_intf.decode regfile
+	assign regfile.ra1 = dataD.instr.rs;
+	assign regfile.ra2 = dataD.instr.rt;
+
+	// hilo_intf.decode hilo
+	assign hi = hilo.hi;
+	assign lo = hilo.lo;
+
+	// cp0_intf.decode cp0
+
+	// hazard_intf.decode hazard
+	assign hazard.dataD = dataD;
+	assign forwardAD = hazard.forwardAD;
+	assign forwardBD = hazard.forwardBD;
+	assign aluoutM = hazard.aluoutM;
+	assign resultW = hazard.resultW;
+
+	// pcselect_intf.decode pcselect
 	assign pcselect.pcbranchD = pcbranch;
 	assign pcselect.pcjumpD = pcjump;
-	assign pcselect.pcjrD = out.dataD_new.srca;
+	assign pcselect.pcjrD = dataD.srca;
 	assign pcselect.branch_taken = branch_taken;
-	assign pcselect.jr = di.ctl.jr;
-	assign pcselect.jump = di.ctl.jump;
-	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),.sel(hazard.forwardAD),.srca(out.dataD_new.srca));
-	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),.sel(hazard.forwardBD),.srcb(out.dataD_new.srcb));
+	assign pcselect.jr = dataD.instr.ctl.jr;
+	assign pcselect.jump = dataD.instr.ctl.jump;
 endmodule

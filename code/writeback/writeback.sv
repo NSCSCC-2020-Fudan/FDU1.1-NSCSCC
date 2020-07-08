@@ -9,11 +9,11 @@ module writeback_ (
     output word_t pc
 );
     decoded_op_t op;
-    assign op = in.dataM.decoded_instr.op;
-    assign result = in.dataM.decoded_instr.ctl.memread ? in.dataM.rd : in.dataM.aluout;
+    assign op = in.dataM.instr.op;
+    assign result = in.dataM.instr.ctl.memread ? in.dataM.rd : in.dataM.aluout;
     assign pc = in.dataM.pcplus4 - 32'd4;
 
-    assign regfile.rfwrite.wen = in.dataM.decoded_instr.ctl.regwrite;
+    assign regfile.rfwrite.wen = in.dataM.instr.ctl.regwrite;
     assign regfile.rfwrite.addr = in.dataM.writereg;
     assign regfile.rfwrite.wd = result;
 
@@ -22,7 +22,7 @@ module writeback_ (
     assign hilo.hlwrite.wd_h = (op == MTHI) ? result : in.dataM.hi;
     assign hilo.hlwrite.wd_l = (op == MTLO) ? result : in.dataM.lo;
 
-    assign hazard.dataW.decoded_instr = in.dataM.decoded_instr;
+    assign hazard.dataW.instr = in.dataM.instr;
     assign hazard.resultW = result;
     assign hazard.dataW.writereg = in.dataM.writereg;
 endmodule

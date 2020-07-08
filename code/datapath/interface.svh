@@ -81,8 +81,8 @@ interface hazard_intf();
     modport hazard(input dataD, dataE, dataM, dataW,
                    output flushD, flushE, flushM, flushW,
                           stallF, stallD, stallE, stallM,
-                          forwardAE, forwardBE, forwardAD, forwardBD);
-    
+                          forwardAE, forwardBE, forwardAD, forwardBD,
+                          aluoutM, resultW);
     modport freg(input stallF);
     modport dreg(input stallD, flushD);
     modport ereg(input stallE, flushE);
@@ -90,8 +90,8 @@ interface hazard_intf();
     modport wreg(input flushW);
     modport decode(output dataD, input aluoutM, resultW, forwardAD, forwardBD);
     modport exec(output dataE, input aluoutM, resultW, forwardAE, forwardBE);
-    modport memory(output dataM, aluoutM);
-    modport writeback(output dataW, resultW);
+    modport memory(output dataM);
+    modport writeback(output dataW);
     modport excep();
 endinterface
 

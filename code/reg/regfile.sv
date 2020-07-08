@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module regfile_ (
+module regfile (
     input logic clk, reset,
     // input creg_addr_t ra1, ra2,
     // output word_t src1, src2,

@@ -2,7 +2,8 @@
 
 module srcadmux (
     input word_t regfile, m, w,
-    input forward_t sel,
+    input forward_t forward,
+    input srca_source_t src,
     output word_t srca
 );
     always_comb begin

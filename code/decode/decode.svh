@@ -155,7 +155,7 @@ typedef struct packed {
 } decoded_instr_t;
 
 typedef struct packed {
-    decoded_instr_t decoded_instr;
+    decoded_instr_t instr;
     word_t pcplus4;
     logic exception_instr, exception_ri;
     word_t srca, srcb;
