@@ -31,7 +31,7 @@ interface exec_mreg_memory();
     modport memory(input dataE);
 endinterface
 
-interface memory_DRAM(input word_t rd, output m_r_t mread, output m_w_t mwrite);
+interface memory_dram(input word_t rd, output m_r_t mread, output m_w_t mwrite);
     modport memory();
 endinterface
 

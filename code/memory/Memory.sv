@@ -1,12 +1,17 @@
 `include "mips.svh"
 
 module memory (
+    exec_mreg_memory.memory in,
+    memory_wreg_writeback.memory out,
+    hazard_intf.memory hazard,
+    exception_intf.memory exception,
+    memory_dram.memory dram
+);
     input exec_data_t dataE,
     input word_t rd,
     output m_r_t mread,
     output m_w_t mwrite,
     output mem_data_t dataM
-);
     // assign mread.en = dataE.memread;
     assign mread.addr = dataE.aluout;
     // assign mwrite.en = dataE.memwrite;

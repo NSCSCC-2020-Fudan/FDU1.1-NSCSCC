@@ -18,7 +18,7 @@ module datapath (
     fetch_dreg_decode fetch_dreg_decode(.instr);
     decode_ereg_exec decode_ereg_exec();
     exec_mreg_memory exec_mreg_memory();
-    memory_DRAM memory_DRAM(.rd, .mread, .mwrite);
+    memory_dram memory_dram(.rd, .mread, .mwrite);
     memory_wreg_writeback memory_wreg_writeback();
     regfile_intf regfile_intf(.rfwrite);
     hilo_intf hilo_intf();
@@ -56,21 +56,29 @@ module datapath (
                .hazard(hazard_intf.mreg));
     memory memory_(.in(exec_mreg_memory.memory),
                    .out(memory_wreg_writeback.memory),
-                   .());
+                   .hazard(hazard_intf.memory),
+                   .exception(exception_intf.memory),
+                   .dram(memory_dram.memory));
     
     Wreg wreg_(.clk, .reset,
                .ports(memory_wreg_writeback.wreg),
                .hazard(hazard_intf.wreg));
-    writeback writeback_(.pc(wb_pc));
+    writeback writeback_(.pc(wb_pc),
+                         .in(memory_wreg_writeback.writeback),
+                         .regfile(regfile_intf.writeback),
+                         .hilo(hilo_intf.writeback),
+                         .cp0(cp0_intf.writeback),
+                         .hazard(hazard_intf.writeback));
 
     // regfile interacts with Decode, Writeback
-    regfile regfile_();
+    regfile regfile_(.ports(regfile_intf.regfile));
 
     // hilo interacts with Decode, Writeback
-    hilo hilo_();
+    hilo hilo_(.ports(hilo_intf.hilo));
 
     // cp0 interacts with memory, exception
-    cp0 cp0_();
+    cp0 cp0_(.ports(cp0_intf.cp0),
+             .exception(exception_intf.exception));
 
     // hazard interacts with Freg, Dreg, Ereg, Mreg, Wreg, Decode, Execute, Memory
     hazard hazard(hazard_intf.hazard);
