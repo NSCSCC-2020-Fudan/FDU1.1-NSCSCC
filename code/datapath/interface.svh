@@ -3,19 +3,18 @@
 
 `include "mips.svh"
 
-interface pcs_freg_fetch(output word_t pc);
+interface pcselect_freg_fetch(output word_t pc);
     word_t pc_new;
-    modport pcs(output pc_new);
+    modport pcselect(output pc_new);
     modport freg(input pc_new, output pc);
     modport fetch(input pc);
 endinterface
 
-interface fetch_dreg_decode(input word_t instr_new);
+interface fetch_dreg_decode(input word_t instr);
     fetch_data_t dataF_new, dataF;
-    word_t instr;
-    modport fetch(output dataF_new);
-    modport dreg(input dataF_new, instr_new, output dataF, instr);
-    modport decode(input dataF, instr);
+    modport fetch(input instr, output dataF_new);
+    modport dreg(input dataF_new, output dataF);
+    modport decode(input dataF);
 endinterface
 
 interface decode_ereg_exec();
@@ -32,7 +31,7 @@ interface exec_mreg_memory();
     modport memory(input dataE);
 endinterface
 
-interface memory_DRAM(input word_t rd, output m_r_t read_q, m_w_t write_q);
+interface memory_DRAM(input word_t rd, output m_r_t mread, output m_w_t mwrite);
     modport memory();
 endinterface
 
@@ -43,13 +42,12 @@ interface memory_wreg_writeback();
     modport writeback(input dataM);
 endinterface
 
-interface regfile_intf();
+interface regfile_intf(output rf_w_t rfwrite);
     creg_addr_t ra1, ra2;
     word_t src1, src2;
-    w_rf_t w;
     modport regfile(input ra1, ra2, w, output src1, src2);
     modport decode(input src1, src2, output ra1, ra2);
-    modport writeback(output w);
+    modport writeback(output rfwrite);
 endinterface
 
 interface hilo_intf();
@@ -77,11 +75,11 @@ interface hazard_intf();
     logic         flushD, flushE, flushM, flushW;
     logic stallF, stallD, stallE, stallM;
     modport hazard(input dataE);
-    modport Freg(input stallF);
-    modport Dreg(input stallD, flushD);
-    modport Ereg(input stallE, flushE);
-    modport Mreg(input stallM, flushM);
-    modport Wreg(input flushW);
+    modport freg(input stallF);
+    modport dreg(input stallD, flushD);
+    modport ereg(input stallE, flushE);
+    modport mreg(input stallM, flushM);
+    modport wreg(input flushW);
     modport decode(output dataD);
     modport execute(output dataE);
     modport memory(output dataM);
@@ -92,8 +90,14 @@ interface exception_intf();
 
     modport exception();
     modport cp0();
-    modport pcselect();
     modport memory();
+endinterface
+
+interface pcselect_intf();
+    modport pcselect();
+    modport fetch();
+    modport decode();
+    modport exception();
 endinterface
 
 `endif

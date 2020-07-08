@@ -3,7 +3,8 @@
 module writeback (
     input mem_data_t mem_data,
     output word_t result,
-    output creg_addr_t writereg
+    output creg_addr_t writereg,
+    output word_t pc
 );
     decoded_op_t op;
     m_addr_t addr;

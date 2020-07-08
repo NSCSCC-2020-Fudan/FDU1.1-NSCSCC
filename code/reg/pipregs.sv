@@ -2,79 +2,84 @@
 
 module Freg (
     input logic clk, reset,
-    input word_t pcnext,
-    output word_t pc
+    pcselect_freg_fetch.freg ports
 );
+    word_t pc, pc_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             pc <= '0;
         end
         else if(~stall) begin
-            pc <= pcnext;
+            pc <= pc_new;
         end
     end
 endmodule
 
 module Dreg (
-    input logic clk, reset, en, clear,
-    input fetch_data_t dataF,
-    output fetch_data_t dataD
+    input logic clk, reset,
+    fetch_dreg_decode.dreg ports,
+    hazard_intf.dreg hazard
 );
+    fetch_data_t dataF_new, dataF;
+    logic en, clear;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            dataD <= '0;
+            dataF <= '0;
         end
         else if(en & clear) begin
-            dataD <= '0;
+            dataF <= '0;
         end else if(en) begin
-            dataD <= dataF;
+            dataF <= dataF_new;
         end
     end
 endmodule
 
 module Ereg (
-    input logic clk, reset, clear,
-    input decode_data_t dataD,
-    output decode_data_t data_E
+    input logic clk, reset, 
+    decode_ereg_exec.ereg ports,
+    hazard_intf.ereg hazard
 );
+    decode_data_t dataD, dataD_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            dataE <= '0;
+            dataD <= '0;
         end
         else if(clear) begin
-            dataE <= '0;
+            dataD <= '0;
         end else begin
-            dataE <= dataD;
+            dataD <= dataD_new;
         end
     end
 endmodule
 
 module Mreg (
     input logic clk, reset,
-    input exec_data_t dataE,
-    output exec_data_t dataM
+    exec_mreg_memory.mreg ports,
+    hazard_intf.mreg hazard
 );
+    exec_data_t dataE, dataE_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            dataM <= '0;
+            dataE <= '0;
         end
         else begin
-            dataM <= dataE;
+            dataE <= dataE_new;
         end
     end
 endmodule
 
 module Wreg (
     input logic clk, reset,
-    input mem_data_t dataM,
-    output mem_data_t dataW
+    memory_wreg_writeback.ereg ports,
+    hazard_intf.wreg hazard
 );
+    mem_data_t dataM, dataM_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            dataW <= '0;
+            dataM <= '0;
         end
         else begin
-            dataW <= dataM;
+            dataM <= dataM_new;
         end
     end
 endmodule

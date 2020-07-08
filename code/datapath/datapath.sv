@@ -14,33 +14,54 @@ module datapath (
     output word_t wb_pc
 );
     // interfaces
-    pcs_freg_fetch pcs_freg_fetch(.pc);
-    fetch_dreg_decode fetch_dreg_decode(.instr_new(instr));
+    pcselect_freg_fetch pcselect_freg_fetch(.pc);
+    fetch_dreg_decode fetch_dreg_decode(.instr);
     decode_ereg_exec decode_ereg_exec();
     exec_mreg_memory exec_mreg_memory();
-    memory_DRAM memory_DRAM();
+    memory_DRAM memory_DRAM(.rd, .mread, .mwrite);
     memory_wreg_writeback memory_wreg_writeback();
-    regfile_intf regfile_intf();
+    regfile_intf regfile_intf(.rfwrite);
     hilo_intf hilo_intf();
     cp0_intf cp0_intf();
     hazard_intf hazard_intf();
     exception_intf exception_intf();
+    pcselect_intf pcselect_intf();
 
-    Freg freg_(.ports(pcs_freg_fetch.freg), .clk(clk), .reset(reset));
-    fetch fetch_();
-    pcselect pcselect_();
+    Freg freg_(.ports(pcselect_freg_fetch.freg), 
+               .clk, .reset);
+    fetch fetch_(.in(pcselect_freg_fetch.fetch), 
+                 .out(fetch_dreg_decode.fetch), 
+                 .pcselect(pcselect_intf.fetch));
+    pcselect pcselect_(.out(pcselect_freg_fetch.pcselect),
+                       .in(pcselect_intf.pcselect));
     
-    Dreg dreg_();
-    decode decode_();
+    Dreg dreg_(.clk, .reset, 
+               .ports(fetch_dreg_decode.dreg),
+               .hazard(hazard_intf.dreg));
+    decode decode_(.in(fetch_dreg_decode.decode),
+                   .out(decode_ereg_exec.decode),
+                   .regfile(regfile_intf.decode),
+                   .hilo(hilo_intf.decode),
+                   .cp0(cp0_intf.decode),
+                   .hazard(hazard_intf.decode));
     
-    Ereg ereg_();
-    execute execute_();
+    Ereg ereg_(.clk, .reset, 
+               .ports(decode_ereg_exec.ereg),
+               .hazard(hazard_intf.ereg));
+    execute execute_(.in(decode_ereg_exec.exec),
+                     .out(exec_mreg_memory.exec));
     
-    Mreg mreg_();
-    memory memory_();
+    Mreg mreg_(.clk, .reset,
+               .ports(exec_mreg_memory.mreg),
+               .hazard(hazard_intf.mreg));
+    memory memory_(.in(exec_mreg_memory.memory),
+                   .out(memory_wreg_writeback.memory),
+                   .());
     
-    Wreg wreg_();
-    writeback writeback_();
+    Wreg wreg_(.clk, .reset,
+               .ports(memory_wreg_writeback.wreg),
+               .hazard(hazard_intf.wreg));
+    writeback writeback_(.pc(wb_pc));
 
     // regfile interacts with Decode, Writeback
     regfile regfile_();

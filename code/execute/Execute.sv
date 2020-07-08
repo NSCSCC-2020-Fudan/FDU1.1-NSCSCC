@@ -1,9 +1,10 @@
 `include "mips.svh"
 module execute (
-    input decode_data_t dataD,
-    output exec_data_t dataE
+    decode_ereg_exec.exec in,
+    exec_mreg_memory.exec out
 );
-    
+    decode_data_t dataD;
+    exec_data_t dataE;
     wrmux wrmux0(.rt(decoded_instr.rt), .rd(decoded_instr.rd), .jump(decoded_instr.jump), .regdst(decoded_instr.regdst), .writereg(writereg));
     srcamux srcamux();
     wdmux wdmux();

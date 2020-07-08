@@ -3,7 +3,7 @@ module hilo (
     input w_lohi_t w,
     output word_t hi, lo
 );
-    always_ff @(negedge clk, posedge reset) begin
+    always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             hi <= '0;
             lo <= '0;

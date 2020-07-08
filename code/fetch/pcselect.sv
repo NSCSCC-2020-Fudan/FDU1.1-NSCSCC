@@ -1,9 +1,11 @@
 module pcselect (
-    input word_t pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F,
-    input logic exception, branch_taken, jr, jump,
-    output word_t pcnext
+    pcselect_freg_fetch.pcselect out,
+    pcselect_intf.pcselect in
 );
-    assign pcnext = exception            ? pcexception : (
+    word_t pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F,
+    logic exception, branch_taken, jr, jump,
+    word_t pc_new;
+    assign pc_new = exception            ? pcexception : (
                     branch_taken         ? pcbranchD   : (
                     jr                   ? pcjrD       : (
                     jump                 ? pcjumpD     : 

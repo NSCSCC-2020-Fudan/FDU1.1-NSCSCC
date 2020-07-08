@@ -7,7 +7,7 @@ module regfile (
     input rf_w_t w
 );
     word_t [31:0] R;
-    always_ff @(negedge clk, posedge reset) begin
+    always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             R <= '0;
         end else if(w.wen && (w.addr != '0)) begin

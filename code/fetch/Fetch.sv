@@ -1,12 +1,14 @@
 `include "mips.svh"
 
 module fetch (
-    // input word_t pc,
-    // output fetch_data_t fetch_data
     pcs_freg_fetch.fetch in,
-    fetch_dreg_decode.fetch out
+    fetch_dreg_decode.fetch out,
+    pcselect_intf.fetch pcselect
 );
-    // assign out.pcplus4 = pc + 32'b4;
-    adder#(32) pcadder(in.pc, 32'b100, out.dataF_new.pcplus4);
-    assign out.dataF_new.exception_instr = (out.dataF_new.pcplus4[1:0] != '0);
+    word_t pc, pcplus4, instr;
+    logic exception_instr;
+    adder#(32) pcadder(pc, 32'b100, pcplus4);
+    assign exception_instr = (pcplus4[1:0] != '0);
+
+    //
 endmodule
