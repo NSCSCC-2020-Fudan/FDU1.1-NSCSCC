@@ -32,7 +32,7 @@ module memory (
         wen,
         aluoutM,
         writedataM
-    }
+    };
 // typedef struct packed {
 //     decoded_instr_t instr;
 //     word_t rd, aluout;
@@ -62,6 +62,6 @@ module memory (
     assign dram = {
         mread,
         mwrite
-    }
+    };
     
 endmodule
