@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module pcselect (
     pcselect_freg_fetch.pcselect out,
     pcselect_intf.pcselect in

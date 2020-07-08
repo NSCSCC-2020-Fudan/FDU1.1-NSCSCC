@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module readdata (
     input word_t _rd,
     output logic rd,

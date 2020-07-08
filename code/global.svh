@@ -1,6 +1,6 @@
 `ifndef __GLOBAL_SVH
 `define __GLOBAL_SVH
-
+`include "mips.svh"
 typedef logic[31:0] word_t;
 typedef logic[4:0] creg_addr_t;
 typedef logic[15:0] halfword_t;

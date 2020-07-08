@@ -1,7 +1,7 @@
 `ifndef __PCSOURCE_SVH
 `define __PCSOURCE_SVH
 
-`include "global.svh"
+`include "mips.svh"
 
 // typedef struct packed {
 //     word_t pcexception;

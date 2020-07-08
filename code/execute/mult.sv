@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module mult (
     input word_t a, b,
     input decoded_op_t op,

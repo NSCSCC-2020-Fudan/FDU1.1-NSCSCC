@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module srcadmux (
     input word_t regfile, m, w,
     input forwardad_t sel,

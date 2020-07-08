@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module hilo (
     input logic clk, reset,
     hilo_intf.hilo ports

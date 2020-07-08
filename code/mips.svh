@@ -14,5 +14,6 @@
 `include "pipregs.svh"
 `include "regfile.svh"
 `include "writeback.svh"
+`include "interface.svh"
 
 `endif

@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module wdmux (
     input word_t e, m, w,
     input forwardbe_t sel,

@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module writedata (
     input logic[1:0] addr,
     input word_t _wd,
@@ -90,4 +92,4 @@ endmodule
 //             end
 //         endcase
 //     end
-endmodule
+//endmodule

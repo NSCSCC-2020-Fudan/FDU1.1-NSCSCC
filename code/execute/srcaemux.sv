@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module srcaemux (
     input word_t e, m, w,
     input forwardae_t sel,

@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module alu (
     input word_t a, b,
     input alufunc_t alufunc,

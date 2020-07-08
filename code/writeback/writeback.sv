@@ -5,7 +5,7 @@ module writeback (
     regfile_intf.writeback regfile,
 	hilo_intf.writeback hilo,
 	cp0_intf.writeback cp0,
-	hazard_intf.writeback hazard
+	hazard_intf.writeback hazard,
     output word_t pc
 );
     decoded_op_t op;

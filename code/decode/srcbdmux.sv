@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module srcbdmux (
     input word_t regfile, m, w,
     input forwardbd_t sel,

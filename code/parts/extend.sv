@@ -1,4 +1,4 @@
-`include "../mips.svh"
+`include "mips.svh"
 module extend (
     input halfword_t in,
     input logic s,

@@ -1,3 +1,5 @@
+`include "mips.svh"
+
 module srcbemux (
     input word_t srcb, imm, shamt,
     input decoded_instr_t instr,
