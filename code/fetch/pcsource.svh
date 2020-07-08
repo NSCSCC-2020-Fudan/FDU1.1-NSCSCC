@@ -18,12 +18,4 @@
 //     logic jump;
 // } pc_signal_t;
 
-interface Pcselect_intf(input word_t pcexception, input logic exception);
-    word_t pcbranchD, pcjrD, pcjumpD, pcplus4F;
-    logic branch_taken, jr, jump;
-    modport select(input pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F);
-    modport decode(output pcbranchD, pcjrD, pcjumpD);
-    modport fetch(output pcplus4F);
-endinterface
-
 `endif

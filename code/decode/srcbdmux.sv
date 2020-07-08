@@ -2,14 +2,14 @@
 
 module srcbdmux (
     input word_t regfile, m, w,
-    input forwardbd_t sel,
+    input forward_t sel,
     output word_t srcb
 );
     always_comb begin
         case (sel)
             M:srcb = m;
             W:srcb = w;
-            D:srcb = regfile;
+            ORI:srcb = regfile;
             default:srcb = '0;
         endcase
     end

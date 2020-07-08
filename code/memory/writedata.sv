@@ -4,7 +4,7 @@ module writedata (
     input logic[1:0] addr,
     input word_t _wd,
     input decoded_op_t op,
-    output m_wen_t en,
+    output rwen_t en,
     output word_t wd
 );
     always_comb begin

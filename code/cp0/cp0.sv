@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module CP0(
+module cp0_(
     input logic clk, reset,
 
     // read
@@ -21,7 +21,7 @@ module CP0(
     CP0_REGS cp0_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            cp0 <= `CPO_INIT;
+            cp0 <= `CP0_INIT;
         end
         else begin
             cp0 <= cp0_new;

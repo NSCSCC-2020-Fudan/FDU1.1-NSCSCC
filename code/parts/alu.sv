@@ -13,47 +13,47 @@ module alu (
         exception_of = 0;
         temp = '0;
         case (alufunc)
-            AND: begin
+            ALU_AND: begin
                 c = a & b;
             end
-            ADD: begin
+            ALU_ADD: begin
                 c = a + b;
                 temp = {a[31], a} + {b[31], b};
                 exception_of = (temp[32] != temp[31]);
             end
-            OR: begin
+            ALU_OR: begin
                 c = a | b;
             end
-            SLL: begin
+            ALU_SLL: begin
                 c = a << shamt;
             end
-            SRL: begin
+            ALU_SRL: begin
                 c = a >> shamt; 
             end
-            SRA: begin
+            ALU_SRA: begin
                 c = a >>> shamt;
             end
-            SUB: begin
+            ALU_SUB: begin
                 c = a - b;
                 temp = {a[31], a} - {b[31], b};
                 exception_of = (temp[32] != temp[31]);
             end
-            SLT: begin
+            ALU_SLT: begin
                 c = (signed'(a) < signed'(b)) ? 32'b1 : 32'b0; 
             end
-            NOR: begin
+            ALU_NOR: begin
                 c = ~(a & b);
             end
-            XOR: begin
+            ALU_XOR: begin
                 c = a ^ b;
             end
-            ADDU: begin
+            ALU_ADDU: begin
                 c = a + b;
             end
-            SUBU: begin
+            ALU_SUBU: begin
                 c = a - b;
             end
-            SLTU: begin
+            ALU_SLTU: begin
                 c = (a < b) ? 32'b1 : 32'b0;
             end
             default: begin

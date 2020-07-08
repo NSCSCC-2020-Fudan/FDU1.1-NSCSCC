@@ -29,8 +29,8 @@ typedef logic[4:0] shamt_t;
 // `define ALU_USLT 4'b1111
 
 typedef enum logic[3:0] {
-    AND, OR, ADD, SLL, SRL, SRA, SUB, SLT, NOR, XOR, 
-    ADDU, SUBU, SLTU
+    ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
+    ALU_ADDU, ALU_SUBU, ALU_SLTU
 } alufunc_t;
 
 // // aluop
@@ -143,7 +143,7 @@ typedef enum logic [5:0] {
     LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
     ADD, ADDU, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
     AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
-    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL
+    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
 } decoded_op_t;
 
 typedef struct packed {

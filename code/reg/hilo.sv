@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module hilo (
+module hilo_ (
     input logic clk, reset,
     hilo_intf.hilo ports
 );
@@ -9,11 +9,11 @@ module hilo (
             ports.hi <= '0;
             ports.lo <= '0;
         end else begin
-            if (ports.hlwrite.en_h) begin
+            if (ports.hlwrite.wen_h) begin
                 ports.hi <= ports.hlwrite.wd_h;
             end
-            if (ports.hlwrite.en_l) begin
-                ports.lo <= ports.hiwrite.wd_l;
+            if (ports.hlwrite.wen_l) begin
+                ports.lo <= ports.hlwrite.wd_l;
             end
         end
     end

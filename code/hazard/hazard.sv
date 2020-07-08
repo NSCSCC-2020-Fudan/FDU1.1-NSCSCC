@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module hazard (
+module hazard_ (
     hazard_intf.hazard ports
 );
     // logic CP0E, HILOE, RegE;
@@ -9,32 +9,32 @@ module hazard (
     logic rt1, rt2, rs1, rs2;
     always_comb begin
         if ((ports.dataE.decoded_instr.rs != 0) && (ports.dataE.decoded_instr.rs == ports.dataM.writereg) && ports.dataM.decoded_instr.ctl.regwrite) begin
-            forwardAE = M;
+            ports.forwardAE = M;
         end else if ((ports.dataE.decoded_instr.rs != 0) && (ports.dataE.decoded_instr.rs == ports.dataW.writereg) && ports.dataW.decoded_instr.ctl.regwrite) begin
-            forwardAE = W;
+            ports.forwardAE = W;
         end else begin
-            forwardAE = E;
+            ports.forwardAE = ORI;
         end
         if ((ports.dataE.decoded_instr.rt != 0) && (ports.dataE.decoded_instr.rs == ports.dataM.writereg) && ports.dataM.decoded_instr.ctl.regwrite) begin
-            forwardBE = M;
+            ports.forwardBE = M;
         end else if ((ports.dataE.decoded_instr.rt != 0) && (ports.dataE.decoded_instr.rs == ports.dataW.writereg) && ports.dataW.decoded_instr.ctl.regwrite) begin
-            forwardBE = W;
+            ports.forwardBE = W;
         end else begin
-            forwardBE = E;
+            ports.forwardBE = ORI;
         end
         if ((ports.dataD.decoded_instr.rs != 0) && (ports.dataD.decoded_instr.rs == ports.dataM.writereg) && ports.dataM.decoded_instr.ctl.regwrite) begin
-            forwardAD = M;
+            ports.forwardAD = M;
         end else if ((ports.dataD.decoded_instr.rs != 0) && (ports.dataD.decoded_instr.rs == ports.dataW.writereg) && ports.dataW.decoded_instr.ctl.regwrite) begin
-            forwardAD = W;
+            ports.forwardAD = W;
         end else begin
-            forwardAD = D;
+            ports.forwardAD = ORI;
         end
         if ((ports.dataD.decoded_instr.rt != 0) && (ports.dataD.decoded_instr.rs == ports.dataM.writereg) && ports.dataM.decoded_instr.ctl.regwrite) begin
-            forwardBD = M;
+            ports.forwardBD = M;
         end else if ((ports.dataD.decoded_instr.rt != 0) && (ports.dataD.decoded_instr.rs == ports.dataW.writereg) && ports.dataW.decoded_instr.ctl.regwrite) begin
-            forwardBD = W;
+            ports.forwardBD = W;
         end else begin
-            forwardBD = D;
+            ports.forwardBD = ORI;
         end
     end
 

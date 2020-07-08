@@ -3,9 +3,10 @@
 
 `include "mips.svh"
 
-`define EXC_BASE 32'hbfc0_0000;
+`define EXC_BASE 32'hbfc0_0000
 typedef logic [8:0] interrupt_info_t;
 typedef logic [11:0] exception_offset_t;
+typedef logic[1:0] exc_code_t;
 typedef struct packed {
     logic valid;
     word_t location;

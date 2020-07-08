@@ -1,6 +1,6 @@
 `include "mips.svh"
 
-module Exception(
+module exception_(
     input logic reset,
     input cp0_regs_t cp0,
     input interrupt_info_t interrupt_info,

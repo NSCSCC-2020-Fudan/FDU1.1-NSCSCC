@@ -5,24 +5,24 @@ module aludec (
 );
     always_comb begin
         case (op)
-			ADD:		alufunc = ADD;
-			ADDU:		alufunc = ADDU;
-			SUB:		alufunc = SUB;
-			SUBU:		alufunc = SUBU;
-			SLT:		alufunc = SLT;
-			SLTU:		alufunc = SLTU;
-			AND:		alufunc = AND;
-			NOR:		alufunc = NOR;
-			OR:			alufunc = OR;
-			XOR:		alufunc = XOR;
-			SLLV:		alufunc = SLL;
-			SLL:		alufunc = SLL;
-			SRAV:		alufunc = SRA;
-			SRA:		alufunc = SRA;
-			SRLV:		alufunc = SRL;
-			SRL:		alufunc = SRL;
-			LUI:		alufunc = SLL;
-			default: 	alufunc = ADDU;
+			ADD:		alufunc = ALU_ADD;
+			ADDU:		alufunc = ALU_ADDU;
+			SUB:		alufunc = ALU_SUB;
+			SUBU:		alufunc = ALU_SUBU;
+			SLT:		alufunc = ALU_SLT;
+			SLTU:		alufunc = ALU_SLTU;
+			AND:		alufunc = ALU_AND;
+			NOR:		alufunc = ALU_NOR;
+			OR:			alufunc = ALU_OR;
+			XOR:		alufunc = ALU_XOR;
+			SLLV:		alufunc = ALU_SLL;
+			SLL:		alufunc = ALU_SLL;
+			SRAV:		alufunc = ALU_SRA;
+			SRA:		alufunc = ALU_SRA;
+			SRLV:		alufunc = ALU_SRL;
+			SRL:		alufunc = ALU_SRL;
+			LUI:		alufunc = ALU_SLL;
+			default: 	alufunc = ALU_ADDU;
         endcase
     end
 endmodule

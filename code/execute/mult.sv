@@ -7,7 +7,7 @@ module mult (
 );
     dword_t ans;
     always_comb begin
-        case (mode)
+        case (op)
             MULTU: begin
                 ans = {32'b0, a} * {32'b0, b};
                 hi = ans[63:32];

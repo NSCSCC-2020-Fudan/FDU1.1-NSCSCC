@@ -4,14 +4,14 @@ module maindec (
     output decoded_op_t op,
     output logic exception_ri
 );
-    op_t op;
-    assign op = instr[31:26];
+    op_t op_;
+    assign op_ = op_t'(instr[31:26]);
 
     func_t func;
     assign func = instr[5:0];
     always_comb begin
         exception_ri = 1'b1;
-        case (op)
+        case (op_)
             `OP_ADDI:   op = ADD;
             `OP_ADDIU:  op = ADDU;
             `OP_SLTI:   op = SLT;
@@ -47,16 +47,16 @@ module maindec (
             `OP_SW:     op = SW;
             `OP_ERET: begin
                 case (instr[25:21])
-                    C_ERET: op = ERET;
-                    C_MFC0: op = MFC0;
-                    C_MTC0: op = MTC0;
+                    `C_ERET: op = ERET;
+                    `C_MFC0: op = MFC0;
+                    `C_MTC0: op = MTC0;
                     default: begin
                         exception_ri = 1'b1;
                     end
                 endcase
             end
             `OP_RT: begin
-                case (funct)
+                case (func)
                     `F_ADD:     op = ADD;
                     `F_ADDU:    op = ADDU;
                     `F_SUB:     op = SUB;

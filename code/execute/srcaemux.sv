@@ -2,14 +2,14 @@
 
 module srcaemux (
     input word_t e, m, w,
-    input forwardae_t sel,
+    input forward_t sel,
     output word_t srca
 );
     always_comb begin
         case (sel)
             M:srca = m;
             W:srca = w;
-            E:srca = e;
+            ORI:srca = e;
             default:srca = '0;
         endcase
     end

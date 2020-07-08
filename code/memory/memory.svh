@@ -8,6 +8,7 @@ typedef struct packed {
     word_t rd, aluout;
     creg_addr_t writereg;
     word_t hi, lo;
+    word_t pcplus4;
 } mem_data_t;
 
 `endif

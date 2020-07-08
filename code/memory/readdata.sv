@@ -2,7 +2,7 @@
 
 module readdata (
     input word_t _rd,
-    output logic rd,
+    output word_t rd,
     input decoded_op_t op
 );
     always_comb begin

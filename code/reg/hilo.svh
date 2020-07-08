@@ -4,6 +4,6 @@
 typedef struct packed {
     logic wen_h, wen_l;
     word_t wd_h, wd_l;
-} w_hilo_t;
+} hilo_w_t;
 
 `endif
