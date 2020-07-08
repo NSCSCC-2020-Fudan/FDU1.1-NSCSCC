@@ -45,8 +45,7 @@ module decode (
 							 (di.op == MFHI) || (di.op == MFLO);
 	assign di.ctl.memread = (di.op == LB) || (di.op == LBU) ||
 							(di.op == LH) || (di.op == LHU) ||
-							(di.op == LW) ||
-							(di.op == SB) || (di.op == SH);
+							(di.op == LW);
 	assign di.ctl.memwrite = (di.op == SB) || (di.op == SW) || (di.op == SH);
 	assign di.ctl.regdst = (op == `OP_RT) ? 1'b1 : 1'b0;
 	assign di.ctl.branch = (di.op == BEQ) || (di.op == BNE) || 

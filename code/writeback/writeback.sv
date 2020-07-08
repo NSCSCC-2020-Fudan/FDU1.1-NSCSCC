@@ -5,6 +5,9 @@ module writeback (
     output word_t result,
     output creg_addr_t writereg
 );
+    decoded_op_t op;
+    m_addr_t addr;
+    logic regwrite;
     assign result = mem_data.memread ? mem_data.rd : mem_data.aluout;
     assign writereg = mem_data.writereg;
 endmodule

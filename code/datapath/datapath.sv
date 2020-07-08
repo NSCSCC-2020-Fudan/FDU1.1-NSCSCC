@@ -1,11 +1,18 @@
 `include "mips.svh"
 
 module datapath (
+    input logic clk, reset,
+    input logic[5:0] ext_int,
     
-);
-    word_t pc;
-    word_t instr;
+    output word_t pc,
+    input word_t instr,
 
+    output m_r_t mread,
+    output m_w_t mwrite,
+    output rf_w_t rfwrite,
+    input word_t rd,
+    output word_t wb_pc
+);
     // interfaces
     pcs_freg_fetch pcs_freg_fetch(.pc);
     fetch_dreg_decode fetch_dreg_decode(.instr_new(instr));

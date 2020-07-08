@@ -1,4 +1,4 @@
-module moduleName (
+module readdata (
     input word_t _rd,
     output logic rd,
     input decoded_op_t op
