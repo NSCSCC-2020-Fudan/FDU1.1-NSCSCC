@@ -7,8 +7,8 @@ typedef logic[5:0] func_t;
 typedef logic[4:0] shamt_t;
 
 typedef enum logic[3:0] {
-    ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
-    ALU_ADDU, ALU_SUBU, ALU_SLTU
+    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
+    ALU_SUBU, ALU_SLTU, ALU_PASSA
 } alufunc_t;
 
 // op
@@ -83,19 +83,28 @@ typedef enum logic[3:0] {
 `define C_MFC0          5'b00000
 `define C_MTC0          5'b00100
 
-typedef enum logic { IMM, REG } alusrc_t;
-typedef enum logic { RD, RT } regdst_t;
+typedef enum logic[1:0] { REG, IMM, SHAMT, SIXTEEN } alusrcb_t;
+typedef enum logic { RT, RD } regdst_t;
+typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
 typedef struct packed {
     alufunc_t alufunc;
     logic memread, memwrite;
     logic regwrite;
-    alusrc_t alusrc;
+    alusrcb_t alusrc;
     regdst_t regdst;
     logic branch;
+    logic branch1, branch2;
+    branch_t branch_type;
     logic jump;
     logic jr;
     logic shift;
-    // logic zeroext;
+    logic zeroext;
+    logic cp0write;
+    logic is_eret;
+    logic hiwrite;
+    logic lowrite;
+    logic is_bp;
+    logic is_sys;
 } control_t;
 
 typedef enum logic [5:0] { 

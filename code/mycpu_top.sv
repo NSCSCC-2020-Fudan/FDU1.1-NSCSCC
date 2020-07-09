@@ -31,7 +31,7 @@ module mycpu_top(
                       .pc(inst_sram_addr), .instr_(inst_sram_rdata),
                       .mread, .mwrite, .rfwrite, .rd(data_sram_rdata), .wb_pc(debug_wb_pc));
 
-    assign inst_sram_en = resetn;
+    assign inst_sram_en = 1'b1;
     assign inst_sram_wen = 4'b0;
     assign inst_sram_wdata = '0;
 

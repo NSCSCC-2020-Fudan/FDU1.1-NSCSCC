@@ -56,6 +56,9 @@ module alu (
             ALU_SLTU: begin
                 c = (a < b) ? 32'b1 : 32'b0;
             end
+            ALU_PASSA: begin
+                c = a;
+            end
             default: begin
                 c = '0;
             end
