@@ -6,16 +6,18 @@ module Freg (
     hazard_intf hazard
 );
     logic en;
+    word_t pc, pc_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            ports.pc <= 32'hbfc00000;
+            pc <= 32'hbfc00000;
         end
         else if(en) begin
-            ports.pc <= ports.pc_new;
+            pc <= pc_new;
         end
     end
     assign en = ~hazard.stallF;
-    
+    assign ports.pc = pc;
+    assign pc_new = ports.pc_new;
 endmodule
 
 module Dreg (
@@ -31,7 +33,7 @@ module Dreg (
         end
         else if(en & clear) begin
             dataF <= '0;
-        end else if(en && dataF_new.pcplus4 != 0) begin
+        end else if(en) begin
             dataF <= dataF_new;
         end
     end
