@@ -1,1 +1,5 @@
-benchtest/*
+5-stage/
+*.log
+*.jou
+vivado/*
+.vscode/
