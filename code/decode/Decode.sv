@@ -35,36 +35,36 @@ module decode (
 	assign dataD.instr.shamt = dataF.instr_[15:11];
 	assign ext = (dataD.instr.op == AND) || (dataD.instr.op == NOR) || (dataD.instr.op == OR) || (dataD.instr.op == XOR);
 	extend ext1(imm, ext, dataD.instr.extended_imm);
-	assign dataD.instr.ctl.alusrc = (op == `OP_RT) ? REG : IMM;
-	assign dataD.instr.ctl.regwrite = (dataD.instr.op == BGEZAL) || (dataD.instr.op == BLTZAL) ||
-							 (dataD.instr.op == SB) || (dataD.instr.op == SH) ||
-							 (dataD.instr.op == SW) || (dataD.instr.op == MFC0) ||
-							 (dataD.instr.op == ADD) || (dataD.instr.op == ADDU) ||
-							 (dataD.instr.op == SUB) || (dataD.instr.op == SUBU) ||
-							 (dataD.instr.op == SLT) || (dataD.instr.op == SLTU) ||
-							 (dataD.instr.op == AND) || (dataD.instr.op == NOR) ||
-							 (dataD.instr.op == OR) || (dataD.instr.op == XOR) ||
-							 (dataD.instr.op == SLLV) || (dataD.instr.op == SLL) ||
-							 (dataD.instr.op == SRAV) || (dataD.instr.op == SRA) ||
-							 (dataD.instr.op == SRLV) || (dataD.instr.op == SRL) ||
-							 (dataD.instr.op == JAL) || (dataD.instr.op == JALR) ||
-							 (dataD.instr.op == MFHI) || (dataD.instr.op == MFLO);
-	assign dataD.instr.ctl.memread = (dataD.instr.op == LB) || (dataD.instr.op == LBU) ||
-							(dataD.instr.op == LH) || (dataD.instr.op == LHU) ||
-							(dataD.instr.op == LW);
-	assign dataD.instr.ctl.memwrite = (dataD.instr.op == SB) || (dataD.instr.op == SW) || (dataD.instr.op == SH);
-	assign dataD.instr.ctl.regdst = (op == `OP_RT) ? RD : RT;
-	assign dataD.instr.ctl.branch = (dataD.instr.op == BEQ) || (dataD.instr.op == BNE) || 
-						   (dataD.instr.op == BGEZ) || (dataD.instr.op == BGTZ) ||
-						   (dataD.instr.op == BLEZ) || (dataD.instr.op == BLTZ) ||
-						   (dataD.instr.op == BGEZAL) || (dataD.instr.op == BLTZAL);
+	// assign dataD.instr.ctl.alusrc = (op == `OP_RT) ? REG : IMM;
+	// assign dataD.instr.ctl.regwrite = (dataD.instr.op == BGEZAL) || (dataD.instr.op == BLTZAL) ||
+	// 						 (dataD.instr.op == SB) || (dataD.instr.op == SH) ||
+	// 						 (dataD.instr.op == SW) || (dataD.instr.op == MFC0) ||
+	// 						 (dataD.instr.op == ADD) || (dataD.instr.op == ADDU) ||
+	// 						 (dataD.instr.op == SUB) || (dataD.instr.op == SUBU) ||
+	// 						 (dataD.instr.op == SLT) || (dataD.instr.op == SLTU) ||
+	// 						 (dataD.instr.op == AND) || (dataD.instr.op == NOR) ||
+	// 						 (dataD.instr.op == OR) || (dataD.instr.op == XOR) ||
+	// 						 (dataD.instr.op == SLLV) || (dataD.instr.op == SLL) ||
+	// 						 (dataD.instr.op == SRAV) || (dataD.instr.op == SRA) ||
+	// 						 (dataD.instr.op == SRLV) || (dataD.instr.op == SRL) ||
+	// 						 (dataD.instr.op == JAL) || (dataD.instr.op == JALR) ||
+	// 						 (dataD.instr.op == MFHI) || (dataD.instr.op == MFLO);
+	// assign dataD.instr.ctl.memread = (dataD.instr.op == LB) || (dataD.instr.op == LBU) ||
+	// 						(dataD.instr.op == LH) || (dataD.instr.op == LHU) ||
+	// 						(dataD.instr.op == LW);
+	// assign dataD.instr.ctl.memwrite = (dataD.instr.op == SB) || (dataD.instr.op == SW) || (dataD.instr.op == SH);
+	// assign dataD.instr.ctl.regdst = (op == `OP_RT) ? RD : RT;
+	// assign dataD.instr.ctl.branch = (dataD.instr.op == BEQ) || (dataD.instr.op == BNE) || 
+	// 					   (dataD.instr.op == BGEZ) || (dataD.instr.op == BGTZ) ||
+	// 					   (dataD.instr.op == BLEZ) || (dataD.instr.op == BLTZ) ||
+	// 					   (dataD.instr.op == BGEZAL) || (dataD.instr.op == BLTZAL);
 
-	assign dataD.instr.ctl.jump = (dataD.instr.op == J) || (dataD.instr.op == JAL) || (dataD.instr.op == JALR) || (dataD.instr.op == JR);
-	assign dataD.instr.ctl.jr = (dataD.instr.op == JALR) || (dataD.instr.op == JR);
-	assign dataD.instr.ctl.shift = (dataD.instr.op == SLLV) || (dataD.instr.op == SLL) ||
-						  (dataD.instr.op == SRAV) || (dataD.instr.op == SRA) ||
-						  (dataD.instr.op == SRLV) || (dataD.instr.op == SRL) ||
-						  (dataD.instr.op == LUI);
+	// assign dataD.instr.ctl.jump = (dataD.instr.op == J) || (dataD.instr.op == JAL) || (dataD.instr.op == JALR) || (dataD.instr.op == JR);
+	// assign dataD.instr.ctl.jr = (dataD.instr.op == JALR) || (dataD.instr.op == JR);
+	// assign dataD.instr.ctl.shift = (dataD.instr.op == SLLV) || (dataD.instr.op == SLL) ||
+	// 					  (dataD.instr.op == SRAV) || (dataD.instr.op == SRA) ||
+	// 					  (dataD.instr.op == SRLV) || (dataD.instr.op == SRL) ||
+	// 					  (dataD.instr.op == LUI);
 	maindec mainde(dataF.instr_, dataD.instr.op, dataD.exception_ri, dataD.instr.ctl);
 	// aludec alude(dataD.instr.op, dataD.instr.ctl.alufunc);
 	assign is_reserved = dataD.instr.op == RESERVED;
