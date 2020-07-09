@@ -3,14 +3,14 @@
 module srcaemux (
     input word_t e, m, w,
     input forward_t forward,
-    output word_t srca
+    output word_t alusrca
 );
     always_comb begin
         case (forward)
-            M:srca = m;
-            W:srca = w;
-            ORI:srca = e;
-            default:srca = '0;
+            ALUOUTM:alusrca = m;
+            RESULTW:alusrca = w;
+            NOFORWARD:alusrca = e;
+            default:alusrca = '0;
         endcase
     end
 endmodule

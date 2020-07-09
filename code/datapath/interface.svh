@@ -68,7 +68,7 @@ interface cp0_intf();
 
 endinterface
 
-interface hazard_intf();
+interface hazard_intf(input i_data_ok);
     decode_data_t dataD;
     exec_data_t dataE;
     mem_data_t dataM;
@@ -78,7 +78,9 @@ interface hazard_intf();
     logic stallF, stallD, stallE, stallM;
     word_t aluoutM, resultW;
     forward_t forwardAE, forwardBE, forwardAD, forwardBD;
-    modport hazard(input dataD, dataE, dataM, dataW,
+    // exception_t exception;
+    logic exception_valid;
+    modport hazard(input dataD, dataE, dataM, dataW, exception_valid, i_data_ok,
                    output flushD, flushE, flushM, flushW,
                           stallF, stallD, stallE, stallM,
                           forwardAE, forwardBE, forwardAD, forwardBD,
@@ -92,14 +94,18 @@ interface hazard_intf();
     modport exec(output dataE, input aluoutM, resultW, forwardAE, forwardBE);
     modport memory(output dataM);
     modport writeback(output dataW);
-    modport excep();
+    modport excep(output exception_valid);
 endinterface
 
-interface exception_intf();
-
-    modport excep();
-    modport cp0();
-    modport memory();
+interface exception_intf(input logic[5:0]ext_int);
+    logic exception_instr, exception_ri, exception_of, exception_data;
+    // interrupt_info_t interrupt_info;
+    exception_t exception;
+    modport excep(output exception, 
+                  input exception_instr, exception_ri, 
+                        exception_of, exception_data);
+    modport cp0(input exception);
+    modport memory(output exception_instr, exception_ri, exception_of, exception_data);
 endinterface
 
 interface pcselect_intf();

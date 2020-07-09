@@ -21,8 +21,10 @@ module decode (
 	decode_data_t dataD;
 	fetch_data_t dataF;
 	logic ext;
+	logic pcbranch, pcjump, branch_taken;
 	word_t hi, lo;
 	word_t aluoutM, resultW;
+	logic is_reserved;
 	forward_t forwardAD, forwardBD;
     assign op = dataF.instr_[31:26];
 	assign func = dataF.instr_[5:0];
@@ -65,7 +67,7 @@ module decode (
 						  (dataD.instr.op == LUI);
 	maindec mainde(dataF.instr_, dataD.instr.op, dataD.exception_ri);
 	aludec alude(dataD.instr.op, dataD.instr.ctl.alufunc);
-
+	assign is_reserved = dataD.instr.op == RESERVED;
 	assign pcbranch = dataF.pcplus4 + {dataD.instr.extended_imm[29:0], 2'b00};
 	assign pcjump = {dataF.pcplus4[31:28], dataF.instr_[25:0], 2'b00};
 	assign branch_taken = dataD.instr.ctl.branch && (

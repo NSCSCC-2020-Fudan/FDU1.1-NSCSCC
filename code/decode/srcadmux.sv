@@ -3,14 +3,14 @@
 module srcadmux (
     input word_t regfile, m, w,
     input forward_t forward,
-    input srca_source_t src,
+    // input srcad_source_t src,
     output word_t srca
 );
     always_comb begin
         case (forward)
-            M:srca = m;
-            W:srca = w;
-            ORI:srca = regfile;
+            ALUOUTM:srca = m;
+            RESULTW:srca = w;
+            NOFORWARD:srca = regfile;
             default:srca = '0;
         endcase
     end

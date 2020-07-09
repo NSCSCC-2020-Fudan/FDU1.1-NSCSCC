@@ -40,13 +40,13 @@ module memory (
 //     word_t hi, lo;
 //     word_t pcplus4;
 // } mem_data_t;    
-    assign dataM = {
-        dataE.instr,
-        readdataM, aluoutM,
-        dataE.writereg,
-        dataE.hi, dataE.lo,
-        dataE.pcplus4
-    };
+    assign dataM.instr = dataE.instr;
+    assign dataM.rd = readdataM;
+    assign dataM.aluout = aluoutM;
+    assign dataM.writereg = dataE.writereg;
+    assign dataM.hi = dataE.hi;
+    assign dataM.lo = dataE.lo;
+    assign dataM.pcplus4 = dataE.pcplus4;
     // ports
     // exec_mreg_memory.memory in
     assign dataE = in.dataE;
@@ -57,7 +57,10 @@ module memory (
     // hazard_intf.memory hazard
     assign hazard.dataM = dataM;
     // exception_intf.memory exception
-
+    assign exception.exception_instr = dataE.exception_instr;
+    assign exception.exception_ri =  dataE.exception_ri;
+    assign exception.exception_of = dataE.exception_of;
+    assign exception.exception_data = exception_data;
     // memory_dram.memory dram    
     assign dram.mread = mread;
     assign dram.mwrite = mwrite;
