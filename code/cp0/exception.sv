@@ -24,7 +24,7 @@ module exception(
                         //    & (~cp0.debug.DM)
                            & (~cp0.status.EXL)
                            & (~cp0.status.ERL);
-    assign interrupt_valid = '0;
+//    assign interrupt_valid = '0;
 
     always_comb begin
         if (interrupt_valid) begin
