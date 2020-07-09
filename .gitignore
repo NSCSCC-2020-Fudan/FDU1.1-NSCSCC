@@ -1,13 +1,1 @@
-mycpu.hw/mycpu.lpr
-mycpu.xpr
-.idea/edaphic/defines.xml
-mycpu.cache/wt/gui_handlers.wdf
-mycpu.cache/wt/webtalk_pa.xml
-mycpu.cache/wt/project.wpc
-.idea/edaphic/defines.xml
-mycpu.cache/wt/java_command_handlers.wdf
-soc_sram_func/run_vivado/mycpu_prj1/mycpu.hw/mycpu.lpr
-soc_sram_func/run_vivado/mycpu_prj1/mycpu.cache/wt/webtalk_pa.xml
-soc_sram_func/run_vivado/mycpu_prj1/mycpu.cache/wt/project.wpc
-soc_sram_func/run_vivado/mycpu_prj1/mycpu.cache/wt/java_command_handlers.wdf
-soc_sram_func/run_vivado/mycpu_prj1/mycpu.cache/wt/gui_handlers.wdf
+benchtest/*
