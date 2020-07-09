@@ -21,4 +21,48 @@ typedef struct packed {
     m_addr_t addr;
     word_t wd;
 } m_w_t;
+
+typedef struct packed {
+    logic wen_h, wen_l;
+    word_t wd_h, wd_l;
+} hilo_w_t;
+
+typedef struct packed {
+    logic wen;
+    creg_addr_t addr;
+    word_t wd;
+} rf_w_t; // write regfile request
+
+
+typedef struct packed {
+    word_t instr_;
+    word_t pcplus4;
+    logic exception_instr;
+} fetch_data_t;
+
+typedef struct packed {
+    decoded_instr_t instr;
+    word_t rd, aluout;
+    creg_addr_t writereg;
+    word_t hi, lo;
+    word_t pcplus4;
+} mem_data_t;
+
+typedef struct packed {
+    decoded_instr_t instr;
+    logic exception_instr, exception_ri, exception_of;
+    word_t aluout;
+    creg_addr_t writereg;
+    word_t writedata;
+    word_t hi, lo;
+    word_t pcplus4;
+} exec_data_t;
+
+typedef struct packed {
+    decoded_instr_t instr;
+    creg_addr_t writereg;
+    word_t result;
+} wb_data_t;
+
+typedef enum logic[1:0] { RESULTW, ALUOUTM, NOFORWARD } forward_t;
 `endif
