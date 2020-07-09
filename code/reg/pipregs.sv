@@ -8,7 +8,7 @@ module Freg (
     logic en;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            ports.pc <= '0;
+            ports.pc <= 32'hbfc00000;
         end
         else if(en) begin
             ports.pc <= ports.pc_new;
@@ -31,7 +31,7 @@ module Dreg (
         end
         else if(en & clear) begin
             dataF <= '0;
-        end else if(en) begin
+        end else if(en && dataF_new.pcplus4 != 0) begin
             dataF <= dataF_new;
         end
     end

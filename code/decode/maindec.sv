@@ -10,7 +10,7 @@ module maindec (
     func_t func;
     assign func = instr[5:0];
     always_comb begin
-        exception_ri = 1'b1;
+        exception_ri = 1'b0;
         case (op_)
             `OP_ADDI:   op = ADD;
             `OP_ADDIU:  op = ADDU;
@@ -30,6 +30,7 @@ module maindec (
                     `B_BLTZAL:  op = BLTZAL;
                     default: begin
                         exception_ri = 1'b1;
+                        op = RESERVED;
                     end
                 endcase
             end
@@ -52,6 +53,7 @@ module maindec (
                     `C_MTC0: op = MTC0;
                     default: begin
                         exception_ri = 1'b1;
+                        op = RESERVED;
                     end
                 endcase
             end
@@ -87,11 +89,13 @@ module maindec (
 					`F_SYSCALL:	op = SYSCALL;
                     default: begin
                         exception_ri = 1'b1;
+                        op = RESERVED;
                     end
                 endcase
             end
             default: begin
                 exception_ri = 1'b1;
+                op = RESERVED;
             end
         endcase
 	end

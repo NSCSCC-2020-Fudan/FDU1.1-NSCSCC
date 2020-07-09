@@ -139,9 +139,10 @@ typedef struct packed {
 
 typedef enum logic [5:0] { 
     // ADDI, ADDIU, SLTI, SLTIU, ANDI, LUI, ORI, XORI, 
+    ADDU, RESERVED,
     BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
     LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
-    ADD, ADDU, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
+    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
     AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
     JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
 } decoded_op_t;
@@ -161,7 +162,7 @@ typedef struct packed {
     word_t srca, srcb;
 } decode_data_t;
 
-typedef enum logic { RD1 } srca_source_t;
-typedef enum logic { RD2 } srcb_source_t;
+typedef enum logic { RD1 } srcad_source_t;
+typedef enum logic { RD2 } srcbd_source_t;
 
 `endif

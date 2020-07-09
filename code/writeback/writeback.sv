@@ -9,6 +9,7 @@ module writeback (
     output word_t pc
 );
     decoded_op_t op;
+    word_t result;
     assign op = in.dataM.instr.op;
     assign result = in.dataM.instr.ctl.memread ? in.dataM.rd : in.dataM.aluout;
     assign pc = in.dataM.pcplus4 - 32'd4;
@@ -24,4 +25,5 @@ module writeback (
 
     assign hazard.dataW.instr = in.dataM.instr;
     assign hazard.dataW.writereg = in.dataM.writereg;
+    assign hazard.dataW.result = result;
 endmodule

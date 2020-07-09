@@ -7,9 +7,9 @@ module srcbdmux (
 );
     always_comb begin
         case (forward)
-            M:srcb = m;
-            W:srcb = w;
-            ORI:srcb = regfile;
+            ALUOUTM:srcb = m;
+            RESULTW:srcb = w;
+            NOFORWARD:srcb = regfile;
             default:srcb = '0;
         endcase
     end

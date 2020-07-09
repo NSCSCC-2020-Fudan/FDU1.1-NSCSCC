@@ -1,26 +1,26 @@
 `include "mips.svh"
 
 module srcbemux (
-    input word_t srcb0, imm, shamt,
+    input word_t wd, imm, shamt,
     input decoded_instr_t instr,
-    output word_t srcbE
+    output word_t alusrcb
 );
 
     always_comb begin
-        if (instr.ctl.alusrc) begin
-            srcbE = imm;
+        if (instr.ctl.alusrc == IMM) begin
+            alusrcb = imm;
         end else if (instr.ctl.shift) begin
             case (instr.op)
-                LUI: srcbE = 32'd16;
-                SLL: srcbE = shamt;
-                SRL: srcbE = shamt;
-                SRA: srcbE = shamt;
+                LUI: alusrcb = 32'd16;
+                SLL: alusrcb = shamt;
+                SRL: alusrcb = shamt;
+                SRA: alusrcb = shamt;
                 default: begin
-                    srcbE = srcb0;
+                    alusrcb = wd;
                 end
             endcase
         end else begin
-            srcbE = srcb0;
+            alusrcb = wd;
         end
     end
 endmodule

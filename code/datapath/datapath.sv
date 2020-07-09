@@ -13,7 +13,15 @@ module datapath (
     input word_t rd,
     output word_t wb_pc
 );
-    // interfaces
+    logic i_data_ok;
+    assign i_data_ok = 1'b1;
+    // always_ff @(posedge clk, posedge reset) begin
+    //     if (reset) begin
+    //         i_data_ok <= '0;
+    //     end else begin
+    //         i_data_ok <= 1'b1;
+    //     end
+    // end
     pcselect_freg_fetch pcselect_freg_fetch(.pc);
     fetch_dreg_decode fetch_dreg_decode(.instr_);
     decode_ereg_exec decode_ereg_exec();
@@ -23,15 +31,16 @@ module datapath (
     regfile_intf regfile_intf(.rfwrite);
     hilo_intf hilo_intf();
     cp0_intf cp0_intf();
-    hazard_intf hazard_intf();
-    exception_intf exception_intf();
+    hazard_intf hazard_intf(.i_data_ok);
+    exception_intf exception_intf(.ext_int);
     pcselect_intf pcselect_intf();
 
     Freg freg(.ports(pcselect_freg_fetch.freg), 
                .clk, .reset, .hazard(hazard_intf.freg));
     fetch fetch(.in(pcselect_freg_fetch.fetch), 
                  .out(fetch_dreg_decode.fetch), 
-                 .pcselect(pcselect_intf.fetch));
+                 .pcselect(pcselect_intf.fetch),
+                 .clk, .reset);
     pcselect pcselect(.out(pcselect_freg_fetch.pcselect),
                        .in(pcselect_intf.pcselect));
     
@@ -79,12 +88,14 @@ module datapath (
     hilo hilo0(.ports(hilo_intf.hilo),.clk, .reset);
 
     // cp0 interacts with memory, exception
-    // cp0_ cp0_(.ports(cp0_intf.cp0),
-    //          .exception(exception_intf.exception));
+    // cp0_ cp0(.ports(cp0_intf.cp0),
+    //          .exception(exception_intf.excep));
 
     // hazard interacts with Freg, Dreg, Ereg, Mreg, Wreg, Decode, Execute, Memory
     hazard hazard0(hazard_intf.hazard);
 
     // exception interacts with cp0, pcselect, memory
-    // exception_ exception_(exception_intf.excep);
+    exception exception(exception_intf.excep,
+                          pcselect_intf.excep,
+                          hazard_intf.excep);
 endmodule
