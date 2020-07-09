@@ -69,7 +69,8 @@ module datapath (
                    .out(memory_wreg_writeback.memory),
                    .hazard(hazard_intf.memory),
                    .exception(exception_intf.memory),
-                   .dram(memory_dram.memory));
+                   .dram(memory_dram.memory),
+                   .cp0(cp0_intf.memory));
     
     Wreg wreg0(.clk, .reset,
                .ports(memory_wreg_writeback.wreg),
@@ -88,14 +89,15 @@ module datapath (
     hilo hilo0(.ports(hilo_intf.hilo),.clk, .reset);
 
     // cp0 interacts with memory, exception
-    // cp0_ cp0(.ports(cp0_intf.cp0),
-    //          .exception(exception_intf.excep));
+    cp0 cp0(.ports(cp0_intf.cp0),
+             .excep(exception_intf.cp0));
 
     // hazard interacts with Freg, Dreg, Ereg, Mreg, Wreg, Decode, Execute, Memory
     hazard hazard0(hazard_intf.hazard);
 
     // exception interacts with cp0, pcselect, memory
-    exception exception(exception_intf.excep,
-                          pcselect_intf.excep,
-                          hazard_intf.excep);
+    exception exception(.ports(exception_intf.excep),
+                        .pcselect(pcselect_intf.excep),
+                        .hazard(hazard_intf.excep),
+                        .reset);
 endmodule

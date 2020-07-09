@@ -1,14 +1,14 @@
 `include "mips.svh"
 
 module exception(
-
+    input logic reset,
     exception_intf.excep ports,
     pcselect_intf.excep pcselect,
     hazard_intf.excep hazard
 );
 
     // input logic reset,
-    logic exception_instr, exception_ri, exception_of, exception_data;
+    logic exception_instr, exception_ri, exception_of, exception_data, exception_bp, exception_sys;
     cp0_regs_t cp0;
     interrupt_info_t interrupt_info;
     logic exception_valid;
@@ -17,13 +17,13 @@ module exception(
     logic in_delay_slot;
     word_t pc;
     exception_t exception;
-    // interrupt    
+    // interrupt
     logic interrupt_valid;
-    // assign interrupt_valid = (interrupt_info != 0) // request
-    //                        & (cp0.status.IE)
-    //                        & (~cp0.debug.DM)
-    //                        & (~cp0.status.EXL)
-    //                        & (~cp0.status.ERL);
+    assign interrupt_valid = (interrupt_info != 0) // request
+                           & (cp0.status.IE)
+                        //    & (~cp0.debug.DM)
+                           & (~cp0.status.EXL)
+                           & (~cp0.status.ERL);
     assign interrupt_valid = '0;
 
     always_comb begin
@@ -39,6 +39,12 @@ module exception(
         end else if (exception_of) begin
             exception_valid = 1'b1;
             exccode = `CODE_OV;
+        end else if (exception_sys) begin
+            exception_valid = 1'b1;
+            exccode = `CODE_SYS;
+        end else if (exception_bp) begin
+            exception_valid = 1'b1;
+            exccode = `CODE_BP;
         end else if (exception_data) begin
             exception_valid = 1'b1;
             exccode = `CODE_ADEL;
@@ -63,18 +69,26 @@ module exception(
     //     end
     // end
     // assign exception.location = `EXC_BASE + offset;
-    // assign exception.location = `EXC_ENTRY;
-    // assign exception.valid = (interrupt_valid | valid) & ~reset;
-    // assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exccode);
-    // assign exception.pc = pc;
-    // assign exception.in_delay_slot = in_delay_slot;
-    // assign exception.badvaddr = vaddr;
+    assign exception.location = `EXC_ENTRY;
+    assign exception.valid = (interrupt_valid | exception_valid) & ~reset;
+    assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exccode);
+    assign exception.pc = pc;
+    assign exception.in_delay_slot = in_delay_slot;
+    assign exception.badvaddr = vaddr;
 
     assign exception_instr = ports.exception_instr;
     assign exception_ri = ports.exception_ri;
     assign exception_of = ports.exception_of;
     assign exception_data =  ports.exception_data;
+    assign exception_bp = ports.exception_bp;
+    assign exception_sys = ports.exception_sys;
     assign pcselect.exception_valid = exception_valid;
     assign pcselect.pcexception = `EXC_ENTRY;
     assign hazard.exception_valid = exception_valid;
+    assign vaddr = ports.vaddr;
+    assign pc = ports.pc;
+    assign in_delay_slot = in_delay_slot;
+    assign ports.exception = exception;
+
+
 endmodule

@@ -61,9 +61,10 @@ endinterface
 interface cp0_intf();
     rf_w_t cwrite;
     cp0_regs_t cp0_data;
-    modport cp0(output cp0_data, input cwrite);
+    logic is_eret;
+    modport cp0(output cp0_data, input cwrite, is_eret);
     modport decode(input cp0_data);
-    // modport memory();
+    modport memory(input cp0_data, output is_eret);
     modport writeback(output cwrite);
 
 endinterface
@@ -98,14 +99,17 @@ interface hazard_intf(input i_data_ok);
 endinterface
 
 interface exception_intf(input logic[5:0]ext_int);
-    logic exception_instr, exception_ri, exception_of, exception_data;
-    // interrupt_info_t interrupt_info;
+    logic exception_instr, exception_ri, exception_of, exception_data, exception_bp, exception_sys;
+    interrupt_info_t interrupt_info;
     exception_t exception;
+    word_t vaddr, pc;
+    logic in_delay_slot;
     modport excep(output exception, 
-                  input exception_instr, exception_ri, 
-                        exception_of, exception_data);
+                  input exception_instr, exception_ri, exception_bp, exception_sys,
+                        exception_of, exception_data, vaddr, pc, in_delay_slot);
     modport cp0(input exception);
-    modport memory(output exception_instr, exception_ri, exception_of, exception_data);
+    modport memory(output exception_instr, exception_ri, exception_of, exception_data, exception_bp, exception_sys,
+                          vaddr, pc, in_delay_slot, input ext_int, output interrupt_info);
 endinterface
 
 interface pcselect_intf();
