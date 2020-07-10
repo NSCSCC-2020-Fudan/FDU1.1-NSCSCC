@@ -1,0 +1,16 @@
+`ifndef __EXECUTE_SVH
+`define __EXECUTE_SVH
+
+`include "mips.svh"
+
+typedef struct packed {
+    decoded_instr_t instr;
+    logic exception_instr, exception_ri, exception_of;
+    word_t aluout;
+    creg_addr_t writereg;
+    word_t writedata;
+    word_t hi, lo;
+    word_t pcplus4;
+} exec_data_t;
+
+`endif

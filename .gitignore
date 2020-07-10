@@ -1,0 +1,5 @@
+5-stage/
+*.log
+*.jou
+vivado/*
+.vscode/
