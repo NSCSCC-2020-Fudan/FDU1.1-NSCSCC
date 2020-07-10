@@ -31,7 +31,7 @@ module alu (
                 c = b >> shamt; 
             end
             ALU_SRA: begin
-                c = b >>> shamt;
+                c = signed'(b) >>> shamt;
             end
             ALU_SUB: begin
                 c = a - b;

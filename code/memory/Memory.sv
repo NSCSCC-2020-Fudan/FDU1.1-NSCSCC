@@ -26,7 +26,7 @@ module memory (
     assign exception_bp = (dataE.instr.op == BREAK);
     writedata writedata(.addr(aluoutM[1:0]), .op(op), ._wd(dataE.writedata),.en(wen), .wd(writedataM));
     // readdata readdata(._rd(dram.rd), .op(op), .addr(aluoutM[1:0]), .rd(readdataM));
-    assign ren = {4{dataE.instr.ctl.memread}};
+    assign ren = {4{dataE.instr.ctl.memtoreg}};
     assign mread.ren = ren;
     assign mread.addr = aluoutM;
     assign mwrite.wen = wen;

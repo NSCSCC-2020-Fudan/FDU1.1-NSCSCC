@@ -145,35 +145,35 @@ module maindec (
             `OP_LB: begin
                 op = LB;
                 ctl.regwrite = 1'b1;
-                ctl.memread = 1'b1;
+                ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
             end    
             `OP_LBU: begin
                 op = LBU;
                 ctl.regwrite = 1'b1;
-                ctl.memread = 1'b1;
+                ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
             end   
             `OP_LH: begin
                 op = LH;
                 ctl.regwrite = 1'b1;
-                ctl.memread = 1'b1;
+                ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
             end    
             `OP_LHU: begin
                 op = LHU;
                 ctl.regwrite = 1'b1;
-                ctl.memread = 1'b1;
+                ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
             end   
             `OP_LW: begin
                 op = LW;
                 ctl.regwrite = 1'b1;
-                ctl.memread = 1'b1;
+                ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
             end    
