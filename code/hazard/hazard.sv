@@ -92,8 +92,8 @@ module hazard (
     assign regwriteE = ports.dataE.instr.ctl.regwrite;
     assign regwriteM = ports.dataM.instr.ctl.regwrite;
     assign regwriteW = ports.dataW.instr.ctl.regwrite;
-    assign memtoregE = ports.dataE.instr.ctl.memread;
-    assign memtoregM = ports.dataM.instr.ctl.memread;
+    assign memtoregE = ports.dataE.instr.ctl.memtoreg;
+    assign memtoregM = ports.dataM.instr.ctl.memtoreg;
     assign opD = ports.dataD.instr.op;
     assign opE = ports.dataE.instr.op;
     assign opM = ports.dataM.instr.op;

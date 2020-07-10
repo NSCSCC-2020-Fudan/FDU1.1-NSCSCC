@@ -88,7 +88,7 @@ typedef enum logic { RT, RD } regdst_t;
 typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
 typedef struct packed {
     alufunc_t alufunc;
-    logic memread, memwrite;
+    logic memtoreg, memwrite;
     logic regwrite;
     alusrcb_t alusrc;
     regdst_t regdst;
@@ -132,7 +132,7 @@ typedef struct packed {
     word_t srca, srcb;
 } decode_data_t;
 
-typedef enum logic { RD1 } srcad_source_t;
-typedef enum logic { RD2 } srcbd_source_t;
+typedef enum logic[1:0] { RDA, HIA, LOA, CP0A } srcad_source_t;
+typedef enum logic[1:0] { RD2, HIB, LOB, CP0B } srcbd_source_t;
 
 `endif

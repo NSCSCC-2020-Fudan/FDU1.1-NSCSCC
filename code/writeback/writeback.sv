@@ -14,7 +14,7 @@ module writeback (
     word_t readdataW;
     readdata readdata(._rd(dram.rd), .op(op), .addr(in.dataM.aluout[1:0]), .rd(readdataW));
     assign op = in.dataM.instr.op;
-    assign result = in.dataM.instr.ctl.memread ? readdataW : in.dataM.aluout;
+    assign result = in.dataM.instr.ctl.memtoreg ? readdataW : in.dataM.aluout;
     assign pc = in.dataM.pcplus4 - 32'd4;
 
     assign regfile.rfwrite.wen = in.dataM.instr.ctl.regwrite;
