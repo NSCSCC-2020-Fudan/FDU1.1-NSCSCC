@@ -2,16 +2,22 @@ pipeline {
   agent any
  
   stages {
-    stage('Create project') {
+    stage('Add directory') {
       steps {
         deleteDir() // clean up workspace
-        git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
-        sh 'cd vivado && vivado -mode batch -source create_vivado_proj.tcl'
+        // git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
+        git branch: 'docker-jenkins',
+            url: 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
+        sh 'vivado -mode tcl -source scripts/add_directory.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
       }
     }
-    stage('Run simulation') {
+    stage('Run sram_func_test') {
       steps {
-        sh 'cd vivado && vivado -mode batch -source run_simulation.tcl'
+        sh 'export SIMULATION=sim_1'
+        sh 'export LOG_PATH=loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log'
+        sh 'export FLAG='\-\-\-\-PASS!!!''
+        sh 'vivado -mode tcl -source scripts/run_simulation.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
+        sh 'bash scripts/check_simulation.sh'
       }
     }
   }
