@@ -29,4 +29,6 @@ module writeback (
     assign hazard.dataW.instr = in.dataM.instr;
     assign hazard.dataW.writereg = in.dataM.writereg;
     assign hazard.dataW.result = result;
+    assign hazard.dataW.hi = in.dataM.hi;
+    assign hazard.dataW.lo = in.dataM.lo;
 endmodule

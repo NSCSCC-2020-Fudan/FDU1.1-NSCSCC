@@ -45,8 +45,15 @@ module decode (
 	assign dataD.pcplus4 = dataF.pcplus4;
 	assign dataD.exception_instr = dataF.exception_instr;
 
-	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),.forward(hazard.forwardAD),.srca(dataD.srca));
-	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),.forward(hazard.forwardBD),.srcb(dataD.srcb));
+	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),
+					  .forward(hazard.forwardAD), .ctl(dataD.instr.ctl), 
+					  .hiD(hilo.hi), .loD(hilo.lo), .cp0D(cp0.cp0_data[dataD.instr.rd]),
+					  .hiM(hazard.hiM), .loM(hazard.loM), .hiW(hazard.hiW), .loW(hazard.loW),
+					  .srca(dataD.srca));
+	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),
+					  .forward(hazard.forwardBD),.ctl(dataD.instr.ctl), 
+					  .hiD(hilo.hi), .loD(hilo.lo), .cp0D(cp0.cp0_data[dataD.instr.rd]),
+					  .hiM(hazard.hiM), .loM(hazard.loM), .hiW(hazard.hiW), .loW(hazard.loW), .srcb(dataD.srcb));
 
 	// ports
 	// 	fetch_dreg_decode.decode in
