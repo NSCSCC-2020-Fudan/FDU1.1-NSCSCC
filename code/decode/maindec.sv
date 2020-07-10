@@ -202,6 +202,7 @@ module maindec (
                         op = MFC0;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RT;
+                        ctl.cp0toreg = 1'b1;
                     end 
                     `C_MTC0:begin
                         op = MTC0;
@@ -375,12 +376,14 @@ module maindec (
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
                         ctl.alufunc = ALU_PASSA;
+                        ctl.hitoreg = 1'b1;
                     end	
 					`F_MFLO:begin
                         op = MFLO;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
                         ctl.alufunc = ALU_PASSA;
+                        ctl.lotoreg = 1'b1;
                     end	
 					`F_MTHI:begin
                         op = MTHI;

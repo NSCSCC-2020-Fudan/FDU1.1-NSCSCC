@@ -105,6 +105,7 @@ typedef struct packed {
     logic lowrite;
     logic is_bp;
     logic is_sys;
+    logic hitoreg, lotoreg, cp0toreg;
 } control_t;
 
 typedef enum logic [5:0] { 
@@ -131,8 +132,5 @@ typedef struct packed {
     logic exception_instr, exception_ri;
     word_t srca, srcb;
 } decode_data_t;
-
-typedef enum logic[1:0] { RDA, HIA, LOA, CP0A } srcad_source_t;
-typedef enum logic[1:0] { RD2, HIB, LOB, CP0B } srcbd_source_t;
 
 `endif

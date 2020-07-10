@@ -81,20 +81,21 @@ interface hazard_intf(input i_data_ok, output stallF);
     logic         stallD, stallE, stallM;
     word_t aluoutM, resultW;
     forward_t forwardAE, forwardBE, forwardAD, forwardBD;
+    word_t hiM, loM, hiW, loW;
     // exception_t exception;
     logic exception_valid;
     modport hazard(input dataD, dataE, dataM, dataW, exception_valid, i_data_ok,
                    output flushD, flushE, flushM, flushW,
                           stallF, stallD, stallE, stallM,
                           forwardAE, forwardBE, forwardAD, forwardBD,
-                          aluoutM, resultW);
+                          aluoutM, resultW, hiM, loM, hiW, loW);
     modport freg(input stallF);
     modport dreg(input stallD, flushD);
     modport ereg(input stallE, flushE);
     modport mreg(input stallM, flushM);
     modport wreg(input flushW);
-    modport decode(output dataD, input aluoutM, resultW, forwardAD, forwardBD);
-    modport exec(output dataE, input aluoutM, resultW, forwardAE, forwardBE);
+    modport decode(output dataD, input aluoutM, resultW, forwardAD, forwardBD, hiM, loM, hiW, loW);
+    modport exec(output dataE, input aluoutM, resultW, forwardAE, forwardBE, hiM, loM, hiW, loW);
     modport memory(output dataM);
     modport writeback(output dataW);
     modport excep(output exception_valid);
