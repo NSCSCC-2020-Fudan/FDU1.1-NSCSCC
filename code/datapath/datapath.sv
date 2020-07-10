@@ -11,8 +11,9 @@ module datapath (
     output m_w_t mwrite,
     output rf_w_t rfwrite,
     input word_t rd,
-    output word_t wb_pc
-    // output logic inst_en
+    output word_t wb_pc,
+    // output logic inst_en,
+    output stallF
 );
     logic i_data_ok;
     assign i_data_ok = 1'b1;
@@ -32,10 +33,10 @@ module datapath (
     regfile_intf regfile_intf(.rfwrite);
     hilo_intf hilo_intf();
     cp0_intf cp0_intf();
-    hazard_intf hazard_intf(.i_data_ok);
+    hazard_intf hazard_intf(.i_data_ok, .stallF);
     exception_intf exception_intf(.ext_int);
     pcselect_intf pcselect_intf();
-
+    
     Freg freg(.ports(pcselect_freg_fetch.freg), 
                .clk, .reset, .hazard(hazard_intf.freg));
     fetch fetch(.in(pcselect_freg_fetch.fetch), 
@@ -81,7 +82,8 @@ module datapath (
                          .regfile(regfile_intf.writeback),
                          .hilo(hilo_intf.writeback),
                          .cp0(cp0_intf.writeback),
-                         .hazard(hazard_intf.writeback));
+                         .hazard(hazard_intf.writeback),
+                         .dram(memory_dram.writeback));
 
     // regfile interacts with Decode, Writeback
     regfile regfile0(.ports(regfile_intf.regfile), .clk, .reset);

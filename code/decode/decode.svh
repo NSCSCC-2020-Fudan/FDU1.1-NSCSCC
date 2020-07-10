@@ -8,7 +8,7 @@ typedef logic[4:0] shamt_t;
 
 typedef enum logic[3:0] {
     ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
-    ALU_SUBU, ALU_SLTU, ALU_PASSA
+    ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI
 } alufunc_t;
 
 // op
@@ -21,7 +21,7 @@ typedef enum logic[3:0] {
 `define OP_LUI          6'b001111
 `define OP_ORI          6'b001101
 `define OP_XORI         6'b001110
-`define OP_BEQ          6'b000110
+`define OP_BEQ          6'b000100
 `define OP_BNE          6'b000101
 `define OP_BGEZ         6'b000001
 `define OP_BGTZ         6'b000111
@@ -83,7 +83,7 @@ typedef enum logic[3:0] {
 `define C_MFC0          5'b00000
 `define C_MTC0          5'b00100
 
-typedef enum logic[1:0] { REG, IMM, SHAMT, SIXTEEN } alusrcb_t;
+typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
 typedef enum logic { RT, RD } regdst_t;
 typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
 typedef struct packed {
@@ -97,7 +97,7 @@ typedef struct packed {
     branch_t branch_type;
     logic jump;
     logic jr;
-    logic shift;
+    logic shamt_valid;
     logic zeroext;
     logic cp0write;
     logic is_eret;

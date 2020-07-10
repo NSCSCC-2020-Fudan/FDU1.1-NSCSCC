@@ -27,18 +27,20 @@ module mycpu_top(
     m_r_t mread;
     m_w_t mwrite;
     rf_w_t rfwrite;
+    logic stallF;
     datapath datapath(.clk, .reset(~resetn), .ext_int, 
                       .pc(inst_sram_addr), .instr_(inst_sram_rdata),
-                      .mread, .mwrite, .rfwrite, .rd(data_sram_rdata), .wb_pc(debug_wb_pc));
+                      .mread, .mwrite, .rfwrite, .rd(data_sram_rdata), .wb_pc(debug_wb_pc),
+                      .stallF);
 
-    assign inst_sram_en = 1'b1;
+    assign inst_sram_en = ~stallF;
     assign inst_sram_wen = 4'b0;
     assign inst_sram_wdata = '0;
 
-    assign data_sram_en = | (mread.ren | mwrite.wen);
-    assign data_sram_wen = mwrite.wen;
-    assign data_sram_addr = (|mwrite.wen) ? mwrite.addr : mread.addr;
-    assign data_sram_wdata = mwrite.wd;
+    assign #0.2 data_sram_en = 1'b1;
+    assign #0.2 data_sram_wen = mwrite.wen;
+    assign #0.2 data_sram_addr = (|mwrite.wen) ? mwrite.addr : mread.addr;
+    assign #0.2 data_sram_wdata = mwrite.wd;
     assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
     assign debug_wb_rf_wnum = rfwrite.addr;
     assign debug_wb_rf_wdata = rfwrite.wd;
