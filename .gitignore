@@ -3,3 +3,4 @@
 *.jou
 vivado/*
 .vscode/
+.Xil/
