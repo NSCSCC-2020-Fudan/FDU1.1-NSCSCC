@@ -34,8 +34,7 @@ module decode (
 	assign dataD.instr.rt = dataF.instr_[20:16];
 	assign dataD.instr.rd = dataF.instr_[15:11];
 	assign dataD.instr.shamt = dataF.instr_[10:6];
-	assign ext = (dataD.instr.op == AND) || (dataD.instr.op == NOR) || (dataD.instr.op == OR) || (dataD.instr.op == XOR);
-	extend ext1(imm, ext, dataD.instr.extended_imm);
+	extend ext1(imm, dataD.instr.ctl.zeroext, dataD.instr.extended_imm);
 	maindec mainde(dataF.instr_, dataD.instr.op, dataD.exception_ri, dataD.instr.ctl);
 	// aludec alude(dataD.instr.op, dataD.instr.ctl.alufunc);
 	assign is_reserved = dataD.instr.op == RESERVED;

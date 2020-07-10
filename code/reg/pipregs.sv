@@ -3,7 +3,7 @@
 module Freg (
     input logic clk, reset,
     pcselect_freg_fetch.freg ports,
-    hazard_intf hazard
+    hazard_intf.freg hazard
 );
     logic en;
     word_t pc, pc_new;
