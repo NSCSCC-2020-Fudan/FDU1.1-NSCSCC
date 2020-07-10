@@ -32,7 +32,9 @@ interface exec_mreg_memory();
 endinterface
 
 interface memory_dram(input word_t rd, output m_r_t mread, output m_w_t mwrite);
-    modport memory(input rd, output mread, mwrite);
+    // modport memory(input rd, output mread, mwrite);
+    modport memory(output mread, mwrite);
+    modport writeback(input rd);
 endinterface
 
 interface memory_wreg_writeback();
@@ -69,14 +71,14 @@ interface cp0_intf();
 
 endinterface
 
-interface hazard_intf(input i_data_ok);
+interface hazard_intf(input i_data_ok, output stallF);
     decode_data_t dataD;
     exec_data_t dataE;
     mem_data_t dataM;
     wb_data_t dataW;
     logic exception;
     logic         flushD, flushE, flushM, flushW;
-    logic stallF, stallD, stallE, stallM;
+    logic         stallD, stallE, stallM;
     word_t aluoutM, resultW;
     forward_t forwardAE, forwardBE, forwardAD, forwardBD;
     // exception_t exception;

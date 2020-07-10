@@ -4,7 +4,7 @@ module execute (
     exec_mreg_memory.exec out,
     hazard_intf.exec hazard
 );
-    word_t alusrcaE, alusrcbE, writedataE;
+    word_t alusrcaE, alusrcbE, writedataE, srcaE0;
     exec_data_t dataE;
     decode_data_t dataD;
     word_t srcaE, srcbE;
@@ -14,20 +14,21 @@ module execute (
     word_t aluoutE, aluoutE0;
     logic exception_of;
     word_t hi, lo;
-    logic jumpE; 
+    logic jumpE, shamt_valid; 
     regdst_t regdstE;
     creg_addr_t rtE, rdE;
     word_t shamt, imm;
     alufunc_t alufuncE;
     decoded_op_t op;
     word_t pcplus4E;
-    decoded_instr_t instrE;
+    alusrcb_t alusrcE;
     wrmux wrmux0(.rt(rtE), .rd(rdE), 
                  .jump(jumpE), .regdst(regdstE), 
                  .writereg(writeregE));
-    srcaemux srcaemux(.e(srcaE),.m(aluoutM),.w(resultW),.forward(forwardAE),.alusrca(alusrcaE));
+    forwardaemux forwardaemux(.e(srcaE),.m(aluoutM),.w(resultW),.forward(forwardAE),.srca(srcaE0));
+    alusrcamux alusrcamux(.srca(srcaE0), .shamt(shamt), .shamt_valid(shamt_valid), .alusrca(alusrcaE));
     wdmux wdmux(.e(srcbE),.m(aluoutM),.w(resultW),.forward(forwardBE),.wd(writedataE));
-    srcbemux srcbemux(.wd(writedataE), .imm(imm),.shamt(shamt),.instr(instrE),.alusrcb(alusrcbE));
+    alusrcbmux alusrcbmux(.wd(writedataE), .imm(imm),.sel(alusrcE),.alusrcb(alusrcbE));
     alu alu(alusrcaE, alusrcbE, alufuncE, aluoutE0, exception_of);
     mult multdiv(.a(alusrcaE), .b(alusrcbE), .op(op), .hi(hi), .lo(lo));
     aluoutmux aluoutmux(.aluout(aluoutE0), .pcplus8(pcplus4E + 32'd4), .jump(jumpE), .out(aluoutE));
@@ -38,7 +39,7 @@ module execute (
     assign resultW = hazard.resultW;
     assign forwardAE = hazard.forwardAE;
     assign forwardBE = hazard.forwardBE;
-    assign jumpE = dataD.instr.ctl.jr | dataD.instr.ctl.branch;
+    assign jumpE = dataD.instr.ctl.jump | dataD.instr.ctl.branch;
     assign regdstE = dataD.instr.ctl.regdst;
     assign rtE = dataD.instr.rt;
     assign rdE = dataD.instr.rd;
@@ -47,7 +48,8 @@ module execute (
     assign alufuncE = dataD.instr.ctl.alufunc;
     assign op = dataD.instr.op;
     assign pcplus4E = dataD.pcplus4;
-    assign instrE = dataD.instr;
+    assign alusrcE = dataD.instr.ctl.alusrc;
+    assign shamt_valid = dataD.instr.ctl.shamt_valid;
     // typedef struct packed {
 //     decoded_instr_t instr;
 //     logic exception_instr, exception_ri, exception_of;

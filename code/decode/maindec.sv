@@ -32,15 +32,15 @@ module maindec (
                 op = SLT;
                 ctl.alufunc = ALU_SLT;
                 ctl.regwrite = 1'b1;
-                ctl.shift = 1'b1;
+                
                 ctl.alusrc = IMM;
                 ctl.regdst = RT;
             end 
             `OP_SLTIU: begin
                 op = SLTU;
-                ctl.alufunc = ALU_SLT;
+                ctl.alufunc = ALU_SLTU;
                 ctl.regwrite = 1'b1;
-                ctl.shift = 1'b1;
+                
                 ctl.alusrc = IMM;
                 ctl.regdst = RT;
             end 
@@ -54,11 +54,10 @@ module maindec (
             end  
             `OP_LUI:  begin
                 op = LUI;
-                ctl.alufunc = ALU_SLL;
+                ctl.alufunc = ALU_LUI;
                 ctl.regwrite = 1'b1;
                 ctl.alusrc = IMM;
                 ctl.regdst = RT;
-                ctl.shift = 1'b1;
             end  
             `OP_ORI:  begin
                 op = OR;
@@ -148,43 +147,50 @@ module maindec (
                 ctl.regwrite = 1'b1;
                 ctl.memread = 1'b1;
                 ctl.regdst = RT;
-
+                ctl.alusrc = IMM;
             end    
             `OP_LBU: begin
                 op = LBU;
                 ctl.regwrite = 1'b1;
                 ctl.memread = 1'b1;
                 ctl.regdst = RT;
+                ctl.alusrc = IMM;
             end   
             `OP_LH: begin
                 op = LH;
                 ctl.regwrite = 1'b1;
                 ctl.memread = 1'b1;
                 ctl.regdst = RT;
+                ctl.alusrc = IMM;
             end    
             `OP_LHU: begin
                 op = LHU;
                 ctl.regwrite = 1'b1;
                 ctl.memread = 1'b1;
                 ctl.regdst = RT;
+                ctl.alusrc = IMM;
             end   
             `OP_LW: begin
                 op = LW;
                 ctl.regwrite = 1'b1;
                 ctl.memread = 1'b1;
                 ctl.regdst = RT;
+                ctl.alusrc = IMM;
             end    
             `OP_SB: begin
                 op = SB;
                 ctl.memwrite = 1'b1;
+                ctl.alusrc = IMM;
             end    
             `OP_SH: begin
                 op = SH;
                 ctl.memwrite = 1'b1;
+                ctl.alusrc = IMM;
             end    
             `OP_SW: begin
                 op = SW;
                 ctl.memwrite = 1'b1;
+                ctl.alusrc = IMM;
             end    
             `OP_ERET: begin
                 case (instr[25:21])
@@ -214,142 +220,142 @@ module maindec (
                         ctl.alufunc = ALU_ADD;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end    
                     `F_ADDU: begin
                         op = ADDU;
                         ctl.alufunc = ALU_ADDU;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end   
                     `F_SUB: begin
                         op = SUB;
                         ctl.alufunc = ALU_SUB;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end    
                     `F_SUBU: begin
                         op = SUBU;
                         ctl.alufunc = ALU_SUBU;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end   
                     `F_SLT: begin
                         op = SLT;
                         ctl.alufunc = ALU_SLT;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end    
                     `F_SLTU: begin
                         op = SLTU;
                         ctl.alufunc = ALU_SLTU;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end   
                     `F_DIV: begin
                         op = DIV;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end    
                     `F_DIVU: begin
                         op = DIVU;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end   
                     `F_MULT: begin
                         op = MULT;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end   
 					`F_MULTU:begin
                         op = MULTU;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end	
 					`F_AND:begin
                         op = AND;
                         ctl.alufunc = ALU_AND;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end		
 					`F_NOR:begin
                         op = NOR;
                         ctl.alufunc = ALU_NOR;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end		
 					`F_OR:begin
                         op = OR;
                         ctl.alufunc = ALU_OR;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end		
 					`F_XOR:begin
                         op = XOR;
                         ctl.alufunc = ALU_XOR;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
+                        ctl.alusrc = REGB;
                     end		
 					`F_SLLV:begin
                         op = SLLV;
                         ctl.alufunc = ALU_SLL;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
-                        ctl.shift = 1'b1;
+                        ctl.alusrc = REGB;
+
                     end	
 					`F_SLL:begin
                         op = SLL;
                         ctl.alufunc = ALU_SLL;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = SHAMT;
-                        ctl.shift = 1'b1;
+                        ctl.alusrc = REGB;
+                        ctl.shamt_valid = 1'b1;
                     end		
 					`F_SRAV:begin
                         op = SRAV;
                         ctl.alufunc = ALU_SRA;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
-                        ctl.shift = 1'b1;
+                        ctl.alusrc = REGB;
+                        
                     end	
 					`F_SRA:begin
                         op = SRA;
                         ctl.alufunc = ALU_SRA;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = SHAMT;
-                        ctl.shift = 1'b1;
+                        ctl.alusrc = REGB;
+                        ctl.shamt_valid = 1'b1;
                     end		
 					`F_SRLV:begin
                         op = SRLV;
                         ctl.alufunc = ALU_SRL;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = REG;
-                        ctl.shift = 1'b1;
+                        ctl.alusrc = REGB;
+
                     end	
 					`F_SRL:begin
                         op = SRL;
                         ctl.alufunc = ALU_SRL;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RD;
-                        ctl.alusrc = SHAMT;
-                        ctl.shift = 1'b1;
+                        ctl.alusrc = REGB;
+                        ctl.shamt_valid = 1'b1;
                     end		
 					`F_JR:begin
                         op = JR;

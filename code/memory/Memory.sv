@@ -25,7 +25,7 @@ module memory (
     assign exception_sys = (dataE.instr.op == SYSCALL);
     assign exception_bp = (dataE.instr.op == BREAK);
     writedata writedata(.addr(aluoutM[1:0]), .op(op), ._wd(dataE.writedata),.en(wen), .wd(writedataM));
-    readdata readdata(._rd(dram.rd), .op(op), .addr(aluoutM[1:0]), .rd(readdataM));
+    // readdata readdata(._rd(dram.rd), .op(op), .addr(aluoutM[1:0]), .rd(readdataM));
     assign ren = {4{dataE.instr.ctl.memread}};
     assign mread.ren = ren;
     assign mread.addr = aluoutM;
@@ -40,7 +40,7 @@ module memory (
 //     word_t pcplus4;
 // } mem_data_t;    
     assign dataM.instr = dataE.instr;
-    assign dataM.rd = readdataM;
+    // assign dataM.rd = readdataM;
     assign dataM.aluout = aluoutM;
     assign dataM.writereg = dataE.writereg;
     assign dataM.hi = dataE.hi;
