@@ -56,7 +56,7 @@ typedef enum logic[3:0] {
 `define F_MULT          6'b011000
 `define F_MULTU         6'b011001
 `define F_AND           6'b100100
-`define F_NOR           6'b100110
+`define F_NOR           6'b100111
 `define F_OR            6'b100101
 `define F_XOR           6'b100110
 `define F_SLLV          6'b000100
@@ -108,7 +108,7 @@ typedef struct packed {
 } control_t;
 
 typedef enum logic [5:0] { 
-    // ADDI, ADDIU, SLTI, SLTIU, ANDI, LUI, ORI, XORI, 
+    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, 
     ADDU, RESERVED,
     BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
     LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
