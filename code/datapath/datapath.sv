@@ -12,6 +12,7 @@ module datapath (
     output rf_w_t rfwrite,
     input word_t rd,
     output word_t wb_pc
+    // output logic inst_en
 );
     logic i_data_ok;
     assign i_data_ok = 1'b1;
@@ -22,7 +23,7 @@ module datapath (
     //         i_data_ok <= 1'b1;
     //     end
     // end
-    pcselect_freg_fetch pcselect_freg_fetch(.pc);
+    pcselect_freg_fetch pcselect_freg_fetch(.pc_new(pc));
     fetch_dreg_decode fetch_dreg_decode(.instr_);
     decode_ereg_exec decode_ereg_exec();
     exec_mreg_memory exec_mreg_memory();
