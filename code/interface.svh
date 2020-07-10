@@ -3,8 +3,8 @@
 
 `include "mips.svh"
 
-interface pcselect_freg_fetch(output word_t pc);
-    word_t pc_new;
+interface pcselect_freg_fetch(output word_t pc_new);
+    word_t pc;
     modport pcselect(output pc_new);
     modport freg(input pc_new, output pc);
     modport fetch(input pc);
