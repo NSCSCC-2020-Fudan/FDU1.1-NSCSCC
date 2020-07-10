@@ -1,0 +1,29 @@
+pipeline {
+  agent any
+ 
+  stages {
+    stage('Create project') {
+      steps {
+        deleteDir() // clean up workspace
+        git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
+        sh 'cd vivado && vivado -mode batch -source create_vivado_proj.tcl'
+      }
+    }
+    stage('Run simulation') {
+      steps {
+        sh 'cd vivado && vivado -mode batch -source run_simulation.tcl'
+      }
+    }
+  }
+  post {
+    failure {
+      emailext attachLog: true,
+      body: '''Project name: $PROJECT_NAME
+Build number: $BUILD_NUMBER
+Build Status: $BUILD_STATUS
+Build URL: $BUILD_URL''',
+      recipientProviders: [culprits()],
+      subject: 'Project \'$PROJECT_NAME\' is broken'
+    }
+  }
+}
