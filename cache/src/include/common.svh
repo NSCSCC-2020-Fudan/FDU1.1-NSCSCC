@@ -1,8 +1,7 @@
-`ifndef __AXI3_COMMON_SVH
-`define __AXI3_COMMON_SVH
+`ifndef __CACHE_COMMON_SVH__
+`define __CACHE_COMMON_SVH__
 
-// nibble：半个字节
-typedef logic [3:0] nibble_t;
-typedef logic [31:0] word_t;
+`include "defs.svh"
+`include "axi.svh"
 
 `endif
