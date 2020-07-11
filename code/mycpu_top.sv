@@ -26,20 +26,21 @@ module mycpu(
     rf_w_t rfwrite;
     logic stallF;
     logic clk_;
-    always_ff @( posedge clk) begin
-        clk_ <=  clk & inst_addr_ok & (inst_data_ok | ~inst_req) & (data_data_ok | ~data_req) & inst_data_ok;
-    end
+    // always_ff @( posedge clk) begin
+    //     clk_ <=  clk & inst_addr_ok & (inst_data_ok | ~inst_req) & (data_data_ok | ~data_req) & inst_data_ok;
+    // end
+    assign clk_ = clk;
     word_t vaddr;
     datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
-                      .pc(inst_sram_addr), .instr_(inst_sram_rdata),
-                      .mread, .mwrite, .rfwrite, .rd(data_sram_rdata), .wb_pc(debug_wb_pc),
+                      .pc(inst_addr), .instr_(inst_rdata),
+                      .mread, .mwrite, .rfwrite, .rd(data_rdata), .wb_pc(debug_wb_pc),
                       .stallF);
 
-    assign inst_req = ~stallF;
+    assign inst_req = 1'b1;
     assign inst_wen = 4'b0;
     assign inst_wdata = '0;
 
-    assign data_req = 1'b1;
+    assign data_req = (|mread.ren) | (|mwrite.wen);
     assign data_wen = mwrite.wen;
     assign vaddr = (|mwrite.wen) ? mwrite.addr : mread.addr;
     always_comb begin
@@ -129,7 +130,7 @@ module mycpu_top (
         .wid, .wdata, .wstrb, .wlast, .wvalid, .wready, 
         .bid, .bresp, .bvalid, .bready
     );
-    mucpu mycpu(
+    mycpu mycpu(
         .clk(aclk), .resetn(aresetn), .ext_int,
         .inst_req, .inst_wr, .inst_size, .inst_addr, .inst_wdata, .inst_rdata, .inst_addr_ok, .inst_data_ok,
         .data_req, .data_wr, .data_size, .data_addr, .data_wdata, .data_rdata, .data_addr_ok, .data_data_ok,

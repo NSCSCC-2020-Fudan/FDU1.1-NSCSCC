@@ -24,7 +24,7 @@ module datapath (
     //         i_data_ok <= 1'b1;
     //     end
     // end
-    pcselect_freg_fetch pcselect_freg_fetch(.pc_new(pc));
+    pcselect_freg_fetch pcselect_freg_fetch(.pc(pc));
     fetch_dreg_decode fetch_dreg_decode(.instr_);
     decode_ereg_exec decode_ereg_exec();
     exec_mreg_memory exec_mreg_memory();
@@ -82,8 +82,7 @@ module datapath (
                          .regfile(regfile_intf.writeback),
                          .hilo(hilo_intf.writeback),
                          .cp0(cp0_intf.writeback),
-                         .hazard(hazard_intf.writeback),
-                         .dram(memory_dram.writeback));
+                         .hazard(hazard_intf.writeback));
 
     // regfile interacts with Decode, Writeback
     regfile regfile0(.ports(regfile_intf.regfile), .clk, .reset);
