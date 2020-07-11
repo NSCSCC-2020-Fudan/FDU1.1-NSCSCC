@@ -62,6 +62,9 @@ module alu (
             ALU_LUI : begin
                 c = {b[15:0], 16'b0};
             end
+            ALU_PASSB: begin
+                c = b;
+            end
             default: begin
                 c = '0;
             end

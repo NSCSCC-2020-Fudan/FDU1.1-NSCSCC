@@ -66,5 +66,5 @@ typedef struct packed {
     word_t hi, lo;
 } wb_data_t;
 
-typedef enum logic[2:0] { NOFORWARD, RESULTW, ALUOUTM, HIM, LOM, HIW, LOW } forward_t;
+typedef enum logic[2:0] { NOFORWARD, RESULTW, ALUOUTM, HIM, LOM, HIW, LOW, ALUSRCAE } forward_t;
 `endif

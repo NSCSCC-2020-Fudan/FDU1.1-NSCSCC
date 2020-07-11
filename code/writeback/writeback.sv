@@ -31,4 +31,8 @@ module writeback (
     assign hazard.dataW.result = result;
     assign hazard.dataW.hi = in.dataM.hi;
     assign hazard.dataW.lo = in.dataM.lo;
+
+    assign cp0.cwrite.addr = in.dataM.instr.rd;
+    assign cp0.cwrite.wen = in.dataM.instr.ctl.cp0write;
+    assign cp0.cwrite.wd = result;
 endmodule

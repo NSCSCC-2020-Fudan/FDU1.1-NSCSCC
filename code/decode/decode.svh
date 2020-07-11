@@ -8,7 +8,7 @@ typedef logic[4:0] shamt_t;
 
 typedef enum logic[3:0] {
     ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
-    ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI
+    ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
 } alufunc_t;
 
 // op

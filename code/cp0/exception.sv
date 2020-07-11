@@ -8,7 +8,7 @@ module exception(
 );
 
     // input logic reset,
-    logic exception_instr, exception_ri, exception_of, exception_data, exception_bp, exception_sys;
+    logic exception_instr, exception_ri, exception_of, exception_load, exception_bp, exception_sys;
     cp0_regs_t cp0;
     interrupt_info_t interrupt_info;
     logic exception_valid;
@@ -45,11 +45,15 @@ module exception(
         end else if (exception_bp) begin
             exception_valid = 1'b1;
             exccode = `CODE_BP;
-        end else if (exception_data) begin
+        end else if (exception_load) begin
             exception_valid = 1'b1;
             exccode = `CODE_ADEL;
+        end else if (exception_save) begin
+            exception_valid = 1'b1;
+            exccode = `CODE_ADES;
         end else begin
             exception_valid = 1'b0;
+            exccode = '0;
         end
     end
     // exception_offset_t offset;
@@ -79,9 +83,10 @@ module exception(
     assign exception_instr = ports.exception_instr;
     assign exception_ri = ports.exception_ri;
     assign exception_of = ports.exception_of;
-    assign exception_data =  ports.exception_data;
+    assign exception_load =  ports.exception_load;
     assign exception_bp = ports.exception_bp;
     assign exception_sys = ports.exception_sys;
+    assign exception_save = ports.exception_save;
     assign pcselect.exception_valid = exception_valid;
     assign pcselect.pcexception = `EXC_ENTRY;
     assign hazard.exception_valid = exception_valid;
@@ -89,6 +94,6 @@ module exception(
     assign pc = ports.pc;
     assign in_delay_slot = in_delay_slot;
     assign ports.exception = exception;
-
-
+    assign interrupt_info = ports.interrupt_info;
+    assign cp0 = ports.cp0_data;
 endmodule

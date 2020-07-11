@@ -200,6 +200,7 @@ module maindec (
                     end 
                     `C_MFC0:begin
                         op = MFC0;
+                        ctl.alufunc = ALU_PASSA;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RT;
                         ctl.cp0toreg = 1'b1;
@@ -207,6 +208,7 @@ module maindec (
                     `C_MTC0:begin
                         op = MTC0;
                         ctl.cp0write = 1'b1;
+                        ctl.alufunc = ALU_PASSB;
                     end 
                     default: begin
                         exception_ri = 1'b1;

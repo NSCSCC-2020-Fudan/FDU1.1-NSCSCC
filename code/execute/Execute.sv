@@ -22,10 +22,13 @@ module execute (
     decoded_op_t op;
     word_t pcplus4E;
     alusrcb_t alusrcE;
+    word_t hiM, loM, hiW, loW;
     wrmux wrmux0(.rt(rtE), .rd(rdE), 
                  .jump(jumpE), .regdst(regdstE), 
                  .writereg(writeregE));
-    forwardaemux forwardaemux(.e(srcaE),.m(aluoutM),.w(resultW),.forward(forwardAE),.srca(srcaE0));
+    forwardaemux forwardaemux(.e(srcaE),.m(aluoutM),.w(resultW),
+                              .hiM, .loM, .hiW, .loW,
+                              .forward(forwardAE),.srca(srcaE0));
     alusrcamux alusrcamux(.srca(srcaE0), .shamt(shamt), .shamt_valid(shamt_valid), .alusrca(alusrcaE));
     wdmux wdmux(.e(srcbE),.m(aluoutM),.w(resultW),.forward(forwardBE),.wd(writedataE));
     alusrcbmux alusrcbmux(.wd(writedataE), .imm(imm),.sel(alusrcE),.alusrcb(alusrcbE));
@@ -50,6 +53,10 @@ module execute (
     assign pcplus4E = dataD.pcplus4;
     assign alusrcE = dataD.instr.ctl.alusrc;
     assign shamt_valid = dataD.instr.ctl.shamt_valid;
+    assign hiM = hazard.hiM;
+    assign loM = hazard.loM;
+    assign hiW = hazard.hiW;
+    assign loW = hazard.loW;
     // typedef struct packed {
 //     decoded_instr_t instr;
 //     logic exception_instr, exception_ri, exception_of;
@@ -78,4 +85,5 @@ module execute (
     
     // hazard_intf.exec hazard
     assign hazard.dataE = dataE;
+    assign hazard.alusrcaE = alusrcaE;
 endmodule

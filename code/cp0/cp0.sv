@@ -3,13 +3,16 @@
 module cp0(
     input logic clk, reset,
     cp0_intf.cp0 ports,
-    exception_intf.cp0 excep
+    exception_intf.cp0 excep,
+    pcselect_intf.cp0 pcselect
 );
     logic is_eret;
     cp0_regs_t cp0, cp0_new;
     word_t wd;
     rf_w_t cwrite; 
     exception_t exception;
+    creg_addr_t ra;
+    word_t rd;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             cp0 <= `CP0_INIT;
@@ -30,17 +33,17 @@ module cp0(
     end
 
     // read
-    // always_comb begin
-    //     case (ra)
-    //         5'd8:   rd = cp0.badvaddr;
-    //         5'd9:   rd = cp0.count;
-    //         5'd12:  rd = cp0.status;
-    //         5'd13:  rd = cp0.cause;
-    //         5'd14:  rd = cp0.epc;
-    //         5'd16:  rd = cp0.config_;
-    //         default:rd = '0;
-    //     endcase
-    // end
+    always_comb begin
+        case (ra)
+            5'd8:   rd = cp0.badvaddr;
+            5'd9:   rd = cp0.count;
+            5'd12:  rd = cp0.status;
+            5'd13:  rd = cp0.cause;
+            5'd14:  rd = cp0.epc;
+            5'd16:  rd = cp0.config_;
+            default:rd = '0;
+        endcase
+    end
 
     // update cp0 registers
     always_comb begin
@@ -96,4 +99,9 @@ module cp0(
     assign ports.cp0_data = cp0;
     assign is_eret = ports.is_eret;
     assign exception = excep.exception;
+    assign ra = ports.ra;
+    assign ports.rd = rd;
+    assign excep.cp0_data = cp0;
+    assign pcselect.is_eret = is_eret;
+    assign pcselect.epc = cp0.epc;
 endmodule

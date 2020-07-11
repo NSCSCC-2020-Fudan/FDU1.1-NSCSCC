@@ -18,10 +18,12 @@ module memory (
     assign dram.mwrite.addr = dataE.aluout;
     decoded_op_t op;
     assign op = dataE.instr.op;
-    logic exception_data, exception_sys, exception_bp;
+    logic exception_load, exception_save, exception_sys, exception_bp;
     rwen_t ren, wen;
-    assign exception_data = ((op == SW || op == LW) && (aluoutM[1:0] != '0)) ||
-                            ((op == SH || op == LH || op == LHU) && (aluoutM[0] != '0));
+    assign exception_load = ((op == LW) && (aluoutM[1:0] != '0)) ||
+                            ((op == LH || op == LHU) && (aluoutM[0] != '0));
+    assign exception_save = ((op == SW) && (aluoutM[1:0] != '0)) ||
+                            ((op == SH) && (aluoutM[0] != '0));
     assign exception_sys = (dataE.instr.op == SYSCALL);
     assign exception_bp = (dataE.instr.op == BREAK);
     writedata writedata(.addr(aluoutM[1:0]), .op(op), ._wd(dataE.writedata),.en(wen), .wd(writedataM));
@@ -55,13 +57,16 @@ module memory (
 
     // hazard_intf.memory hazard
     assign hazard.dataM = dataM;
+    assign hazard.is_eret = (dataE.instr.op == ERET);
     // exception_intf.memory exception
     assign exception.exception_instr = dataE.exception_instr;
     assign exception.exception_ri =  dataE.exception_ri;
     assign exception.exception_of = dataE.exception_of;
-    assign exception.exception_data = exception_data;
+    assign exception.exception_load = exception_load;
+    assign exception.exception_save = exception_save;
     assign exception.exception_sys = exception_sys;
     assign exception.exception_bp = exception_bp;
+    assign exception.exception_save = exception_save;
     assign exception.in_delay_slot = dataE.instr.ctl.branch | dataE.instr.ctl.jump;// wrong
     assign exception.pc = dataE.pcplus4 - 32'd4;
     assign exception.vaddr = aluoutM;

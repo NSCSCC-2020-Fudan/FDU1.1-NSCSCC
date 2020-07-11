@@ -94,7 +94,8 @@ module datapath (
     // cp0 interacts with memory, exception
     cp0 cp0(.ports(cp0_intf.cp0),
              .excep(exception_intf.cp0),
-             .clk, .reset);
+             .clk, .reset,
+             .pcselect(pcselect_intf.cp0));
 
     // hazard interacts with Freg, Dreg, Ereg, Mreg, Wreg, Decode, Execute, Memory
     hazard hazard0(hazard_intf.hazard);

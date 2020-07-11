@@ -2,20 +2,17 @@
 
 module srcadmux (
     input word_t regfile, m, w, 
-    input word_t hiD, loD, hiM, loM, hiW, loW,
-    input word_t cp0D, 
+    input word_t hiD, loD, cp0D, 
+    input word_t alusrcaE,
     input forward_t forward,
     input control_t ctl,
     output word_t srca
 );
     always_comb begin
         priority case (forward)
+            ALUSRCAE:srca = alusrcaE;
             ALUOUTM:srca = m;
-            HIM:srca = hiM;
-            LOM:srca = loM;
             RESULTW:srca = w;
-            HIW:srca = hiW;
-            LOW:srca = loW;
             NOFORWARD: begin
                 case (1'b1)
                     ctl.hitoreg: srca = hiD;
