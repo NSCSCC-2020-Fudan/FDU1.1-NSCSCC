@@ -57,7 +57,7 @@ typedef enum logic [1:0] {
 typedef struct packed {
     id_t id;
     addr_t addr;
-    size_t len;  // actual length - 1
+    len_t len;  // actual length - 1
     burst_size size;
     burst_type burst;
     lock_type lock;
@@ -85,7 +85,7 @@ typedef struct packed {
 typedef struct packed {
     id_t id;
     addr_t addr;
-    size_t len;
+    len_t len;
     burst_size size;
     burst_type burst;
     lock_type lock;
