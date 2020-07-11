@@ -57,6 +57,7 @@ typedef struct packed {
     word_t writedata;
     word_t hi, lo;
     word_t pcplus4;
+    logic in_delay_slot;
 } exec_data_t;
 
 typedef struct packed {

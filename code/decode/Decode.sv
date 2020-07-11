@@ -13,7 +13,8 @@ module decode (
 	hilo_intf.decode hilo,
 	cp0_intf.decode cp0,
 	hazard_intf.decode hazard,
-	pcselect_intf.decode pcselect
+	pcselect_intf.decode pcselect,
+	input clk, reset
 );
 	op_t op;
 	func_t func;
@@ -52,6 +53,7 @@ module decode (
 	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),.alusrcaE(hazard.alusrcaE),
 					  .forward(hazard.forwardBD), .srcb(dataD.srcb));
 
+	assign dataD.in_delay_slot = out.in_delay_slot;
 	// ports
 	// 	fetch_dreg_decode.decode in
 	assign dataF = in.dataF;

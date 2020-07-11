@@ -31,7 +31,6 @@ module cp0(
             count_switch <= ~count_switch;
         end
     end
-
     // read
     always_comb begin
         case (ra)
@@ -44,11 +43,19 @@ module cp0(
             default:rd = '0;
         endcase
     end
-
+    
     // update cp0 registers
     always_comb begin
         cp0_new = cp0;
-
+        
+        cp0_new.count = cp0_new.count + count_switch;
+        if (reset) begin
+            ports.timer_interrupt = 1'b0;
+        end else if (cp0_new.count == cp0_new.compare) begin
+            ports.timer_interrupt = 1'b1;
+        end else if (cwrite.wen & cwrite.addr == 5'd11) begin
+            ports.timer_interrupt = 1'b0;
+        end
         // write
         if (cwrite.wen) begin
             case (cwrite.addr)

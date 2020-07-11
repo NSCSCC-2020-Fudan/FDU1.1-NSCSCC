@@ -13,6 +13,10 @@ module memory (
     mem_data_t dataM;
     m_r_t mread;
     m_w_t mwrite;
+    cp0_cause_t cp0_cause;
+    cp0_status_t cp0_status;
+    assign cp0_cause = (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) ? cp0.cwrite.wd : cp0.cp0_data.cause;
+    assign cp0_status = (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) ? cp0.cwrite.wd : cp0.cp0_data.status;
     assign aluoutM = dataE.aluout;
     // assign mwrite.en = dataE.memwrite;
     assign dram.mwrite.addr = dataE.aluout;
@@ -31,7 +35,7 @@ module memory (
     assign ren = {4{dataE.instr.ctl.memtoreg}};
     assign mread.ren = ren;
     assign mread.addr = aluoutM;
-    assign mwrite.wen = wen;
+    assign mwrite.wen = wen & {4{~exception_save}};
     assign mwrite.addr = aluoutM;
     assign mwrite.wd = writedataM;
 // typedef struct packed {
@@ -67,10 +71,10 @@ module memory (
     assign exception.exception_sys = exception_sys;
     assign exception.exception_bp = exception_bp;
     assign exception.exception_save = exception_save;
-    assign exception.in_delay_slot = dataE.instr.ctl.branch | dataE.instr.ctl.jump;// wrong
+    assign exception.in_delay_slot = dataE.in_delay_slot;
     assign exception.pc = dataE.pcplus4 - 32'd4;
-    assign exception.vaddr = aluoutM;
-    assign exception.interrupt_info = ({exception.ext_int, 2'b00} | cp0.cp0_data.cause.IP) & cp0.cp0_data.status.IM;
+    assign exception.vaddr = (dataE.exception_instr) ? exception.pc : aluoutM;
+    assign exception.interrupt_info = ({exception.ext_int, 2'b00} | cp0_cause.IP | {cp0.timer_interrupt, 7'b0}) & cp0_status.IM;
     // memory_dram.memory dram    
     assign dram.mread = mread;
     assign dram.mwrite = mwrite;

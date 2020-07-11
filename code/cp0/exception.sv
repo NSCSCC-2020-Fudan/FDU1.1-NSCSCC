@@ -92,7 +92,7 @@ module exception(
     assign hazard.exception_valid = exception_valid;
     assign vaddr = ports.vaddr;
     assign pc = ports.pc;
-    assign in_delay_slot = in_delay_slot;
+    assign in_delay_slot = ports.in_delay_slot;
     assign ports.exception = exception;
     assign interrupt_info = ports.interrupt_info;
     assign cp0 = ports.cp0_data;

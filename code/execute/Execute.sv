@@ -76,9 +76,11 @@ module execute (
     assign dataE.hi = hi;
     assign dataE.lo = lo;;
     assign dataE.pcplus4 = dataD.pcplus4;
+    assign dataE.in_delay_slot = dataD.in_delay_slot;
     // ports
     // decode_ereg_exec.exec in
     assign dataD = in.dataD;
+    assign in.in_delay_slot = dataD.instr.ctl.branch | dataD.instr.ctl.jump;
 
     // exec_mreg_memory.exec out
     assign out.dataE_new = dataE;
