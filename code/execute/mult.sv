@@ -14,19 +14,19 @@ module mult (
                 lo = ans[31:0];
             end
             MULT: begin
-                ans = {{32{a[31]}}, a} * {{32{b[31]}}, b};
+                ans = signed'({{32{a[31]}}, a}) * signed'({{32{b[31]}}, b});
                 hi = ans[63:32];
                 lo = ans[31:0];
             end
             DIVU: begin
                 ans = '0;
-                hi = {1'b0, a} / {1'b0, b};
-                lo = {1'b0, a} % {1'b0, b};
+                lo = {1'b0, a} / {1'b0, b};
+                hi = {1'b0, a} % {1'b0, b};
             end
             DIV: begin
                 ans = '0;
-                hi = a / b;
-                lo = a % b;
+                lo = signed'(a) / signed'(b);
+                hi = signed'(a) % signed'(b);
             end
             default: begin
                 hi = '0;

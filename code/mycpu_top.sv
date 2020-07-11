@@ -30,6 +30,7 @@ module mycpu_top(
     logic stallF;
     logic clk_;
     assign clk_ = clk;
+    word_t vaddr;
     datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
                       .pc(inst_sram_addr), .instr_(inst_sram_rdata),
                       .mread, .mwrite, .rfwrite, .rd(data_sram_rdata), .wb_pc(debug_wb_pc),
@@ -41,7 +42,19 @@ module mycpu_top(
 
     assign data_sram_en = 1'b1;
     assign data_sram_wen = mwrite.wen;
-    assign data_sram_addr = (|mwrite.wen) ? mwrite.addr : mread.addr;
+    assign vaddr = (|mwrite.wen) ? mwrite.addr : mread.addr;
+    always_comb begin
+        case (vaddr[31:28])
+            4'h8: data_sram_addr[31:28] = 4'b0;
+            4'h9: data_sram_addr[31:28] = 4'b1;
+            4'ha: data_sram_addr[31:28] = 4'b0;
+            4'hb: data_sram_addr[31:28] = 4'b1;
+            default: begin
+                data_sram_addr[31:28] = vaddr[31:28];
+            end
+        endcase
+    end
+    assign data_sram_addr[27:0] = vaddr[27:0];
     assign data_sram_wdata = mwrite.wd;
     assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
     assign debug_wb_rf_wnum = rfwrite.addr;

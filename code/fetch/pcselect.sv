@@ -5,8 +5,9 @@ module pcselect (
     pcselect_intf.pcselect in
 );
     assign out.pc_new = in.exception_valid      ? in.pcexception : (
+                        in.is_eret              ? in.epc         : (
                         in.branch_taken         ? in.pcbranchD   : (
                         in.jr                   ? in.pcjrD       : (
                         in.jump                 ? in.pcjumpD     : 
-                                                  in.pcplus4F))) ;
+                                                  in.pcplus4F))));
 endmodule
