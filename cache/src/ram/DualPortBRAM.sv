@@ -15,9 +15,9 @@ module DualPortBRAM #(
     localparam MEM_NUM_BYTES = MEM_NUM_WORDS * BYTES_PER_WORD,
     localparam MEM_NUM_BITS = MEM_NUM_WORDS * DATA_WIDTH,
 
-    type addr_t = logic [ADDR_WIDTH - 1:0],
-    type wrten_t = logic [BYTES_PER_WORD - 1:0],
-    type word_t = logic [DATA_WIDTH - 1:0]
+    localparam type addr_t = logic [ADDR_WIDTH - 1:0],
+    localparam type wrten_t = logic [BYTES_PER_WORD - 1:0],
+    localparam type word_t = logic [DATA_WIDTH - 1:0]
 ) (
     input logic clk, reset, en,
 
