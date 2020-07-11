@@ -131,6 +131,7 @@ typedef struct packed {
     word_t pcplus4;
     logic exception_instr, exception_ri;
     word_t srca, srcb;
+    logic in_delay_slot;
 } decode_data_t;
 
 `endif

@@ -19,9 +19,10 @@ endinterface
 
 interface decode_ereg_exec();
     decode_data_t dataD_new, dataD;
-    modport decode(output dataD_new);
+    logic in_delay_slot;
+    modport decode(output dataD_new, input in_delay_slot);
     modport ereg(input dataD_new, output dataD);
-    modport exec(input dataD);
+    modport exec(input dataD, output in_delay_slot);
 endinterface
 
 interface exec_mreg_memory();
@@ -65,10 +66,10 @@ interface cp0_intf();
     cp0_regs_t cp0_data;
     creg_addr_t ra;
     word_t rd;
-    logic is_eret;
-    modport cp0(output cp0_data, rd, input cwrite, is_eret, ra);
+    logic is_eret, timer_interrupt;
+    modport cp0(output cp0_data, rd, timer_interrupt, input cwrite, is_eret, ra);
     modport decode(input rd, output ra);
-    modport memory(input cp0_data, output is_eret);
+    modport memory(input cp0_data, timer_interrupt, cwrite, output is_eret);
     modport writeback(output cwrite);
 
 endinterface

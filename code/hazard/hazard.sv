@@ -21,6 +21,7 @@ module hazard (
     alufunc_t alufuncE;
     logic is_multM, is_multW;
     logic is_eret;
+    creg_addr_t cp0_addrE, cp0_addr_M, cp0_addrW;
     always_comb begin
         if (rsD != 0) begin
             if (rsD == writeregE && regwriteE && (alufuncE == ALU_PASSA)) begin
@@ -54,7 +55,7 @@ module hazard (
             forwardAE = HIM;
         end else if (is_multM && lotoregE) begin
             forwardAE = LOM;
-        end else if ((hiwriteM && hitoregE) || (lowriteM && lotoregE) || (cp0writeM && cp0toregE)) begin
+        end else if ((hiwriteM && hitoregE) || (lowriteM && lotoregE) || (cp0writeM && cp0toregE && cp0_addrM == cp0_addrE)) begin
             forwardAE = ALUOUTM;
         end else if (rsE != 0 && rsE == writeregM && regwriteM) begin
             forwardAE = ALUOUTM;
@@ -62,7 +63,7 @@ module hazard (
             forwardAE = HIW;
         end else if (is_multW && lotoregE) begin
             forwardAE = LOW;
-        end else if ((hiwriteW && hitoregE) || (lowriteW && lotoregE) || (cp0writeW && cp0toregE)) begin
+        end else if ((hiwriteW && hitoregE) || (lowriteW && lotoregE) || (cp0writeW && cp0toregE && cp0_addrW == cp0_addrE)) begin
             forwardAE = RESULTW;
         end else if (rsE != 0 && rsE == writeregW && regwriteW) begin
             forwardAE = RESULTW;
@@ -88,7 +89,7 @@ module hazard (
                          ((opD == BEQ || opD == BNE) && (regwriteE && (writeregE == rtD))||(memtoregM && (writeregM == rtD))));
 
 
-    assign stallF = lwstall | branchstall | ~i_data_ok;
+    assign stallF = (lwstall | branchstall | ~i_data_ok) & ~exception_validM & ~is_eret; // meet eret?
     assign stallD = stallF;
     assign stallE = '0;
     assign stallM = '0;
@@ -130,6 +131,9 @@ module hazard (
     assign is_multM = hiwriteM & lowriteM;
     assign is_multW = hiwriteW & lowriteW;
     assign is_eret = ports.is_eret;
+    assign cp0_addrE = ports.dataE.instr.rd;
+    assign cp0_addrM = ports.dataM.instr.rd;
+    assign cp0_addrW = ports.dataW.instr.rd;
     assign ports.stallF = stallF;
     assign ports.stallD = stallD;
     assign ports.stallE = stallE;
