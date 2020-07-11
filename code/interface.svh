@@ -3,8 +3,8 @@
 
 `include "mips.svh"
 
-interface pcselect_freg_fetch(output word_t pc_new);
-    word_t pc;
+interface pcselect_freg_fetch(output word_t pc);
+    word_t pc_new;
     modport pcselect(output pc_new);
     modport freg(input pc_new, output pc);
     modport fetch(input pc);
@@ -34,8 +34,8 @@ endinterface
 
 interface memory_dram(input word_t rd, output m_r_t mread, output m_w_t mwrite);
     // modport memory(input rd, output mread, mwrite);
-    modport memory(output mread, mwrite);
-    modport writeback(input rd);
+    modport memory(output mread, mwrite, input rd);
+    // modport writeback(input rd);
 endinterface
 
 interface memory_wreg_writeback();

@@ -42,7 +42,7 @@ typedef struct packed {
 
 typedef struct packed {
     decoded_instr_t instr;
-    // word_t rd;
+    word_t rd;
     word_t aluout;
     creg_addr_t writereg;
     word_t hi, lo;

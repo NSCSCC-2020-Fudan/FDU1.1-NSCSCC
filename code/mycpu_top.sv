@@ -13,7 +13,7 @@ module mycpu(
     output word_t inst_wdata, data_wdata,
     input word_t inst_rdata, data_rdata,
     input logic inst_addr_ok, data_addr_ok,
-    input logic inst_data_ok, data_data_ok
+    input logic inst_data_ok, data_data_ok,
 
     //debug
     output word_t debug_wb_pc,
@@ -26,40 +26,42 @@ module mycpu(
     rf_w_t rfwrite;
     logic stallF;
     logic clk_;
-    assign clk_ = clk;
+    always_ff @( posedge clk) begin
+        clk_ <=  clk & inst_addr_ok & (inst_data_ok | ~inst_req) & (data_data_ok | ~data_req) & inst_data_ok;
+    end
     word_t vaddr;
     datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
                       .pc(inst_sram_addr), .instr_(inst_sram_rdata),
                       .mread, .mwrite, .rfwrite, .rd(data_sram_rdata), .wb_pc(debug_wb_pc),
                       .stallF);
 
-    assign inst_sram_en = ~stallF;
-    assign inst_sram_wen = 4'b0;
-    assign inst_sram_wdata = '0;
+    assign inst_req = ~stallF;
+    assign inst_wen = 4'b0;
+    assign inst_wdata = '0;
 
-    assign data_sram_en = 1'b1;
-    assign data_sram_wen = mwrite.wen;
+    assign data_req = 1'b1;
+    assign data_wen = mwrite.wen;
     assign vaddr = (|mwrite.wen) ? mwrite.addr : mread.addr;
     always_comb begin
         case (vaddr[31:28])
-            4'h8: data_sram_addr[31:28] = 4'b0;
-            4'h9: data_sram_addr[31:28] = 4'b1;
-            4'ha: data_sram_addr[31:28] = 4'b0;
-            4'hb: data_sram_addr[31:28] = 4'b1;
+            4'h8: data_addr[31:28] = 4'b0;
+            4'h9: data_addr[31:28] = 4'b1;
+            4'ha: data_addr[31:28] = 4'b0;
+            4'hb: data_addr[31:28] = 4'b1;
             default: begin
-                data_sram_addr[31:28] = vaddr[31:28];
+                data_addr[31:28] = vaddr[31:28];
             end
         endcase
     end
-    assign data_sram_addr[27:0] = vaddr[27:0];
-    assign data_sram_wdata = mwrite.wd;
+    assign data_addr[27:0] = vaddr[27:0];
+    assign data_wdata = mwrite.wd;
     assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
     assign debug_wb_rf_wnum = rfwrite.addr;
     assign debug_wb_rf_wdata = rfwrite.wd;
 endmodule
 
 
-axi
+// axi
 module mycpu_top (
     input logic[5:0] ext_int,  //high active
 
