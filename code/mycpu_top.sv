@@ -36,7 +36,7 @@ module mycpu(
                       .mread, .mwrite, .rfwrite, .rd(data_rdata), .wb_pc(debug_wb_pc),
                       .stallF);
 
-    assign inst_req = 1'b1;
+    assign inst_req = ~stallF;
     assign inst_wen = 4'b0;
     assign inst_wdata = '0;
 
