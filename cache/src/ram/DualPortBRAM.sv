@@ -4,6 +4,9 @@
  * In verilator, use the behavioral model.
  * Otherwise XPM_MEMORY_TDPRAM will be enabled.
  *
+ * NOTE: the "reset" signal does not reset the entire memory,
+ *       it just reset the output to `RESET_VALUE`.
+ *
  * Default configuration: 4KB / 32bit width / write-first
  */
 module DualPortBRAM #(
@@ -41,34 +44,46 @@ module DualPortBRAM #(
 );
 `ifdef VERILATOR
     localparam word_t _RESET_VALUE = RESET_VALUE.atohex();
+    localparam word_t DEADBEEF     = 'hdeadbeef;
 
     `ASSERT(WRITE_MODE != "write_first", "Only \"write_first\" mode is supported.");
 
-    addr_t addr_reg_1, addr_reg_2;
-    view_t [MEM_NUM_WORDS - 1:0] mem_1, mem_2;
+    logic reset_reg = 0;  // RST_MODE = "SYNC"
+    addr_t addr_reg_1 = 0, addr_reg_2 = 0;
+    view_t [MEM_NUM_WORDS - 1:0] mem = 0;
 
-    // verilator lint_off ASSIGNDLY
-    assign #100ps {data_out_1, data_out_2} = {
-        mem_1[addr_reg_1].word,
-        mem_2[addr_reg_2].word
-    };
-    // verilator lint_on ASSIGNDLY
+    // detect read/write collision
+    logic addr_eq, hazard_1, hazard_2;
+    logic hazard_reg_1 = 0, hazard_reg_2 = 0;
+    assign addr_eq = addr_1 == addr_2;
+    assign hazard_1 = addr_eq && |write_en_2;
+    assign hazard_2 = addr_eq && |write_en_1;
 
-    always_ff @(posedge clk)
-    if (en) begin
-        if (reset) begin
-            for (int i = 0; i < MEM_NUM_WORDS; i++) begin
-                mem_1[i].word <= _RESET_VALUE;
-                mem_2[i].word <= _RESET_VALUE;
-            end
+    always_comb begin
+        if (reset_reg) begin
+            data_out_1 = _RESET_VALUE;
+            data_out_2 = _RESET_VALUE;
         end else begin
+            data_out_1 = hazard_reg_1 ?
+                DEADBEEF : mem[addr_reg_1].word;
+            data_out_2 = hazard_reg_2 ?
+                DEADBEEF : mem[addr_reg_2].word;
+        end
+    end
+
+    always_ff @(posedge clk) begin
+        reset_reg <= reset;
+
+        if (en) begin
             {addr_reg_1, addr_reg_2} <= {addr_1, addr_2};
+            {hazard_reg_1, hazard_reg_2} <= {hazard_1, hazard_2};
+
             for (int i = 0; i < BYTES_PER_WORD; i++) begin
                 int hi = 8 * i + 7;
                 if (write_en_1[i])
-                    mem_1[addr_1].bytes[i] <= data_in_1[hi-:8];
+                    mem[addr_1].bytes[i] <= data_in_1[hi-:8];
                 if (write_en_2[i])
-                    mem_2[addr_2].bytes[i] <= data_in_2[hi-:8];
+                    mem[addr_2].bytes[i] <= data_in_2[hi-:8];
             end
         end
     end
@@ -129,7 +144,7 @@ module DualPortBRAM #(
         .web(write_en_2),
         .addrb(addr_2),
         .dinb(data_in_2),
-        .doutb(data_out_2),
+        .doutb(data_out_2)
     );
     // End of xpm_memory_tdpram_inst instantiation
 
