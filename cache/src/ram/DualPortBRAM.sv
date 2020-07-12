@@ -1,3 +1,5 @@
+`include "defs.svh"
+
 /**
  * In verilator, use the behavioral model.
  * Otherwise XPM_MEMORY_TDPRAM will be enabled.
@@ -5,37 +7,74 @@
  * Default configuration: 4KB / 32bit width / write-first
  */
 module DualPortBRAM #(
-    DATA_WIDTH = 32,
-    ADDR_WIDTH = 10,
-    RESET_VALUE = "00000000",
-    WRITE_MODE = "write_first",
+    parameter int DATA_WIDTH     = 32,
+    parameter int ADDR_WIDTH     = 10,
+    parameter string RESET_VALUE = "00000000",
+    parameter string WRITE_MODE  = "write_first",
 
-    localparam MEM_NUM_WORDS = 2**ADDR_WIDTH,
-    localparam BYTES_PER_WORD = DATA_WIDTH / 8,
-    localparam MEM_NUM_BYTES = MEM_NUM_WORDS * BYTES_PER_WORD,
-    localparam MEM_NUM_BITS = MEM_NUM_WORDS * DATA_WIDTH,
+    localparam int MEM_NUM_WORDS  = 2**ADDR_WIDTH,
+    localparam int BYTES_PER_WORD = DATA_WIDTH / 8,
+    localparam int MEM_NUM_BYTES  = MEM_NUM_WORDS * BYTES_PER_WORD,
+    localparam int MEM_NUM_BITS   = MEM_NUM_WORDS * DATA_WIDTH,
 
-    localparam type addr_t = logic [ADDR_WIDTH - 1:0],
+    localparam type addr_t  = logic [ADDR_WIDTH - 1:0],
     localparam type wrten_t = logic [BYTES_PER_WORD - 1:0],
-    localparam type word_t = logic [DATA_WIDTH - 1:0]
+    localparam type word_t  = logic [DATA_WIDTH - 1:0],
+    localparam type view_t  = union packed {
+        byte_t [BYTES_PER_WORD - 1:0] bytes;
+        word_t word;
+    }
 ) (
     input logic clk, reset, en,
 
     // port 1
-    input wrten_t write_en_1,
-    input addr_t addr_1,
-    input word_t data_in_1,
-    output word_t data_out_1,
+    input  wrten_t write_en_1,
+    input  addr_t  addr_1,
+    input  word_t  data_in_1,
+    output word_t  data_out_1,
 
     // port 2
-    input wrten_t write_en_2,
-    input addr_t addr_2,
-    input word_t data_in_2,
-    output word_t data_out_2
+    input  wrten_t write_en_2,
+    input  addr_t  addr_2,
+    input  word_t  data_in_2,
+    output word_t  data_out_2
 );
 `ifdef VERILATOR
-    // TODO: behavioral model
+    localparam word_t _RESET_VALUE = RESET_VALUE.atohex();
+
+    `ASSERT(WRITE_MODE != "write_first", "Only \"write_first\" mode is supported.");
+
+    addr_t addr_reg_1, addr_reg_2;
+    view_t [MEM_NUM_WORDS - 1:0] mem_1, mem_2;
+
+    // verilator lint_off ASSIGNDLY
+    assign #100ps {data_out_1, data_out_2} = {
+        mem_1[addr_reg_1].word,
+        mem_2[addr_reg_2].word
+    };
+    // verilator lint_on ASSIGNDLY
+
+    always_ff @(posedge clk)
+    if (en) begin
+        if (reset) begin
+            for (int i = 0; i < MEM_NUM_WORDS; i++) begin
+                mem_1[i].word <= _RESET_VALUE;
+                mem_2[i].word <= _RESET_VALUE;
+            end
+        end else begin
+            {addr_reg_1, addr_reg_2} <= {addr_1, addr_2};
+            for (int i = 0; i < BYTES_PER_WORD; i++) begin
+                int hi = 8 * i + 7;
+                if (write_en_1[i])
+                    mem_1[addr_1].bytes[i] <= data_in_1[hi-:8];
+                if (write_en_2[i])
+                    mem_2[addr_2].bytes[i] <= data_in_2[hi-:8];
+            end
+        end
+    end
+
 `else
+
     // xpm_memory_tdpram: True Dual Port RAM
     // Xilinx Parameterized Macro, version 2019.2
     xpm_memory_tdpram #(
@@ -93,5 +132,6 @@ module DualPortBRAM #(
         .doutb(data_out_2),
     );
     // End of xpm_memory_tdpram_inst instantiation
+
 `endif
 endmodule

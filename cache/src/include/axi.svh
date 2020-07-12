@@ -7,12 +7,12 @@
 
 typedef union packed {
     byte_t [3:0] bytes;
-    word_t word;
+    word_t       word;
 } data_lanes_t;
 
 typedef enum logic [2:0] {
-    BURST_SIZE1, BURST_SIZE2,
-    BURST_SIZE4, BURST_SIZE8,
+    BURST_SIZE1,  BURST_SIZE2,
+    BURST_SIZE4,  BURST_SIZE8,
     BURST_SIZE16, BURST_SIZE32,
     BURST_SIZE64, BURST_SIZE128
 } burst_size;
@@ -55,15 +55,15 @@ typedef enum logic [1:0] {
  */
 
 typedef struct packed {
-    id_t id;
-    addr_t addr;
-    len_t len;  // actual length - 1
+    id_t       id;
+    addr_t     addr;
+    len_t      len;   // actual length - 1
     burst_size size;
     burst_type burst;
-    lock_type lock;
-    mem_type cache;
-    prot_t prot;
-    logic valid;
+    lock_type  lock;
+    mem_type   cache;
+    prot_t     prot;
+    logic      valid;
 } ar_req_t;
 
 typedef struct packed {
@@ -75,23 +75,23 @@ typedef struct packed {
 } r_req_t;
 
 typedef struct packed {
-    id_t id;
+    id_t         id;
     data_lanes_t data;
-    resp_type resp;
-    logic last;
-    logic valid;
+    resp_type    resp;
+    logic        last;
+    logic        valid;
 } r_resp_t;
 
 typedef struct packed {
-    id_t id;
-    addr_t addr;
-    len_t len;
+    id_t       id;
+    addr_t     addr;
+    len_t      len;
     burst_size size;
     burst_type burst;
-    lock_type lock;
-    mem_type cache;
-    prot_t prot;
-    logic valid;
+    lock_type  lock;
+    mem_type   cache;
+    prot_t     prot;
+    logic      valid;
 } aw_req_t;
 
 typedef struct packed {
@@ -99,11 +99,11 @@ typedef struct packed {
 } aw_resp_t;
 
 typedef struct packed {
-    id_t id;
+    id_t         id;
     data_lanes_t data;
-    strobe_t strb;
-    logic last;
-    logic valid;
+    strobe_t     strb;
+    logic        last;
+    logic        valid;
 } w_req_t;
 
 typedef struct packed {
@@ -115,25 +115,25 @@ typedef struct packed {
 } b_req_t;
 
 typedef struct packed {
-    id_t id;
+    id_t      id;
     resp_type resp;
-    logic valid;
+    logic     valid;
 } b_resp_t;
 
 typedef struct packed {
     ar_req_t ar;
-    r_req_t r;
+    r_req_t  r;
     aw_req_t aw;
-    w_req_t w;
-    b_req_t b;
+    w_req_t  w;
+    b_req_t  b;
 } axi_req_t;
 
 typedef struct packed {
     ar_resp_t ar;
-    r_resp_t r;
+    r_resp_t  r;
     aw_resp_t aw;
-    w_resp_t w;
-    b_resp_t b;
+    w_resp_t  w;
+    b_resp_t  b;
 } axi_resp_t;
 
 `endif
