@@ -64,7 +64,7 @@
 	"dsp": {
 		"prefix": "dsp",
 		"body": [
-			"(*use_dsp48 = \"yes\"*)"
+			"(*use_dsp = \"yes\"*)"
 		]
 	}
 }
