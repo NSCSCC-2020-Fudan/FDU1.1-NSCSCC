@@ -16,7 +16,7 @@ module CacheBusToAXI(
     input  axi_resp_t  axi_resp
 );
     localparam axi_burst_size AXI_BURST_SIZE =
-        axi_burst_size'($clog2(CBUS_DATA_WIDTH));
+        axi_burst_size'($clog2(CBUS_DATA_BYTES));
 
     localparam int EXCEED_BITS = CBUS_LEN_BITS - AXI_LEN_BITS;
     `ASSERT(EXCEED_BITS > 0,
@@ -27,63 +27,73 @@ module CacheBusToAXI(
     // calculate the minimal number of AXI transactions and
     // determine the length of each transaction.
     //
-    // variables prefiexed with "actual_" are the real value,
-    // otherwise the value minus one, since they are intended
-    // to be initial values of counters.
-    round_t    num_round;
-    cbus_len_t actual_len,  len;
-    axi_len_t  axi_len;
-    addr_t     addr_stride;
-    assign actual_len = 1 << cbus_req.order;
-    assign len = actual_len - 1;
-    assign num_round = actual_len[CBUS_LEN_BITS - 1:AXI_LEN_BITS];
-    assign axi_len = (|num_round) ? AXI_MAXLEN_VALUE : actual_len[AXI_LEN_BITS - 1:0];
+    // both `axi_len` and `num_round` are used as intial values
+    // of counters. They differ from their actual value by one.
+    axi_len_t axi_len;
+    round_t   num_round;
+    assign {num_round, axi_len} = (1 << cbus_req.order) - 1;
 
     // NOTE: assume 32 bit data channel.
+    addr_t addr_step;
     typedef logic [29:0] _u30_t;
-    assign addr_stride = {_u30_t'(axi_len) + 30'b1, 2'b00};
+    assign addr_step = {_u30_t'(axi_len) + 30'b1, 2'b00};
 
     // NOTE: axready may be asserted even if axvalid is deasserted.
-    logic addr_ok;
-    assign addr_ok = cbus_req.valid && (axi_resp.aw.ready || axi_resp.ar.ready);
-    assign cbus_resp.okay =
+    // `transaction_ok`: DO RESPECT THE B CHANNEL! QAQ
+    logic addr_ok, transaction_ok;
+    assign addr_ok        = cbus_req.is_write ? axi_resp.aw.ready : axi_resp.ar.ready;
+    assign transaction_ok = axi_req.b.ready && axi_resp.b.valid;
+
+    // detect completion
+    logic is_last, is_final;
+    assign is_last  = len_cnt == 0;
+    assign is_final = is_last && round_cnt == 0;
+
+    // only in WAITING state, `transaction_ok` will be asserted.
+    assign cbus_resp.last = is_final &&
+        (cbus_req.is_write ? transaction_ok : (state != IDLE));
+
+    // since we never issue both AR & AW request in one clock cycle,
+    // it's okay to ignore `cbus_req.is_write`.
+    // the last write `okay` response is replaced by the end of transaction.
+    logic rw_handshake;
+    assign rw_handshake =
         (axi_req.w.valid && axi_resp.w.ready) ||
         (axi_req.r.ready && axi_resp.r.valid);
+    assign cbus_resp.okay = (cbus_req.is_write && is_last) ?
+        transaction_ok : rw_handshake;
 
+    // state variables
     enum logic [1:0] {
-        INITIAL, TRANSFER, REQUEST, RESERVED
+        IDLE, TRANSFER, REQUEST, WAITING
     } state;
-    addr_t     current_addr;
-    round_t    round_cnt;
-    cbus_len_t len_cnt;
-
-    logic is_last;
-    assign is_last = round_cnt == 0 && len_cnt == 0;
-    assign cbus_resp.last = state != INITIAL && is_last;
+    addr_t    current_addr;
+    round_t   round_cnt;
+    axi_len_t len_cnt;
 
     // AXI driver
+    `define APPLY_AXI_DEFAULTS(channel) \
+        axi_req.channel.size  = AXI_BURST_SIZE; \
+        axi_req.channel.burst = BURST_INCR; \
+        axi_req.channel.lock  = LOCK_NORMAL; \
+        axi_req.channel.cache = MEM_DEFAULT; \
+        axi_req.channel.prot  = 0;
+
     always_comb begin
         axi_req = 0;
-        unique case (state)
-            INITIAL: if (cbus_req.valid) begin
+
+        unique0 case (state)
+            IDLE: if (cbus_req.valid) begin
                 if (cbus_req.is_write) begin
                     axi_req.aw.valid = 1;
                     axi_req.aw.addr  = cbus_req.addr;
                     axi_req.aw.len   = axi_len;
-                    axi_req.aw.size  = AXI_BURST_SIZE;
-                    axi_req.aw.burst = BURST_INCR;
-                    axi_req.aw.lock  = LOCK_NORMAL;
-                    axi_req.aw.cache = MEM_DEFAULT;
-                    axi_req.aw.prot  = 0;
+                    `APPLY_AXI_DEFAULTS(aw);
                 end else begin
                     axi_req.ar.valid = 1;
                     axi_req.ar.addr  = cbus_req.addr;
                     axi_req.ar.len   = axi_len;
-                    axi_req.ar.size  = AXI_BURST_SIZE;
-                    axi_req.ar.burst = BURST_INCR;
-                    axi_req.ar.lock  = LOCK_NORMAL;
-                    axi_req.ar.cache = MEM_DEFAULT;
-                    axi_req.ar.prot  = 0;
+                    `APPLY_AXI_DEFAULTS(ar);
                 end
             end
 
@@ -93,7 +103,6 @@ module CacheBusToAXI(
                     axi_req.w.data  = cbus_req.wdata;
                     axi_req.w.strb  = AXI_FULL_STROBE;
                     axi_req.w.last  = is_last;
-                    axi_req.b.ready = 1;
                 end else begin
                     axi_req.r.ready = 1;
                 end
@@ -104,24 +113,18 @@ module CacheBusToAXI(
                     axi_req.aw.valid = 1;
                     axi_req.aw.addr  = current_addr;
                     axi_req.aw.len   = axi_len;
-                    axi_req.aw.size  = AXI_BURST_SIZE;
-                    axi_req.aw.burst = BURST_INCR;
-                    axi_req.aw.lock  = LOCK_NORMAL;
-                    axi_req.aw.cache = MEM_DEFAULT;
-                    axi_req.aw.prot  = 0;
+                    `APPLY_AXI_DEFAULTS(aw);
                 end else begin
                     axi_req.ar.valid = 1;
-                    axi_req.ar.addr  = cbus_req.addr;
+                    axi_req.ar.addr  = current_addr;
                     axi_req.ar.len   = axi_len;
-                    axi_req.ar.size  = AXI_BURST_SIZE;
-                    axi_req.ar.burst = BURST_INCR;
-                    axi_req.ar.lock  = LOCK_NORMAL;
-                    axi_req.ar.cache = MEM_DEFAULT;
-                    axi_req.ar.prot  = 0;
+                    `APPLY_AXI_DEFAULTS(ar);
                 end
             end
 
-            RESERVED: /* do nothing */;
+            WAITING: begin
+                axi_req.b.ready = 1;
+            end
         endcase
     end
 
@@ -131,31 +134,35 @@ module CacheBusToAXI(
     // the FSM
     always_ff @(posedge clk)
     if (reset) begin
-        state <= INITIAL;
+        state <= IDLE;
         {current_addr, round_cnt, len_cnt} <= 0;
     end else begin
         unique case (state)
-            INITIAL: if (addr_ok) begin
+            IDLE: if (cbus_req.valid && addr_ok) begin
                 state        <= TRANSFER;
                 current_addr <= cbus_req.addr;
                 round_cnt    <= num_round;
-                len_cnt      <= len;
+                len_cnt      <= axi_len;
             end
 
-            TRANSFER: if (is_last) begin
-                state <= INITIAL;
+            TRANSFER: if (is_final) begin
+                state <= cbus_req.is_write ? WAITING : IDLE;
+            end else if (is_last) begin
+                state        <= cbus_req.is_write ? WAITING : REQUEST;
+                current_addr <= current_addr + addr_step;
             end else begin
-                state        <= REQUEST;
-                current_addr <= current_addr + addr_stride;
+                len_cnt <= len_cnt - 1;
             end
 
             REQUEST: if (addr_ok) begin
                 state     <= TRANSFER;
                 round_cnt <= round_cnt - 1;
-                len_cnt   <= len;
+                len_cnt   <= axi_len;
             end
 
-            RESERVED: /* do nothing */;
+            WAITING: if (transaction_ok) begin
+                state <= is_final ? IDLE : REQUEST;
+            end
         endcase
     end
 
