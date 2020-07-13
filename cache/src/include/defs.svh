@@ -18,9 +18,6 @@ typedef logic [3 :0] nibble_t;
 typedef logic [7 :0] byte_t;
 typedef logic [31:0] word_t;
 
-typedef nibble_t id_t;
-typedef nibble_t len_t;
-typedef word_t   addr_t;
-typedef nibble_t strobe_t;
+typedef word_t addr_t;
 
 `endif

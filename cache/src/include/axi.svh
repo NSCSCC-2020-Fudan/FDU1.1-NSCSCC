@@ -3,11 +3,22 @@
 
 `include "defs.svh"
 
+parameter int AXI_DATA_WIDTH = 32;
+parameter int AXI_NUM_LANES  = AXI_DATA_WIDTH / 8;
+parameter int AXI_LEN_BITS   = 4;
+parameter int AXI_MAXLEN = 2**AXI_LEN_BITS;
+
+typedef logic  [3:0]                  axi_id_t;
+typedef logic  [AXI_DATA_WIDTH - 1:0] axi_word_t;
+typedef logic  [AXI_LEN_BITS - 1:0]   axi_len_t;
+typedef logic  [AXI_NUM_LANES - 1:0]  axi_strobe_t;
+typedef byte_t [AXI_NUM_LANES - 1:0]  axi_bytes_t;
+
 // AXI enumerations & structs
 
 typedef union packed {
-    byte_t [3:0] bytes;
-    word_t       word;
+    axi_bytes_t bytes;
+    axi_word_t  word;
 } axi_data_lanes_t;
 
 typedef enum logic [2:0] {
@@ -55,9 +66,9 @@ typedef enum logic [1:0] {
  */
 
 typedef struct packed {
-    id_t           id;
+    axi_id_t       id;
     addr_t         addr;
-    len_t          len;   // actual length - 1
+    axi_len_t      len;   // actual length - 1
     axi_burst_size size;
     axi_burst_type burst;
     axi_lock_type  lock;
@@ -75,7 +86,7 @@ typedef struct packed {
 } axi_r_req_t;
 
 typedef struct packed {
-    id_t             id;
+    axi_id_t         id;
     axi_data_lanes_t data;
     axi_resp_type    resp;
     logic            last;
@@ -83,9 +94,9 @@ typedef struct packed {
 } axi_r_resp_t;
 
 typedef struct packed {
-    id_t           id;
+    axi_id_t       id;
     addr_t         addr;
-    len_t          len;
+    axi_len_t      len;
     axi_burst_size size;
     axi_burst_type burst;
     axi_lock_type  lock;
@@ -99,11 +110,11 @@ typedef struct packed {
 } axi_aw_resp_t;
 
 typedef struct packed {
-    id_t         id;
+    axi_id_t         id;
     axi_data_lanes_t data;
-    strobe_t     strb;
-    logic        last;
-    logic        valid;
+    axi_strobe_t     strb;
+    logic            last;
+    logic            valid;
 } axi_w_req_t;
 
 typedef struct packed {
@@ -115,7 +126,7 @@ typedef struct packed {
 } axi_b_req_t;
 
 typedef struct packed {
-    id_t          id;
+    axi_id_t      id;
     axi_resp_type resp;
     logic         valid;
 } axi_b_resp_t;
