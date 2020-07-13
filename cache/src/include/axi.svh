@@ -4,15 +4,18 @@
 `include "defs.svh"
 
 parameter int AXI_DATA_WIDTH = 32;
-parameter int AXI_NUM_LANES  = AXI_DATA_WIDTH / 8;
+parameter int AXI_NUM_LANES  = AXI_DATA_WIDTH / 8;  // 4
 parameter int AXI_LEN_BITS   = 4;
-parameter int AXI_MAXLEN = 2**AXI_LEN_BITS;
+parameter int AXI_MAXLEN     = 2**AXI_LEN_BITS;     // 16
 
 typedef logic  [3:0]                  axi_id_t;
 typedef logic  [AXI_DATA_WIDTH - 1:0] axi_word_t;
 typedef logic  [AXI_LEN_BITS - 1:0]   axi_len_t;
 typedef logic  [AXI_NUM_LANES - 1:0]  axi_strobe_t;
 typedef byte_t [AXI_NUM_LANES - 1:0]  axi_bytes_t;
+
+parameter axi_len_t    AXI_MAXLEN_VALUE = axi_len_t'(AXI_MAXLEN - 1);  // 15
+parameter axi_strobe_t AXI_FULL_STROBE  = 4'b1111;
 
 // AXI enumerations & structs
 

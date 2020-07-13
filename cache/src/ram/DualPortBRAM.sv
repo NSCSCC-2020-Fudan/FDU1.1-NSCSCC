@@ -46,7 +46,7 @@ module DualPortBRAM #(
     localparam word_t _RESET_VALUE = RESET_VALUE.atohex();
     localparam word_t DEADBEEF     = 'hdeadbeef;
 
-    `ASSERT(WRITE_MODE != "write_first", "Only \"write_first\" mode is supported.");
+    `ASSERT(WRITE_MODE == "write_first", "Only \"write_first\" mode is supported.");
 
     logic reset_reg = 0;  // RST_MODE = "SYNC"
     addr_t addr_reg_1 = 0, addr_reg_2 = 0;

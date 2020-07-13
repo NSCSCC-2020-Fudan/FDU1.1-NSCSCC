@@ -3,5 +3,6 @@
 
 `include "defs.svh"
 `include "axi.svh"
+`include "cache_bus.svh"
 
 `endif

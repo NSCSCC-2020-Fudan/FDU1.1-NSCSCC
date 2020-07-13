@@ -6,7 +6,7 @@
  */
 
 `define ASSERT(expr, message) \
-    if (expr) \
+    if (!(expr)) \
         $error(message);
 
 /**
