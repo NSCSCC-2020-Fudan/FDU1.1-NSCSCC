@@ -60,5 +60,11 @@
 			"\t$5",
 			"end\n$6"
 		]
+	},
+	"dsp": {
+		"prefix": "dsp",
+		"body": [
+			"(*use_dsp48 = \"yes\"*)"
+		]
 	}
 }
