@@ -8,44 +8,44 @@
 typedef union packed {
     byte_t [3:0] bytes;
     word_t       word;
-} data_lanes_t;
+} axi_data_lanes_t;
 
 typedef enum logic [2:0] {
     BURST_SIZE1,  BURST_SIZE2,
     BURST_SIZE4,  BURST_SIZE8,
     BURST_SIZE16, BURST_SIZE32,
     BURST_SIZE64, BURST_SIZE128
-} burst_size;
+} axi_burst_size;
 
 typedef enum logic [1:0] {
     BURST_FIXED,
     BURST_INCR,
     BURST_WRAP
-} burst_type;
+} axi_burst_type;
 
 typedef enum logic [1:0] {
     LOCK_NORMAL,
     LOCK_EX,
     LOCK_LOCKED
-} lock_type;
+} axi_lock_type;
 
 typedef enum logic [3:0] {
     MEM_DEFAULT
     // TODO: too many enums.
-} mem_type;
+} axi_mem_type;
 
 typedef struct packed {
     logic is_instr;
     logic secure;
     logic privileged;
-} prot_t;
+} axi_prot_t;
 
 typedef enum logic [1:0] {
     RESP_OKAY,
     RESP_EXOKAY,
     RESP_SLVERR,
     RESP_DECERR
-} resp_type;
+} axi_resp_type;
 
 /**
  * AXI interface
@@ -55,85 +55,85 @@ typedef enum logic [1:0] {
  */
 
 typedef struct packed {
-    id_t       id;
-    addr_t     addr;
-    len_t      len;   // actual length - 1
-    burst_size size;
-    burst_type burst;
-    lock_type  lock;
-    mem_type   cache;
-    prot_t     prot;
-    logic      valid;
-} ar_req_t;
+    id_t           id;
+    addr_t         addr;
+    len_t          len;   // actual length - 1
+    axi_burst_size size;
+    axi_burst_type burst;
+    axi_lock_type  lock;
+    axi_mem_type   cache;
+    axi_prot_t     prot;
+    logic          valid;
+} axi_ar_req_t;
 
 typedef struct packed {
     logic ready;
-} ar_resp_t;
+} axi_ar_resp_t;
 
 typedef struct packed {
     logic ready;
-} r_req_t;
+} axi_r_req_t;
+
+typedef struct packed {
+    id_t             id;
+    axi_data_lanes_t data;
+    axi_resp_type    resp;
+    logic            last;
+    logic            valid;
+} axi_r_resp_t;
+
+typedef struct packed {
+    id_t           id;
+    addr_t         addr;
+    len_t          len;
+    axi_burst_size size;
+    axi_burst_type burst;
+    axi_lock_type  lock;
+    axi_mem_type   cache;
+    axi_prot_t     prot;
+    logic          valid;
+} axi_aw_req_t;
+
+typedef struct packed {
+    logic ready;
+} axi_aw_resp_t;
 
 typedef struct packed {
     id_t         id;
-    data_lanes_t data;
-    resp_type    resp;
-    logic        last;
-    logic        valid;
-} r_resp_t;
-
-typedef struct packed {
-    id_t       id;
-    addr_t     addr;
-    len_t      len;
-    burst_size size;
-    burst_type burst;
-    lock_type  lock;
-    mem_type   cache;
-    prot_t     prot;
-    logic      valid;
-} aw_req_t;
-
-typedef struct packed {
-    logic ready;
-} aw_resp_t;
-
-typedef struct packed {
-    id_t         id;
-    data_lanes_t data;
+    axi_data_lanes_t data;
     strobe_t     strb;
     logic        last;
     logic        valid;
-} w_req_t;
+} axi_w_req_t;
 
 typedef struct packed {
     logic ready;
-} w_resp_t;
+} axi_w_resp_t;
 
 typedef struct packed {
     logic ready;
-} b_req_t;
+} axi_b_req_t;
 
 typedef struct packed {
-    id_t      id;
-    resp_type resp;
-    logic     valid;
-} b_resp_t;
+    id_t          id;
+    axi_resp_type resp;
+    logic         valid;
+} axi_b_resp_t;
 
 typedef struct packed {
-    ar_req_t ar;
-    r_req_t  r;
-    aw_req_t aw;
-    w_req_t  w;
-    b_req_t  b;
+    axi_ar_req_t ar;
+    axi_r_req_t  r;
+    axi_aw_req_t aw;
+    axi_w_req_t  w;
+    axi_b_req_t  b;
 } axi_req_t;
 
 typedef struct packed {
-    ar_resp_t ar;
-    r_resp_t  r;
-    aw_resp_t aw;
-    w_resp_t  w;
-    b_resp_t  b;
+    axi_ar_resp_t ar;
+    axi_r_resp_t  r;
+    axi_aw_resp_t aw;
+    axi_w_resp_t  w;
+    axi_b_resp_t  b;
 } axi_resp_t;
 
 `endif
