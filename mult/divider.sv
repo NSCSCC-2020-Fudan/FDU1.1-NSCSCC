@@ -1,7 +1,30 @@
 // unsigned
 `include "mips.svh"
 `include "divider.svh"
-module divider(
+
+module divider (
+    input logic clk, reset,
+    input logic valid,
+    input word_t a, b,
+    output dword_t hilo,
+    output logic ok,
+    input logic is_signed
+);
+    dword_t out;
+    word_t a_u, b_u;
+    divider_u divider_u(.clk, .reset, .valid, .a(a_u), .b(b_u), .out, .ok);
+
+    assign a_u = (is_signed & a[31]) ? -a:a;
+    assign b_u = (is_signed & b[31]) ? -b:b;
+    
+/* |b| = |aq| + |r|
+ *   1) b > 0, a < 0 ---> b = (-a)(-q) + r
+ *   2) b < 0, a > 0 ---> -b = a(-q) + (-r) */
+assign hilo[31:0]  = (is_signed & (a[31] ^ b[31])) ? -out[31:0] : out[31:0];
+assign hilo[63:32] = (is_signed & (a[31] ^ out[63])) ? -out[63:32] : out[63:32];
+endmodule
+
+module divider_u(
     input logic clk, reset,
     input logic valid,
     input word_t a, b, // a / b
