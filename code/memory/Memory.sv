@@ -23,7 +23,7 @@ module memory (
     decoded_op_t op;
     assign op = dataE.instr.op;
     logic exception_load, exception_save, exception_sys, exception_bp;
-    rwen_t ren, wen;
+    logic ren, wen;
     assign exception_load = ((op == LW) && (aluoutM[1:0] != '0)) ||
                             ((op == LH || op == LHU) && (aluoutM[0] != '0));
     assign exception_save = ((op == SW) && (aluoutM[1:0] != '0)) ||
@@ -32,12 +32,14 @@ module memory (
     assign exception_bp = (dataE.instr.op == BREAK);
     writedata writedata(.addr(aluoutM[1:0]), .op(op), ._wd(dataE.writedata),.en(wen), .wd(writedataM));
     // readdata readdata(._rd(dram.rd), .op(op), .addr(aluoutM[1:0]), .rd(readdataM));
-    assign ren = {4{dataE.instr.ctl.memtoreg}};
+    assign ren = dataE.instr.ctl.memtoreg;
     assign mread.ren = ren;
     assign mread.addr = aluoutM;
-    assign mwrite.wen = wen & {4{~exception_save}};
+    assign mread.size = (op == LW) ? 2'b10 : (op == LH ? 2'b01:2'b00); 
+    assign mwrite.wen = wen & ~exception_save;
     assign mwrite.addr = aluoutM;
     assign mwrite.wd = writedataM;
+    assign mwrite.size = (op == SW) ? 2'b10 : (op == SH ? 2'b01:2'b00);
 // typedef struct packed {
 //     decoded_instr_t instr;
 //     word_t rd, aluout;
@@ -46,7 +48,7 @@ module memory (
 //     word_t pcplus4;
 // } mem_data_t;    
     assign dataM.instr = dataE.instr;
-    // assign dataM.rd = readdataM;
+    assign dataM.rd = dram.rd;
     assign dataM.aluout = aluoutM;
     assign dataM.writereg = dataE.writereg;
     assign dataM.hi = dataE.hi;

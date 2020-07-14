@@ -12,12 +12,14 @@ typedef logic[3:0] rwen_t; // 1 word has 4 bytes
 typedef enum logic { ZERO_EXT, SIGN_EXT } ext_mode;
 
 typedef struct packed {
-    rwen_t ren;
+    logic ren;
     m_addr_t addr;
+    logic[1:0] size;
 } m_r_t;
 
 typedef struct packed {
-    rwen_t wen;
+    logic[1:0] size;
+    logic wen;
     m_addr_t addr;
     word_t wd;
 } m_w_t;

@@ -13,10 +13,9 @@ module datapath (
     input word_t rd,
     output word_t wb_pc,
     // output logic inst_en,
-    output stallF
+    output stallF,
+    input i_data_ok, d_data_ok
 );
-    logic i_data_ok;
-    assign i_data_ok = 1'b1;
     // always_ff @(posedge clk, posedge reset) begin
     //     if (reset) begin
     //         i_data_ok <= '0;
@@ -33,7 +32,7 @@ module datapath (
     regfile_intf regfile_intf(.rfwrite);
     hilo_intf hilo_intf();
     cp0_intf cp0_intf();
-    hazard_intf hazard_intf(.i_data_ok, .stallF);
+    hazard_intf hazard_intf(.i_data_ok, .stallF, .d_data_ok);
     exception_intf exception_intf(.ext_int);
     pcselect_intf pcselect_intf();
     

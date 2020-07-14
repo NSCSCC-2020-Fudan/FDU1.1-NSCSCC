@@ -31,18 +31,20 @@ module mycpu(
     // end
     assign clk_ = clk;
     word_t vaddr;
+    logic i_data_ok, d_data_ok;
     datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
                       .pc(inst_addr), .instr_(inst_rdata),
                       .mread, .mwrite, .rfwrite, .rd(data_rdata), .wb_pc(debug_wb_pc),
-                      .stallF);
+                      .stallF, .i_data_ok, .d_data_ok);
 
-    assign inst_req = ~stallF;
-    assign inst_wen = 4'b0;
+    // assign inst_req = 1'b1;
+    assign inst_wr = 1'b0;
+    assign inst_size = 2'b10;
     assign inst_wdata = '0;
-
-    assign data_req = (|mread.ren) | (|mwrite.wen);
-    assign data_wen = mwrite.wen;
-    assign vaddr = (|mwrite.wen) ? mwrite.addr : mread.addr;
+    handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req));
+    // assign data_req = (|mread.ren) | (|mwrite.wen);
+    assign data_wr = mwrite.wen;
+    assign vaddr = (mwrite.wen) ? mwrite.addr : mread.addr;
     always_comb begin
         case (vaddr[31:28])
             4'h8: data_addr[31:28] = 4'b0;
@@ -54,8 +56,14 @@ module mycpu(
             end
         endcase
     end
+    always_comb begin
+        
+    end
     assign data_addr[27:0] = vaddr[27:0];
     assign data_wdata = mwrite.wd;
+    assign data_size = mwrite.wen ? mwrite.size : mread.size;
+    handshake d_handshake(.clk, .reset(~resetn), .cpu_req(mread.ren|mwrite.wen), .addr_ok(data_addr_ok), .data_ok(data_data_ok), .cpu_data_ok(d_data_ok), .req(data_req));
+
     assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
     assign debug_wb_rf_wnum = rfwrite.addr;
     assign debug_wb_rf_wdata = rfwrite.wd;

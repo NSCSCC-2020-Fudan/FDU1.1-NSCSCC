@@ -15,13 +15,13 @@ module hazard (
     decoded_op_t opD, opE, opM, opW;
     logic branchD, jrD;
     logic exception_validM;
-    logic i_data_ok;
+    logic i_data_ok, d_data_ok;
     logic hiwriteM, lowriteM, cp0writeM, hiwriteW, lowriteW, cp0writeW;
     logic hitoregE, lotoregE, cp0toregE;
     alufunc_t alufuncE;
     logic is_multM, is_multW;
     logic is_eret;
-    creg_addr_t cp0_addrE, cp0_addr_M, cp0_addrW;
+    creg_addr_t cp0_addrE, cp0_addrM, cp0_addrW;
     always_comb begin
         if (rsD != 0) begin
             if (rsD == writeregE && regwriteE && (alufuncE == ALU_PASSA)) begin
@@ -88,15 +88,15 @@ module hazard (
                          (((regwriteE && (writeregE == rsD))||(memtoregM && (writeregM == rsD)))||
                          ((opD == BEQ || opD == BNE) && (regwriteE && (writeregE == rtD))||(memtoregM && (writeregM == rtD))));
 
-
-    assign stallF = (lwstall | branchstall | ~i_data_ok) & ~exception_validM & ~is_eret; // meet eret?
+    logic flush_ex = exception_validM | is_eret;
+    assign stallF = ~i_data_ok | ~d_data_ok | ((lwstall | branchstall) & ~flush_ex); // meet eret?
     assign stallD = stallF;
-    assign stallE = '0;
-    assign stallM = '0;
+    assign stallE = ~d_data_ok;
+    assign stallM = ~d_data_ok;
     assign flushD = exception_validM | is_eret;
-    assign flushE = stallF | exception_validM | is_eret;
-    assign flushM = exception_validM | is_eret;
-    assign flushW = exception_validM;
+    assign flushE = stallF | flush_ex;
+    assign flushM = flush_ex;
+    assign flushW = flush_ex | stallM;
 
     assign rtD = ports.dataD.instr.rt;
     assign rsD = ports.dataD.instr.rs;
@@ -118,6 +118,7 @@ module hazard (
     assign jrD = ports.dataD.instr.ctl.jr;
     assign exception_validM = ports.exception_valid;
     assign i_data_ok = ports.i_data_ok;
+    assign d_data_ok = ports.d_data_ok;
     assign hiwriteM = ports.dataM.instr.ctl.hiwrite;
     assign lowriteM = ports.dataM.instr.ctl.lowrite;
     assign cp0writeM = ports.dataM.instr.ctl.cp0write;
