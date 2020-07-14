@@ -12,7 +12,7 @@
 
 ## Cache 总线（`cbus`/$bus）
 
-Cache 总线用于 cache 读取/写回一整条 cache line。在时钟上升沿时进行握手。
+Cache 总线用于 cache 读取/写回一整条 cache line。在时钟上升沿时进行握手。该总线不是双向握手，cache（master）一方必须进行忙等待，slave 一方的 `okay` 和 `last` 信号只持续一拍。
 
 方向 “`→`” 表示 master 到 slave 的信号，“`←`” 表示 slave 到 master 的信号。
 

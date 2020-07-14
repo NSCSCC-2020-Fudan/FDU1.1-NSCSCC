@@ -42,7 +42,8 @@ module CacheBusToAXI(
     // `transaction_ok`: DO RESPECT THE B CHANNEL! QAQ
     logic addr_ok, transaction_ok;
     assign addr_ok        = cbus_req.is_write ? axi_resp.aw.ready : axi_resp.ar.ready;
-    assign transaction_ok = axi_req.b.ready && axi_resp.b.valid;
+    // assign transaction_ok = axi_req.b.ready && axi_resp.b.valid;
+    assign transaction_ok = axi_resp.b.valid;
 
     // detect completion
     logic is_last, is_final;
@@ -51,15 +52,16 @@ module CacheBusToAXI(
 
     // only in WAITING state, `transaction_ok` will be asserted.
     assign cbus_resp.last = is_final &&
-        (cbus_req.is_write ? transaction_ok : (state != IDLE));
+        (cbus_req.is_write ? transaction_ok : rw_handshake);
 
     // since we never issue both AR & AW request in one clock cycle,
     // it's okay to ignore `cbus_req.is_write`.
     // the last write `okay` response is replaced by the end of transaction.
     logic rw_handshake;
-    assign rw_handshake =
-        (axi_req.w.valid && axi_resp.w.ready) ||
-        (axi_req.r.ready && axi_resp.r.valid);
+    // assign rw_handshake =
+    //     (axi_req.w.valid && axi_resp.w.ready) ||
+    //     (axi_req.r.ready && axi_resp.r.valid);
+    assign rw_handshake = axi_resp.w.ready || axi_resp.r.valid;
     assign cbus_resp.okay = (cbus_req.is_write && is_last) ?
         transaction_ok : rw_handshake;
 
@@ -145,13 +147,15 @@ module CacheBusToAXI(
                 len_cnt      <= axi_len;
             end
 
-            TRANSFER: if (is_final) begin
-                state <= cbus_req.is_write ? WAITING : IDLE;
-            end else if (is_last) begin
-                state        <= cbus_req.is_write ? WAITING : REQUEST;
-                current_addr <= current_addr + addr_step;
-            end else begin
-                len_cnt <= len_cnt - 1;
+            TRANSFER: if (rw_handshake) begin
+                if (is_final) begin
+                    state <= cbus_req.is_write ? WAITING : IDLE;
+                end else if (is_last) begin
+                    state        <= cbus_req.is_write ? WAITING : REQUEST;
+                    current_addr <= current_addr + addr_step;
+                end else begin
+                    len_cnt <= len_cnt - 1;
+                end
             end
 
             REQUEST: if (addr_ok) begin

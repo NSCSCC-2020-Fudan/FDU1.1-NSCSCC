@@ -5,7 +5,7 @@
 
 module CacheBusToAXITest();
     logic clk = 0;
-    always #5 clk = ~clk;
+    always #10 clk = ~clk;
 
     logic reset = 0, resetn;
     assign resetn = ~reset;
@@ -20,10 +20,42 @@ module CacheBusToAXITest();
     u2_t rresp, bresp;
     assign axi_resp.r.resp = axi_resp_type'(rresp);
     assign axi_resp.b.resp = axi_resp_type'(bresp);
-    wire [4 :0] ram_random_mask = 5'b11111;
+    wire [4 :0] ram_random_mask;
+
+    `define RANDOM_SEED {7'b1010101,16'habcd}
+    reg [22:0] pseudo_random_23;
+    reg        no_mask;     //if led_r_n is all 1, no mask
+    reg        short_delay; //memory long delay
+    always @ (posedge clk)
+    begin
+    if (!resetn)
+        pseudo_random_23 <= `RANDOM_SEED;
+    else
+        pseudo_random_23 <= {pseudo_random_23[21:0],pseudo_random_23[22] ^ pseudo_random_23[17]};
+
+    if(!resetn)
+        no_mask <= pseudo_random_23[15:0]==16'h00FF;
+
+    if(!resetn)
+        short_delay <= pseudo_random_23[7:0]==8'hFF;
+    end
+    assign ram_random_mask[0] = (pseudo_random_23[10]&pseudo_random_23[20]) & (short_delay|(pseudo_random_23[11]^pseudo_random_23[5]))
+                            | no_mask;
+    assign ram_random_mask[1] = (pseudo_random_23[ 9]&pseudo_random_23[17]) & (short_delay|(pseudo_random_23[12]^pseudo_random_23[4]))
+                            | no_mask;
+    assign ram_random_mask[2] = (pseudo_random_23[ 8]^pseudo_random_23[22]) & (short_delay|(pseudo_random_23[13]^pseudo_random_23[3]))
+                            | no_mask;
+    assign ram_random_mask[3] = (pseudo_random_23[ 7]&pseudo_random_23[19]) & (short_delay|(pseudo_random_23[14]^pseudo_random_23[2]))
+                            | no_mask;
+    assign ram_random_mask[4] = (pseudo_random_23[ 6]^pseudo_random_23[16]) & (short_delay|(pseudo_random_23[15]^pseudo_random_23[1]))
+                            | no_mask;
+
     CacheBusToAXI inst(.*);
+    logic rsta_busy, rstb_busy;
     axi_wrap_ram u_axi_ram
     (
+        .rsta_busy       ( rsta_busy ),
+        .rstb_busy       ( rstb_busy ),
         .aclk            ( clk ),
         .aresetn         ( resetn),
         .axi_arid        ( axi_req.ar.id ),
@@ -44,7 +76,7 @@ module CacheBusToAXITest();
         .axi_rready      ( axi_req.r.ready ),
         .axi_awid        ( axi_req.aw.id ),
         .axi_awaddr      ( axi_req.aw.addr ),
-        .axi_awlen       ( {4'd0,axi_req.aw.len[3:0]}        ),
+        .axi_awlen       ( {4'd0,axi_req.aw.len[3:0]} ),
         .axi_awsize      ( axi_req.aw.size),
         .axi_awburst     ( axi_req.aw.burst ),
         .axi_awlock      ( axi_req.aw.lock ),
@@ -75,54 +107,56 @@ module CacheBusToAXITest();
         reset = 1;
     #120
         reset = 0;
-    #77
-        cbus_req.valid = 1;
+    #120
+    #137
+        cbus_req.valid    = 1;
         cbus_req.is_write = 1;
-        cbus_req.addr = 0;
-        cbus_req.order = 5;
-        while (!cbus_resp.last) begin
-            #10 /* spin wait */;
-        end
-        cbus_req.valid = 0;
-    #20
-        cbus_req.valid = 1;
-        cbus_req.is_write = 0;
-        cbus_req.addr = 0;
-        cbus_req.order = 3;
-        while (!cbus_resp.last) begin
-            #10 /* spin wait */;
-        end
-        cbus_req.valid = 0;
-    #20
-        cbus_req.valid = 1;
-        cbus_req.is_write = 0;
-        cbus_req.addr = 4;
-        cbus_req.order = 5;
-        while (!cbus_resp.last) begin
-            #10 /* spin wait */;
-        end
-        cbus_req.valid = 0;
-    #20
-        cbus_req.valid = 1;
-        cbus_req.is_write = 1;
-        cbus_req.addr = 16;
-        cbus_req.order = 5;
-        while (!cbus_resp.last) begin
-            #10 /* spin wait */;
-        end
-        cbus_req.valid = 0;
-    #20
-        cbus_req.valid = 1;
-        cbus_req.is_write = 0;
-        cbus_req.addr = 0;
-        cbus_req.order = 6;
+        cbus_req.addr     = 0;
+        cbus_req.order    = 5;
         while (!cbus_resp.last) begin
             #10 /* spin wait */;
         end
         cbus_req.valid = 0;
     #40
+        cbus_req.valid    = 1;
+        cbus_req.is_write = 0;
+        cbus_req.addr     = 0;
+        cbus_req.order    = 3;
+        while (!cbus_resp.last) begin
+            #20 /* spin wait */;
+        end
+        cbus_req.valid = 0;
+    #40
+        cbus_req.valid    = 1;
+        cbus_req.is_write = 0;
+        cbus_req.addr     = 4;
+        cbus_req.order    = 5;
+        while (!cbus_resp.last) begin
+            #20 /* spin wait */;
+        end
+        cbus_req.valid = 0;
+    #40
+        cbus_req.valid    = 1;
+        cbus_req.is_write = 1;
+        cbus_req.addr     = 16;
+        cbus_req.order    = 5;
+        while (!cbus_resp.last) begin
+            #20 /* spin wait */;
+        end
+        cbus_req.valid = 0;
+    #40
+        cbus_req.valid    = 1;
+        cbus_req.is_write = 0;
+        cbus_req.addr     = 0;
+        cbus_req.order    = 6;
+        while (!cbus_resp.last) begin
+            #20 /* spin wait */;
+        end
+        cbus_req.valid = 0;
+    #80
         $finish;
     end
 endmodule
+
 
 `endif
