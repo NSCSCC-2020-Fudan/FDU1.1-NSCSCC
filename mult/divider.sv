@@ -55,23 +55,23 @@ module divide_process (
         case (q)
             TWO_P: begin
                 out.Q = {in.Q[29:0], 2'b10};
-                out.PA[64:32] = in.PA[64:32] - {in.B[31:0], 1'b0};
+                out.PA[64:32] = {in.PA[62:32], 2'b00} - {in.B[31:0], 1'b0};
             end
             ONE_P: begin
                 out.Q = {in.Q[29:0], 2'b01};
-                out.PA[64:32] = in.PA[64:32] - {1'b0, in.B[31:0]};
+                out.PA[64:32] = {in.PA[62:32], 2'b00} - {1'b0, in.B[31:0]};
             end
             ZERO_P: begin
                 out.Q = {in.Q[29:0], 2'b00};
-                out.PA[64:32] = in.PA[64:32];
+                out.PA[64:32] = {in.PA[62:32], 2'b00};
             end
             ONE_N: begin
                 out.Q = {{in.Q[29:0] - 30'b01}, 2'b11};
-                out.PA[64:32] = in.PA[64:32] + {1'b0, in.B[31:0]};
+                out.PA[64:32] = {in.PA[62:32], 2'b00} + {1'b0, in.B[31:0]};
             end
             TWO_N: begin
                 out.Q = {{in.Q[29:0] - 30'b01}, 2'b10};
-                out.PA[64:32] = in.PA[64:32] + {in.B[31:0], 1'b0};
+                out.PA[64:32] = {in.PA[62:32], 2'b00} + {in.B[31:0], 1'b0};
             end
             default: begin
                 out.PA[64:32] = '0;
