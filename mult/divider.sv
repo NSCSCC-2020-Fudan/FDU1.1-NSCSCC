@@ -5,7 +5,7 @@ module divider(
     input logic clk, reset,
     input logic valid,
     input word_t a, b, // a / b
-    output dword_t out, // {lo, hi}
+    output dword_t out, // {hi, lo}
     output logic ok
 );
     logic [4:0] shift_left;
@@ -55,23 +55,23 @@ module divide_process (
         case (q)
             TWO_P: begin
                 out.Q = {in.Q[29:0], 2'b10};
-                out.PA[64:32] = {in.PA[62:32], 2'b00} - {in.B[31:0], 1'b0};
+                out.PA[64:32] = in.PA[62:30] - {in.B[31:0], 1'b0};
             end
             ONE_P: begin
                 out.Q = {in.Q[29:0], 2'b01};
-                out.PA[64:32] = {in.PA[62:32], 2'b00} - {1'b0, in.B[31:0]};
+                out.PA[64:32] = in.PA[62:30] - {1'b0, in.B[31:0]};
             end
             ZERO_P: begin
                 out.Q = {in.Q[29:0], 2'b00};
-                out.PA[64:32] = {in.PA[62:32], 2'b00};
+                out.PA[64:32] = in.PA[62:30];
             end
             ONE_N: begin
                 out.Q = {{in.Q[29:0] - 30'b01}, 2'b11};
-                out.PA[64:32] = {in.PA[62:32], 2'b00} + {1'b0, in.B[31:0]};
+                out.PA[64:32] = in.PA[62:30] + {1'b0, in.B[31:0]};
             end
             TWO_N: begin
                 out.Q = {{in.Q[29:0] - 30'b01}, 2'b10};
-                out.PA[64:32] = {in.PA[62:32], 2'b00} + {in.B[31:0], 1'b0};
+                out.PA[64:32] = in.PA[62:30] + {in.B[31:0], 1'b0};
             end
             default: begin
                 out.PA[64:32] = '0;
@@ -82,7 +82,8 @@ module divide_process (
     assign out.ok = in.ok;
     assign out.shiftnum = in.shiftnum;
     assign out.B = in.B;
-    assign out.PA[31:0] = in.PA[31:0];
+    // assign out.PA[31:0] = in.PA[31:0];
+    assign out.PA[31:0] = {in.PA[29:0], 2'b00};
 endmodule
 
 module divide_table (
