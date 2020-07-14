@@ -60,9 +60,9 @@ module SRAMxToAXI(
     assign sramx_resp.rdata   = axi_resp.r.data;
 
     // AXI driver
-    axi_len_t    axi_len;
-    axi_strobe_t axi_strb;
-    assign axi_len = {2'b00, req_body.size};
+    axi_burst_size axi_size;
+    axi_strobe_t   axi_strb;
+    assign axi_size = axi_burst_size'({1'b0, req_body.size});
 
     always_comb
     unique case ({req_body.size, req_body.addr[1:0]})
@@ -82,7 +82,7 @@ module SRAMxToAXI(
         if (issue[AR]) begin
             axi_req.ar.valid = 1;
             axi_req.ar.addr  = req_body.addr;
-            axi_req.ar.len   = axi_len;
+            axi_req.ar.size  = axi_size;
         end
 
         if (issue[R]) begin
@@ -92,7 +92,7 @@ module SRAMxToAXI(
         if (issue[AW]) begin
             axi_req.aw.valid = 1;
             axi_req.aw.addr  = req_body.addr;
-            axi_req.aw.len   = axi_len;
+            axi_req.aw.size  = axi_size;
         end
 
         if (issue[W]) begin
