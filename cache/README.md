@@ -1,3 +1,7 @@
+# Cache
+
+<img src="assets/architecture.png" width="100%" />
+
 ## 文件结构
 
 * `src`：源代码。
