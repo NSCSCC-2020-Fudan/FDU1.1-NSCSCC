@@ -14,18 +14,23 @@ typedef logic [CBUS_DATA_WIDTH - 1:0] cbus_word_t;
 typedef logic [CBUS_LEN_BITS - 1:0]   cbus_len_t;
 typedef logic [CBUS_ORDER_BITS - 1:0] cbus_order_t;
 
+typedef union packed {
+    byte_t [CBUS_DATA_BYTES - 1:0] bytes;
+    cbus_word_t                    word;
+} cbus_view_t;
+
 typedef struct packed {
     logic        valid;
     logic        is_write;
     addr_t       addr;
     cbus_order_t order;
-    cbus_word_t  wdata;
+    cbus_view_t  wdata;
 } cbus_req_t;
 
 typedef struct packed {
     logic       okay;
     logic       last;
-    cbus_word_t rdata;
+    cbus_view_t rdata;
 } cbus_resp_t;
 
 `endif

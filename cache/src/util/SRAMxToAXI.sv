@@ -64,17 +64,11 @@ module SRAMxToAXI(
     axi_strobe_t   axi_strb;
     assign axi_size = axi_burst_size'({1'b0, req_body.size});
 
-    always_comb
-    unique case ({req_body.size, req_body.addr[1:0]})
-        4'b00_00: axi_strb = 4'b0001;
-        4'b00_01: axi_strb = 4'b0010;
-        4'b00_10: axi_strb = 4'b0100;
-        4'b00_11: axi_strb = 4'b1000;
-        4'b01_00: axi_strb = 4'b0011;
-        4'b01_10: axi_strb = 4'b1100;
-        4'b10_00: axi_strb = 4'b1111;
-        default:  axi_strb = 4'b0000;
-    endcase
+    StrobeTranslator _strobe_inst(
+        .size(sramx_req.size),
+        .offset(sramx_req.addr[1:0]),
+        .strobe(axi_strb)
+    );
 
     always_comb begin
         axi_req = 0;

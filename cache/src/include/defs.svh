@@ -1,6 +1,9 @@
 `ifndef __CACHE_DEFS_SVH__
 `define __CACHE_DEFS_SVH__
 
+parameter int BYTES_PER_WORD = 4;
+parameter int BITS_PER_WORD  = BYTES_PER_WORD * 8;
+
 /**
  * utility macros
  */
