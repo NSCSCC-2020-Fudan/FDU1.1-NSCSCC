@@ -1,7 +1,9 @@
 `include "mips.svh"
 
 module hazard (
-    hazard_intf.hazard ports
+    hazard_intf.hazard ports,
+    pcselect_intf.hazard pcselect,
+    input logic clk, reset
 );
     // logic CP0E, HILOE, RegE;
     // logic CP0M, HILOM, RegM;
@@ -88,15 +90,28 @@ module hazard (
                          (((regwriteE && (writeregE == rsD))||(memtoregM && (writeregM == rsD)))||
                          ((opD == BEQ || opD == BNE) && (regwriteE && (writeregE == rtD))||(memtoregM && (writeregM == rtD))));
 
-    logic flush_ex = exception_validM | is_eret;
+    logic flush_ex;
+    assign flush_ex = exception_validM | is_eret;
+    // logic flush_ex1;
+    // always_ff @(posedge clk) begin
+    //     if (reset) begin
+    //         flush_ex1 <= 1'b0;
+    //     end else if (~flush_ex) begin
+    //         flush_ex1 <= flush_ex;
+    //     end else if(~stallF)begin
+    //         flush_ex1 <= flush_ex1;
+    //     end
+    // end
+    
+
     assign stallF = ~i_data_ok | ~d_data_ok | ((lwstall | branchstall) & ~flush_ex); // meet eret?
-    assign stallD = stallF;
-    assign stallE = ~d_data_ok;
-    assign stallM = ~d_data_ok;
-    assign flushD = exception_validM | is_eret;
-    assign flushE = stallF | flush_ex;
+    assign stallD = ~d_data_ok | ~i_data_ok | ((lwstall | branchstall) & ~flush_ex);
+    assign stallE = ~d_data_ok | (~i_data_ok & flush_ex);
+    assign stallM = ~d_data_ok | (~i_data_ok & flush_ex);
+    assign flushD = flush_ex;
+    assign flushE = lwstall | branchstall | flush_ex | ~i_data_ok;
     assign flushM = flush_ex;
-    assign flushW = flush_ex | stallM;
+    assign flushW = flush_ex | ~d_data_ok;
 
     assign rtD = ports.dataD.instr.rt;
     assign rsD = ports.dataD.instr.rs;
@@ -153,4 +168,6 @@ module hazard (
     assign ports.loM = ports.dataM.lo;
     assign ports.hiW = ports.dataW.hi;
     assign ports.loW = ports.dataW.lo;
+    assign pcselect.stallF = stallF;
+    assign ports.flush_ex = flush_ex;
 endmodule

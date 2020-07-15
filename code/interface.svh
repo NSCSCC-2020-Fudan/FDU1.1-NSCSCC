@@ -74,7 +74,7 @@ interface cp0_intf();
 
 endinterface
 
-interface hazard_intf(input logic i_data_ok, d_data_ok, output logic stallF);
+interface hazard_intf(input logic i_data_ok, d_data_ok, output logic stallF, flush_ex);
     decode_data_t dataD;
     exec_data_t dataE;
     mem_data_t dataM;
@@ -93,7 +93,7 @@ interface hazard_intf(input logic i_data_ok, d_data_ok, output logic stallF);
                    output flushD, flushE, flushM, flushW,
                           stallF, stallD, stallE, stallM,
                           forwardAE, forwardBE, forwardAD, forwardBD,
-                          aluoutM, resultW, hiM, loM, hiW, loW);
+                          aluoutM, resultW, hiM, loM, hiW, loW, flush_ex);
     modport freg(input stallF);
     modport dreg(input stallD, flushD);
     modport ereg(input stallE, flushE);
@@ -124,12 +124,14 @@ endinterface
 interface pcselect_intf();
     word_t pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F, epc;
     logic exception_valid, branch_taken, jr, jump, is_eret;
+    logic stallF;
     modport pcselect(input pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F, epc,
-                           exception_valid, branch_taken, jr, jump, is_eret);
+                           exception_valid, branch_taken, jr, jump, is_eret, stallF);
     modport fetch(output pcplus4F);
     modport decode(output pcbranchD, pcjumpD, pcjrD, branch_taken, jr, jump);
     modport excep(output exception_valid, pcexception);
     modport cp0(output is_eret, epc);
+    modport hazard(output stallF);
 endinterface
 
 `endif

@@ -13,7 +13,7 @@ module datapath (
     input word_t rd,
     output word_t wb_pc,
     // output logic inst_en,
-    output stallF,
+    output stallF, flush_ex,
     input i_data_ok, d_data_ok
 );
     // always_ff @(posedge clk, posedge reset) begin
@@ -32,7 +32,7 @@ module datapath (
     regfile_intf regfile_intf(.rfwrite);
     hilo_intf hilo_intf();
     cp0_intf cp0_intf();
-    hazard_intf hazard_intf(.i_data_ok, .stallF, .d_data_ok);
+    hazard_intf hazard_intf(.i_data_ok, .stallF, .d_data_ok, .flush_ex);
     exception_intf exception_intf(.ext_int);
     pcselect_intf pcselect_intf();
     
@@ -43,7 +43,7 @@ module datapath (
                  .pcselect(pcselect_intf.fetch),
                  .clk, .reset);
     pcselect pcselect(.out(pcselect_freg_fetch.pcselect),
-                       .in(pcselect_intf.pcselect));
+                       .in(pcselect_intf.pcselect), .clk, .reset);
     
     Dreg dreg(.clk, .reset, 
                .ports(fetch_dreg_decode.dreg),
@@ -96,7 +96,7 @@ module datapath (
              .pcselect(pcselect_intf.cp0));
 
     // hazard interacts with Freg, Dreg, Ereg, Mreg, Wreg, Decode, Execute, Memory
-    hazard hazard0(hazard_intf.hazard);
+    hazard hazard0(.ports(hazard_intf.hazard),.pcselect(pcselect_intf.hazard), .clk, .reset);
 
     // exception interacts with cp0, pcselect, memory
     exception exception(.ports(exception_intf.excep),

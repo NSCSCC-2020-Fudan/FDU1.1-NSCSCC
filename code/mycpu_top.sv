@@ -24,7 +24,7 @@ module mycpu(
     m_r_t mread;
     m_w_t mwrite;
     rf_w_t rfwrite;
-    logic stallF;
+    logic stallF, flush_ex;
     logic clk_;
     // always_ff @( posedge clk) begin
     //     clk_ <=  clk & inst_addr_ok & (inst_data_ok | ~inst_req) & (data_data_ok | ~data_req) & inst_data_ok;
@@ -35,13 +35,15 @@ module mycpu(
     datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
                       .pc(inst_addr), .instr_(inst_rdata),
                       .mread, .mwrite, .rfwrite, .rd(data_rdata), .wb_pc(debug_wb_pc),
-                      .stallF, .i_data_ok, .d_data_ok);
+                      .stallF, .flush_ex,.i_data_ok, .d_data_ok);
 
     // assign inst_req = 1'b1;
     assign inst_wr = 1'b0;
     assign inst_size = 2'b10;
     assign inst_wdata = '0;
-    handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req));
+    logic inst_req_;
+    assign inst_req = inst_req_ & d_data_ok;
+    handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req_));
     // assign data_req = (|mread.ren) | (|mwrite.wen);
     assign data_wr = mwrite.wen;
     assign vaddr = (mwrite.wen) ? mwrite.addr : mread.addr;

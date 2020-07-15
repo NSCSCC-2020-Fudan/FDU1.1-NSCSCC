@@ -15,8 +15,21 @@ module memory (
     m_w_t mwrite;
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
-    assign cp0_cause = (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) ? cp0.cwrite.wd : cp0.cp0_data.cause;
-    assign cp0_status = (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) ? cp0.cwrite.wd : cp0.cp0_data.status;
+    // assign cp0_cause = (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) ? cp0.cwrite.wd : cp0.cp0_data.cause;
+    // assign cp0_status = (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) ? cp0.cwrite.wd : cp0.cp0_data.status;
+
+    always_comb begin
+        cp0_cause = cp0.cp0_data.cause;
+        cp0_status = cp0.cp0_data.status;
+        if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) begin
+            cp0_cause.IP[7:2] = cp0.cwrite.wd[15:10];
+        end
+        if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) begin
+            cp0_status.IM = cp0.cwrite.wd[15:8];
+            cp0_status.EXL = cp0.cwrite.wd[1];
+            cp0_status.IE = cp0.cwrite.wd[0];
+        end
+    end
     assign aluoutM = dataE.aluout;
     // assign mwrite.en = dataE.memwrite;
     assign dram.mwrite.addr = dataE.aluout;
@@ -33,7 +46,7 @@ module memory (
     writedata writedata(.addr(aluoutM[1:0]), .op(op), ._wd(dataE.writedata),.en(wen), .wd(writedataM));
     // readdata readdata(._rd(dram.rd), .op(op), .addr(aluoutM[1:0]), .rd(readdataM));
     assign ren = dataE.instr.ctl.memtoreg;
-    assign mread.ren = ren;
+    assign mread.ren = ren & ~exception_load;
     assign mread.addr = aluoutM;
     assign mread.size = (op == LW) ? 2'b10 : (op == LH ? 2'b01:2'b00); 
     assign mwrite.wen = wen & ~exception_save;
