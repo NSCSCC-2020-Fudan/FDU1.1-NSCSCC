@@ -18,6 +18,16 @@
 * `README.md`：本文件。
 * `wrap.py`：顶层模块生成器。用于测试。
 
+## 模块测试
+
+部分需要与 IP 核交互的模块是在 Vivado 上测试的，测试代码在 `src/xsim` 中。另外一些代码会先使用 Verilator 进行仿真测试。运行这些仿真测试只需要使用以下命令：
+
+```shell
+make run top=[顶层模块名称]
+```
+
+这里要求 `$(top).sv` 在 `src/` 目录下，并且编写了对应的 `$(top).cpp` 测试源码，放置于 `test/` 目录下。
+
 ## 命名逻辑
 
 所有 master → slave 的请求以 `req` 进行标注，而 slave → master 的反馈以 `resp` 进行标注。例如，`axi_req_t` 和 `axi_resp_t`。
