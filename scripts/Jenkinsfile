@@ -8,7 +8,7 @@ pipeline {
         // git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
         git branch: 'docker-jenkins',
           credentialsId: 'jenkins',
-          url: 'github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
+          url: 'ssh://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
         // 'https://git@github.com:NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
         sh 'vivado -mode tcl -source scripts/add_directory.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
       }
