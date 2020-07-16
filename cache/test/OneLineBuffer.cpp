@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include "verilated_fst_c.h"
+
 class CacheBusSlave : public ICacheBusSlave {
 public:
     CacheBusSlave(VTop *inst) : _inst(inst) {}
@@ -44,6 +46,7 @@ public:
     Top() : inst(new VTop) {
         _bus = new CacheBusSlave(inst);
         _mem = new CacheBusMemory(256, _bus);
+        _trace_fp = nullptr;
     }
     ~Top() {
         delete inst;
@@ -52,20 +55,31 @@ public:
     }
 
     void tick() {
-        inst->eval();
+        _tickcount++;
 
+        inst->eval();
         pre_clock_hook();
         inst->eval();
+        trace_dump(10 * _tickcount - 2);
+
         inst->clk = 1;
         _mem->trigger();
-        inst->eval();
+        inst->eval_step();
+        trace_dump(10 * _tickcount);
+
+        inst->eval_end_step();
         _mem->eval();
         inst->eval();
-        post_clock_hook();
+        trace_dump(10 * _tickcount + 1);
 
+        post_clock_hook();
         inst->eval();
+        trace_dump(10 * _tickcount + 2);
+
         inst->clk = 0;
         inst->eval();
+        trace_dump(10 * _tickcount + 3);
+        trace_flush();
     }
 
     void tick(int count) {
@@ -75,6 +89,8 @@ public:
     }
 
     void reset() {
+        _tickcount = 0;
+
         inst->clk = 0;
         inst->reset = 0;
         inst->sramx_req_x_addr = 0;
@@ -115,9 +131,35 @@ public:
         puts("");
     }
 
+    void trace_dump(int time) {
+        if (_trace_fp)
+            _trace_fp->dump(time);
+    }
+
+    void trace_flush() {
+        if (_trace_fp)
+            _trace_fp->flush();
+    }
+
+    void start_trace(cstr filename) {
+        _trace_fp = new VerilatedFstC;
+        inst->trace(_trace_fp, 32);
+        _trace_fp->open(filename);
+        _trace_fp->dump(0);
+    }
+
+    void stop_trace() {
+        _trace_fp->dump(10 * _tickcount + 20);
+        _trace_fp->close();
+        delete _trace_fp;
+        _trace_fp = nullptr;
+    }
+
 private:
+    int _tickcount;
     CacheBusSlave *_bus;
     CacheBusMemory *_mem;
+    VerilatedFstC *_trace_fp;
 };
 
 static auto top = new Top;
@@ -126,11 +168,13 @@ WITH {
     top->reset();
     top->issue_read(2, 4 * 7);
 
+    top->start_trace("trace/single-read.fst");
     top->print_cache();
     for (int i = 0; i < 18; i++) {
         top->tick();
         top->print_cache();
     }
 
+    top->stop_trace();
     assert(top->inst->sramx_resp_x_rdata == 7);
 } AS("single read");

@@ -4,11 +4,19 @@
 
 ## 文件结构
 
-* `src`：源代码。
-    * `include`：SystemVerilog 头文件。
-    * `ram`：RAM 相关的基础模块。
-    * `util`：辅助模块、总线转接模块。
-    * `xsim`：Vivado 下的测试源码。
+* `assets/`：非源码的资源文件。
+* `build/`：构建测试时的临时文件夹。
+* `src/`：源代码。
+    * `include/`：SystemVerilog 头文件。
+    * `ram/`：RAM 相关的基础模块。
+    * `util/`：辅助模块、总线转接模块。
+    * `xsim/`：Vivado 下的测试源码。
+* `test/`：测试代码。
+* `trace/`：保存波形图的文件夹。默认不上传波形图文件。
+* `.gitignore`
+* `Makefile`：使用 `make run` 运行测试。
+* `README.md`：本文件。
+* `wrap.py`：顶层模块生成器。用于测试。
 
 ## 命名逻辑
 
