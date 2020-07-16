@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdio>
 #include <vector>
+#include <random>
 
 #include <unistd.h>
 #include <errno.h>
@@ -103,4 +104,10 @@ auto _set_pretest_hook() -> PretestHook& { \
 
 auto _set_posttest_hook() -> PosttestHook& { \
     return _posttest_hook; \
+}
+
+u32 randu(u32 l, u32 r) {
+    constexpr u32 SEED = 0x19260817;
+    static std::mt19937 gen(SEED);
+    return gen() % (r - l + 1) + l;
 }

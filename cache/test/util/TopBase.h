@@ -33,7 +33,7 @@ public:
         inst->eval();
         pre_clock_hook();
         inst->eval();
-        trace_dump(now - 2);
+        trace_dump(now - 7);
 
         inst->clk = 1;
         clock_trigger();
@@ -80,12 +80,15 @@ public:
         _trace_fp = new VerilatedFstC;
         inst->trace(_trace_fp, 32);
         _trace_fp->open(filename);
-        _trace_fp->dump(0);
+
+        tick();
+        // _trace_fp->dump(0);
     }
 
     void stop_trace() {
         if (_trace_fp) {
             printf("trace: stop @%d\n", tickcount());
+            tick();
             _trace_fp->dump(tickcount() + 10);
             _trace_fp->flush();
             _trace_fp->close();

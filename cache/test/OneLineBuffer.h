@@ -46,7 +46,7 @@ class Top : public TopBase {
 public:
     Top() {
         _bus = new CacheBusSlave(inst);
-        _mem = new CacheBusMemory(MEMORY_DEPTH, _bus);
+        _mem = new CacheBusMemory(MEMORY_DEPTH, _bus, true);
     }
     ~Top() {
         delete _bus;
@@ -55,7 +55,6 @@ public:
 
     void reset() {
         _tickcount = 0;
-        _mem->reset();
 
         inst->clk = 0;
         inst->reset = 0;
@@ -72,6 +71,8 @@ public:
         tick();
         inst->reset = 0;
         tick();
+
+        _mem->reset();
     }
 
     void clock_trigger() {

@@ -97,3 +97,5 @@ void run_tests();
 
 auto _set_pretest_hook() -> PretestHook&;
 auto _set_posttest_hook() -> PosttestHook&;
+
+u32 randu(u32 l, u32 r);
