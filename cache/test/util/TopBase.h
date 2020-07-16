@@ -41,6 +41,7 @@ public:
         trace_dump(now);
 
         inst->eval_end_step();
+        inst->clk = 0;
         inst->eval();
         trace_dump(now + 1);
 
@@ -48,9 +49,6 @@ public:
         inst->eval();
         trace_dump(now + 2);
 
-        inst->clk = 0;
-        inst->eval();
-        trace_dump(now + 3);
         trace_flush();
     }
 

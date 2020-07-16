@@ -39,15 +39,24 @@ private:
 
 /**
  * example:
- * PRETEST_HOOK = [] {
+ * PRETEST_HOOK [] {
  *     dev->reset();
  * };
- * POSTTEST_HOOK = [] {
+ * POSTTEST_HOOK [] {
  *     // source code here.
  * };
  */
-#define PRETEST_HOOK _set_pretest_hook()
-#define POSTTEST_HOOK _set_posttest_hook()
+#define PRETEST_HOOK static struct __PretestHookSetter { \
+    __PretestHookSetter(const PretestHook &fn) { \
+        _set_pretest_hook() = fn; \
+    } \
+} __pretest_hook_setter_inst = (PretestHook)
+
+#define POSTTEST_HOOK static struct __PosttestHookSetter { \
+    __PosttestHookSetter(const PosttestHook &fn) { \
+        _set_posttest_hook() = fn; \
+    } \
+} __posttest_hook_setter_inst = (PosttestHook)
 
 // unique id magic: https://stackoverflow.com/a/2419720/7434327
 #define _TESTBENCH_CAT_IMPL(x, y) x##y

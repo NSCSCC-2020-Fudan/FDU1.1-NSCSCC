@@ -2,9 +2,12 @@
 
 static auto top = new Top;
 
-WITH {
+PRETEST_HOOK [] {
     top->reset();
-    top->issue_read(2, 4 * 7);
+};
+
+WITH {
+    top->issue_read(2, 4 * 31);
 
     top->print_cache();
     for (int i = 0; i < 18; i++) {
@@ -12,12 +15,10 @@ WITH {
         top->print_cache();
     }
 
-    assert(top->inst->sramx_resp_x_rdata == 7);
+    assert(top->inst->sramx_resp_x_rdata == 31);
 } AS("single read");
 
-WITH TRACE {
-    top->reset();
-
+WITH {
     for (int i = 0; i < 256; i++) {
         top->tick();
         top->issue_read(2, 4 * i);
@@ -29,3 +30,7 @@ WITH TRACE {
         assert(top->inst->sramx_resp_x_rdata == i);
     }
 } AS("sequential read");
+
+WITH TRACE {
+
+} AS("single write");
