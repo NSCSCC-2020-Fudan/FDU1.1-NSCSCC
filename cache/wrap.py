@@ -338,7 +338,10 @@ def parse(name: Text):
         else:
             assert section is not None
             if section  == 'ports':
-                port_name, reference = line.split(':', maxsplit=1)
+                if ':' in line:
+                    port_name, reference = line.split(':', maxsplit=1)
+                else:
+                    port_name = reference = line.strip()
                 assigns.append(Assign(port_name.strip(), reference.strip()))
             elif section == 'top':
                 direction, type_name, port_name = line.split(' ')

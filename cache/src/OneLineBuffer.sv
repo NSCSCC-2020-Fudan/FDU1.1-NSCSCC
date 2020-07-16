@@ -8,7 +8,7 @@ module OneLineBuffer #(
     localparam int BUFFER_SIZE  = 16 * BYTES_PER_WORD,      // 64
     localparam int BUFFER_ORDER = $clog2(BUFFER_LENGTH),    // 4
     localparam int ALIGN_BITS   = $clog2(BYTES_PER_WORD),   // 2
-    localparam int OFFSET_BITS  = $clog2(BUFFER_SIZE),      // 6
+    localparam int OFFSET_BITS  = $clog2(BUFFER_LENGTH),    // 6
     localparam int TAG_BITS     = BITS_PER_WORD - OFFSET_BITS - ALIGN_BITS,  // 24
 
     localparam type align_t     = logic [ALIGN_BITS - 1:0],
@@ -133,7 +133,7 @@ module OneLineBuffer #(
     assign sramx_resp.addr_ok = state == IDLE;
     assign sramx_resp.data_ok =
         (state == IDLE && tag_hit) ||
-        (state == READ && offset_hit);
+        (state == READ && offset_hit && cbus_resp.okay);
     assign sramx_resp.rdata = state == IDLE ?
         mem[req_addr.offset] : cbus_resp.rdata;  // direct forwarding
 

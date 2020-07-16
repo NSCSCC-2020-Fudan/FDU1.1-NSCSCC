@@ -1,8 +1,19 @@
 #include "VTop.h"
 #include "verilated_fst_c.h"
 
-#define TRACE(filename) { \
-    top->start_trace("trace/" filename); \
+#include <string>
+
+inline void escape_space(std::string &s) {
+    for (auto &c : s) {
+        if (c == ' ')
+            c = '-';
+    }
+}
+
+#define TRACE { \
+    auto path = std::string("trace/") + name + ".fst"; \
+    escape_space(path); \
+    top->start_trace(path.c_str()); \
     _.defer([] { top->stop_trace(); }); \
 }
 
@@ -76,11 +87,17 @@ public:
 
     void stop_trace() {
         if (_trace_fp) {
-            _trace_fp->dump(10 * _tickcount + 20);
+            printf("trace: stop @%d\n", tickcount());
+            _trace_fp->dump(tickcount() + 10);
+            _trace_fp->flush();
             _trace_fp->close();
             delete _trace_fp;
             _trace_fp = nullptr;
         }
+    }
+
+    int tickcount() const {
+        return 10 * _tickcount;
     }
 
 protected:

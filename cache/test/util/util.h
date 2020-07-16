@@ -15,6 +15,8 @@ using DeferHook    = std::function<void(void)>;  // mimic Go's `defer`
 extern PretestHook   _pretest_hook;
 extern PosttestHook  _posttest_hook;
 
+extern std::vector<DeferHook> _global_defers;
+
 class ITestbench {
 public:
     cstr name;
@@ -56,10 +58,9 @@ private:
     static class id : public ITestbench { \
         using ITestbench::ITestbench; \
         void _run() { \
-            DeferList _; {
+            DeferList _;
 
 #define _TESTBENCH_END(id, name) \
-            } \
         } \
     } id(name);
 

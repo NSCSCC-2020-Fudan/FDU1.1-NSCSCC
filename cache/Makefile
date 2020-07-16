@@ -81,7 +81,7 @@ $(BUILD)/verilated.o: $(CXX_VERILATED)
 $(BUILD)/trace_fst.o: $(CXX_TRACE_FST)
 	$(CXX) $(CXXFLAGS) $< -c -o $@
 
-$(CXX_TEST_TARGET): $(TEST)/$(top).cpp $(CXX_HEADERS) $(CXX_TOP_HEADER)
+$(CXX_TEST_TARGET): $(TEST)/$(top).cpp $(CXX_HEADERS) $(CXX_TOP_HEADER) $(SV_WRAPPER)
 	$(CXX) $(CXXFLAGS) $< -c -o $@
 
 a.out: $(CXXLIBS) $(CXX_TEST_TARGET) $(CXX_TOP_TARGET)

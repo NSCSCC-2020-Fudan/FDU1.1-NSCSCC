@@ -23,6 +23,8 @@ TestList     *_p_test_list   = &_test_list;
 PretestHook   _pretest_hook  = _do_nothing;
 PosttestHook  _posttest_hook = _do_nothing;
 
+std::vector<DeferHook> _global_defers;
+
 ITestbench::ITestbench(cstr _name) : name(_name) {
     _p_test_list->push_back(this);
 }
@@ -44,10 +46,12 @@ void ITestbench::run() {
 DeferList::~DeferList() {
     for (auto fn : _defers)
         fn();
+    _global_defers.clear();
 }
 
 void DeferList::defer(const DeferHook &fn) {
     _defers.push_back(fn);
+    _global_defers.push_back(fn);
 }
 
 // signal handling from CS:APP
@@ -71,6 +75,9 @@ void abort_handler(int) {
     if (_current_test)
         fprintf(stderr, fmt, _current_test->name);
     fflush(stdout);
+
+    for (auto fn : _global_defers)
+        fn();
 }
 
 void exit_handler() {

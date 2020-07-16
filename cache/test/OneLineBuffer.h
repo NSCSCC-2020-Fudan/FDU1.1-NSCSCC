@@ -11,6 +11,7 @@ constexpr int MEMORY_DEPTH = 256;
 class CacheBusSlave : public ICacheBusSlave {
 public:
     CacheBusSlave(VTop *inst) : _inst(inst) {}
+    virtual ~CacheBusSlave() {}
 
     virtual auto valid() -> u8 {
         return _inst->cbus_req_x_valid;
@@ -87,6 +88,7 @@ public:
         inst->sramx_req_x_size = order;
         inst->sramx_req_x_addr = addr;
         inst->sramx_req_x_wdata = 0xcccccccc;
+        inst->eval();
     }
 
     void print_cache() {

@@ -30,7 +30,11 @@ public:
 
     auto get_index() const -> int {
         assert((_bus->addr() % 4) == 0);
-        int index = _bus->addr() / 4 + _count;
+        int index;
+        if (_in_operation)
+            index = _bus->addr() / 4 + _count;
+        else
+            index = _bus->addr() / 4;
         assert(0 <= index && index < size);
         return index;
     }
