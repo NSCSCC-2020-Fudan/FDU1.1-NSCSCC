@@ -26,6 +26,15 @@ private:
     virtual void _run() = 0;
 };
 
+class DeferList {
+public:
+    ~DeferList();
+    void defer(const DeferHook &fn);
+
+private:
+    std::vector<DeferHook> _defers;
+};
+
 /**
  * example:
  * PRETEST_HOOK = [] {
@@ -47,15 +56,12 @@ private:
     static class id : public ITestbench { \
         using ITestbench::ITestbench; \
         void _run() { \
-            std::vector<DeferHook> __testbench_defer_hooks;
+            DeferList _; {
 
-#define _TESTBENCH_END(id, name) { \
-            for (auto &hook : __testbench_defer_hooks) { \
-                hook(); \
+#define _TESTBENCH_END(id, name) \
             } \
         } \
-    } \
-} id(name);
+    } id(name);
 
 /**
  * usage:
@@ -72,7 +78,7 @@ private:
  * NOTE: it is recommended not to implement them in this file.
  */
 // #define TRACE { dev->enable_print(); }
-// #define STATISTICS { __testbench_defer_hooks.push_back([] { \
+// #define STATISTICS { _.defer([] { \
 //     dev->print_statistics(); \
 // }); }
 

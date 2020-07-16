@@ -41,6 +41,15 @@ void ITestbench::run() {
     _current_test = nullptr;
 }
 
+DeferList::~DeferList() {
+    for (auto fn : _defers)
+        fn();
+}
+
+void DeferList::defer(const DeferHook &fn) {
+    _defers.push_back(fn);
+}
+
 // signal handling from CS:APP
 using handler_t = void(int);
 

@@ -1,6 +1,11 @@
 #include "VTop.h"
 #include "verilated_fst_c.h"
 
+#define TRACE(filename) { \
+    top->start_trace("trace/" filename); \
+    _.defer([] { top->stop_trace(); }); \
+}
+
 class TopBase {
 public:
     VTop *inst;
