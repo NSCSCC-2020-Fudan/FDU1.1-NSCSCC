@@ -6,8 +6,8 @@ pipeline {
       steps {
         deleteDir() // clean up workspace
         // git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
-        git branch: 'docker-jenkins'
-          credentialsId: '172e1c9a-e12b-4ea0-b916-6bd2aa9d3744'
+        git branch: 'docker-jenkins',
+          credentialsId: '172e1c9a-e12b-4ea0-b916-6bd2aa9d3744',
           url: 'ssh://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
         // 'https://git@github.com:NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
         sh 'vivado -mode tcl -source scripts/add_directory.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
