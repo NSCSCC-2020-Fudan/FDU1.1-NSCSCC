@@ -93,7 +93,7 @@ module OneLineBuffer #(
                 state <= cbus_resp.last ? IDLE : READ;
 
                 if (cbus_resp.okay) begin
-                    if (offset_hit) begin
+                    if (saved_req.wr && offset_hit) begin
                         // direct overwrite
                         for (int i = 0; i < BYTES_PER_WORD; i++) begin
                             mem[offset].bytes[i] <= saved_strb[i] ?

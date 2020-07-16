@@ -26,7 +26,7 @@ SV_TARGET      := $(BUILD)/$(SV_PREFIX).mk
 SVFLAGS        := -Wall -Wpedantic -cc -Mdir $(BUILD) --prefix $(SV_PREFIX) -O2 $(SV_INCLUDE)
 
 $(BUILD)/default.top:
-	echo "# ports" > $@ \
+	echo "# ports" > $@
 
 $(SV_PORTS): $(BUILD)/default.top
 	cp -n $< $@
