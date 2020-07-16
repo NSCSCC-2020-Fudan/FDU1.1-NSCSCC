@@ -1,10 +1,12 @@
 #include "util.h"
 #include "VTop.h"
+#include "TopBase.h"
 #include "CacheBusMemory.h"
+#include "verilated_fst_c.h"
 
 #include <cassert>
 
-#include "verilated_fst_c.h"
+constexpr int MEMORY_DEPTH = 256;
 
 class CacheBusSlave : public ICacheBusSlave {
 public:
@@ -39,57 +41,20 @@ private:
     VTop *_inst;
 };
 
-class Top {
+class Top : public TopBase {
 public:
-    VTop *inst;
-
-    Top() : inst(new VTop) {
+    Top() {
         _bus = new CacheBusSlave(inst);
-        _mem = new CacheBusMemory(256, _bus);
-        _trace_fp = nullptr;
+        _mem = new CacheBusMemory(MEMORY_DEPTH, _bus);
     }
     ~Top() {
-        delete inst;
         delete _bus;
         delete _mem;
     }
 
-    void tick() {
-        _tickcount++;
-
-        inst->eval();
-        pre_clock_hook();
-        inst->eval();
-        trace_dump(10 * _tickcount - 2);
-
-        inst->clk = 1;
-        _mem->trigger();
-        inst->eval_step();
-        trace_dump(10 * _tickcount);
-
-        inst->eval_end_step();
-        _mem->eval();
-        inst->eval();
-        trace_dump(10 * _tickcount + 1);
-
-        post_clock_hook();
-        inst->eval();
-        trace_dump(10 * _tickcount + 2);
-
-        inst->clk = 0;
-        inst->eval();
-        trace_dump(10 * _tickcount + 3);
-        trace_flush();
-    }
-
-    void tick(int count) {
-        for (int i = 0; i < count; i++) {
-            tick();
-        }
-    }
-
     void reset() {
         _tickcount = 0;
+        _mem->reset();
 
         inst->clk = 0;
         inst->reset = 0;
@@ -108,12 +73,12 @@ public:
         tick();
     }
 
-    void pre_clock_hook() {
-
+    void clock_trigger() {
+        _mem->trigger();
     }
 
     void post_clock_hook() {
-
+        _mem->eval();
     }
 
     void issue_read(int order, int addr) {
@@ -131,35 +96,9 @@ public:
         puts("");
     }
 
-    void trace_dump(int time) {
-        if (_trace_fp)
-            _trace_fp->dump(time);
-    }
-
-    void trace_flush() {
-        if (_trace_fp)
-            _trace_fp->flush();
-    }
-
-    void start_trace(cstr filename) {
-        _trace_fp = new VerilatedFstC;
-        inst->trace(_trace_fp, 32);
-        _trace_fp->open(filename);
-        _trace_fp->dump(0);
-    }
-
-    void stop_trace() {
-        _trace_fp->dump(10 * _tickcount + 20);
-        _trace_fp->close();
-        delete _trace_fp;
-        _trace_fp = nullptr;
-    }
-
 private:
-    int _tickcount;
     CacheBusSlave *_bus;
     CacheBusMemory *_mem;
-    VerilatedFstC *_trace_fp;
 };
 
 static auto top = new Top;
