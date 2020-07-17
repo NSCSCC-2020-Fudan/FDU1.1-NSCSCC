@@ -10,6 +10,8 @@ pipeline {
           credentialsId: 'b18376fc-d1e2-453b-b019-5f4d587dcd5b',
           url: 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
         // 'https://git@github.com:NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
+        sh 'pwd'
+        sh 'cd workspace'
         sh 'vivado -mode tcl -source scripts/add_directory.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
       }
     }
