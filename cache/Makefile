@@ -34,13 +34,13 @@ SVFLAGS        := \
 $(BUILD)/default.top:
 	echo "# ports" > $@
 
-$(SV_PORTS): $(BUILD)/default.top
-	cp -n $< $@
+$(SV_PORTS):
+	cp -n  $@
 
 $(SV_METAXML): $(SV_SOURCE_TREE) $(SV_TOP_FILE)
 	$(SV) $(SVFLAGS) --xml-only --xml-output "$@" $(SV_TOP_FILE)
 
-$(SV_METAINFO): $(SV_METAXML)
+$(SV_METAINFO): $(SV_METAXML) $(BUILD)/default.top
 	python3 ./wrap.py dump $< > $@
 
 $(SV_WRAPPER): $(SV_PORTS) $(SV_METAINFO)
@@ -50,11 +50,8 @@ $(SV_TARGET): $(SV_WRAPPER)
 	$(SV) $(SVFLAGS) $(SV_WRAPPER)
 
 # C++
-ifeq ($(FAST_SIMULATION), 1)
-CXX_OPTFLAGS := -O2
-else
-CXX_OPTFLAGS := -g -fsanitize=undefined
-endif
+FAST_SIMULATION ?= 0
+RUN_ALL			?= 0
 
 CXX             := g++
 CXX_INCLUDE     := $(addprefix -I, $(VERILATOR) $(UTIL) $(BUILD))
@@ -65,12 +62,23 @@ CXX_TOP_HEADER  := $(BUILD)/$(SV_PREFIX).h
 CXX_TOP_TARGET  := $(BUILD)/$(SV_PREFIX)__ALL.a
 CXX_TEST_TARGET := $(BUILD)/$(top).o
 CXXLIBS         := $(addprefix $(BUILD)/, main.o util.o verilated.o trace_fst.o)
+
+ifeq ($(FAST_SIMULATION), 1)
+CXX_OPTFLAGS := -O2
+else
+CXX_OPTFLAGS := -g -fsanitize=undefined
+endif
+
 CXXFLAGS        := \
 	-Wall -Wextra -Wno-comment \
 	-std=c++17 \
 	$(CXX_OPTFLAGS) \
 	-lz \
 	$(CXX_INCLUDE)
+
+ifeq ($(RUN_ALL), 1)
+CXXFLAGS += -DRUN_ALL_TEST
+endif
 
 $(CXX_TOP_HEADER): $(SV_TARGET)
 

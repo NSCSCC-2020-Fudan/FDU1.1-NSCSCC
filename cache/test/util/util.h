@@ -25,7 +25,7 @@ public:
     void run();
 
 private:
-    virtual void _run() = 0;
+    virtual bool _run() = 0;
 };
 
 class DeferList {
@@ -66,10 +66,13 @@ private:
 #define _TESTBENCH_BEGIN(id) \
     static class id : public ITestbench { \
         using ITestbench::ITestbench; \
-        void _run() { \
-            DeferList _;
+        bool _run() { \
+            DeferList _; \
+            {
 
 #define _TESTBENCH_END(id, name) \
+            } \
+            return false; \
         } \
     } id(name);
 
@@ -91,7 +94,11 @@ private:
 // #define STATISTICS { _.defer([] { \
 //     dev->print_statistics(); \
 // }); }
-#define SKIP { return; }
+#ifdef RUN_ALL_TEST  // set in Makefile.
+#define SKIP /* no effect */
+#else
+#define SKIP { return true; }
+#endif
 
 // invoke in `main`:
 void run_tests();

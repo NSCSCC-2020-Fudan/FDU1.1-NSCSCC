@@ -224,7 +224,7 @@ WITH SKIP {
     }
 } AS("random read/write");
 
-WITH LOG TRACE {
+WITH {
     top->issue_write(1, 2, 0x0000cccc);
     top->tick(256);
     top->issue_read(1, 2);

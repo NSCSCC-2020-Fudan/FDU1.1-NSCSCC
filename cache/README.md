@@ -28,6 +28,13 @@ make run top=[顶层模块名称]
 
 这里要求 `$(top).sv` 在 `src/` 目录下，并且编写了对应的 `$(top).cpp` 测试源码，放置于 `test/` 目录下。
 
+编译宏：
+
+* `RUN_ALL`：是否不跳过被 `SKIP` 标记的测试。
+* `FAST_SIMULATION`：编译时开启 O2 优化，并且取消 `-fsanitize=undefined`。
+
+在跑正式测试时建议使用 `RUN_ALL=1 FAST_SIMULATION=1`。
+
 ## 命名逻辑
 
 所有 master → slave 的请求以 `req` 进行标注，而 slave → master 的反馈以 `resp` 进行标注。例如，`axi_req_t` 和 `axi_resp_t`。

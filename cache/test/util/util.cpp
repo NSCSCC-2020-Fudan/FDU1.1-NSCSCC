@@ -35,13 +35,15 @@ void ITestbench::run() {
     _current_test = this;
 
     _pretest_hook();
-    _run();
+    bool skipped = _run();
     _posttest_hook();
 
     auto fmt = isatty(STDOUT_FILENO) ?
-        GREEN "[OK]" RESET " %s\n" :
-        "[OK] %s\n";
+        GREEN "[OK]" RESET " %s" :
+        "[OK] %s";
     printf(fmt, name);
+    puts(skipped ? " (skipped)" : "");
+
     _current_test = nullptr;
 }
 
