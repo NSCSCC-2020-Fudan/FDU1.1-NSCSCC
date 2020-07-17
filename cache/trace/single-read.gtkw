@@ -2,10 +2,10 @@
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
 [*] Thu Jul 16 08:24:23 2020
 [*]
-[dumpfile] "/home/riteme/Code/nscscc/repo/cache/trace/single-read.fst"
+[dumpfile] "./single-read.fst"
 [dumpfile_mtime] "Thu Jul 16 08:08:02 2020"
 [dumpfile_size] 3913
-[savefile] "/home/riteme/Code/nscscc/repo/cache/trace/single-read.gtkw"
+[savefile] "./single-read.gtkw"
 [timestart] 0
 [size] 1920 1048
 [pos] -1 -1

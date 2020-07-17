@@ -44,13 +44,15 @@ private:
 
 class Top : public TopBase {
 public:
+    CacheBusMemory *cmem;
+
     Top() {
         _bus = new CacheBusSlave(inst);
-        _mem = new CacheBusMemory(MEMORY_DEPTH, _bus, true);
+        cmem = new CacheBusMemory(MEMORY_DEPTH, _bus, true);
     }
     ~Top() {
         delete _bus;
-        delete _mem;
+        delete cmem;
     }
 
     void reset() {
@@ -72,15 +74,15 @@ public:
         inst->reset = 0;
         tick();
 
-        _mem->reset();
+        cmem->reset();
     }
 
     void clock_trigger() {
-        _mem->trigger();
+        cmem->trigger();
     }
 
     void post_clock_hook() {
-        _mem->eval();
+        cmem->eval();
     }
 
     void issue_read(int order, int addr) {
@@ -89,6 +91,15 @@ public:
         inst->sramx_req_x_size = order;
         inst->sramx_req_x_addr = addr;
         inst->sramx_req_x_wdata = 0xcccccccc;
+        inst->eval();
+    }
+
+    void issue_write(int order, int addr, u32 data) {
+        inst->sramx_req_x_req = 1;
+        inst->sramx_req_x_wr = 1;
+        inst->sramx_req_x_size = order;
+        inst->sramx_req_x_addr = addr;
+        inst->sramx_req_x_wdata = data;
         inst->eval();
     }
 
@@ -101,5 +112,4 @@ public:
 
 private:
     CacheBusSlave *_bus;
-    CacheBusMemory *_mem;
 };

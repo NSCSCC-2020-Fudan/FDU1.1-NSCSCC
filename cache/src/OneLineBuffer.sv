@@ -143,7 +143,7 @@ module OneLineBuffer #(
     assign cbus_req.order    = cbus_order_t'(BUFFER_ORDER);
     assign cbus_req.wdata    = mem[offset];
     assign cbus_req.addr     = {
-        (saved_req.wr ? tag : saved_addr.tag),
+        (state == WRITE ? tag : saved_addr.tag),
         {(OFFSET_BITS + ALIGN_BITS){1'b0}}
     };
 
