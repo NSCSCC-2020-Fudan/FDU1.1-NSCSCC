@@ -2,7 +2,5 @@ build/*
 !build/.gitkeeper
 *.out
 
-trace/*
-!trace/.gitkeeper
 *.vcd
 *.fst
