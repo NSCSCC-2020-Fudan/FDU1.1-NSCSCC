@@ -3,8 +3,8 @@
 
 `include "mips.svh"
 
-interface pcselect_freg_fetch(output word_t pc);
-    word_t pc_new;
+interface pcselect_freg_fetch(output word_t pc_new);
+    word_t pc;
     modport pcselect(output pc_new);
     modport freg(input pc_new, output pc);
     modport fetch(input pc);
@@ -19,9 +19,10 @@ endinterface
 
 interface decode_ereg_exec();
     decode_data_t dataD_new, dataD;
-    modport decode(output dataD_new);
+    logic in_delay_slot;
+    modport decode(output dataD_new, input in_delay_slot);
     modport ereg(input dataD_new, output dataD);
-    modport exec(input dataD);
+    modport exec(input dataD, output in_delay_slot);
 endinterface
 
 interface exec_mreg_memory();
@@ -32,7 +33,9 @@ interface exec_mreg_memory();
 endinterface
 
 interface memory_dram(input word_t rd, output m_r_t mread, output m_w_t mwrite);
-    modport memory(input rd, output mread, mwrite);
+    // modport memory(input rd, output mread, mwrite);
+    modport memory(output mread, mwrite);
+    modport writeback(input rd);
 endinterface
 
 interface memory_wreg_writeback();
@@ -61,55 +64,72 @@ endinterface
 interface cp0_intf();
     rf_w_t cwrite;
     cp0_regs_t cp0_data;
-    modport cp0(output cp0_data, input cwrite);
-    modport decode(input cp0_data);
-    // modport memory();
+    creg_addr_t ra;
+    word_t rd;
+    logic is_eret, timer_interrupt;
+    modport cp0(output cp0_data, rd, timer_interrupt, input cwrite, is_eret, ra);
+    modport decode(input rd, output ra);
+    modport memory(input cp0_data, timer_interrupt, cwrite, output is_eret);
     modport writeback(output cwrite);
 
 endinterface
 
-interface hazard_intf();
+interface hazard_intf(input i_data_ok, output stallF);
     decode_data_t dataD;
     exec_data_t dataE;
     mem_data_t dataM;
     wb_data_t dataW;
     logic exception;
     logic         flushD, flushE, flushM, flushW;
-    logic stallF, stallD, stallE, stallM;
+    logic         stallD, stallE, stallM;
     word_t aluoutM, resultW;
     forward_t forwardAE, forwardBE, forwardAD, forwardBD;
-    modport hazard(input dataD, dataE, dataM, dataW,
+    word_t hiM, loM, hiW, loW;
+    word_t alusrcaE;
+    logic is_eret;
+    // exception_t exception;
+    logic exception_valid;
+    modport hazard(input dataD, dataE, dataM, dataW, exception_valid, i_data_ok, is_eret,
                    output flushD, flushE, flushM, flushW,
                           stallF, stallD, stallE, stallM,
                           forwardAE, forwardBE, forwardAD, forwardBD,
-                          aluoutM, resultW);
+                          aluoutM, resultW, hiM, loM, hiW, loW);
     modport freg(input stallF);
     modport dreg(input stallD, flushD);
     modport ereg(input stallE, flushE);
     modport mreg(input stallM, flushM);
     modport wreg(input flushW);
-    modport decode(output dataD, input aluoutM, resultW, forwardAD, forwardBD);
-    modport exec(output dataE, input aluoutM, resultW, forwardAE, forwardBE);
-    modport memory(output dataM);
+    modport decode(output dataD, input aluoutM, resultW, forwardAD, forwardBD, hiM, loM, hiW, loW, alusrcaE);
+    modport exec(output dataE, alusrcaE, input aluoutM, resultW, forwardAE, forwardBE, hiM, loM, hiW, loW);
+    modport memory(output dataM, is_eret);
     modport writeback(output dataW);
-    modport excep();
+    modport excep(output exception_valid);
 endinterface
 
-interface exception_intf();
-
-    modport excep();
-    modport cp0();
-    modport memory();
+interface exception_intf(input logic[5:0]ext_int);
+    logic exception_instr, exception_ri, exception_of, exception_load, exception_save, exception_bp, exception_sys;
+    interrupt_info_t interrupt_info;
+    exception_t exception;
+    word_t vaddr, pc;
+    logic in_delay_slot;
+    cp0_regs_t cp0_data;
+    modport excep(output exception, 
+                  input exception_instr, exception_ri, exception_bp, exception_sys,
+                        exception_of, exception_load, exception_save, vaddr, pc, in_delay_slot, cp0_data, interrupt_info);
+    modport cp0(input exception, output cp0_data);
+    modport memory(output exception_instr, exception_ri, exception_of, exception_load, exception_save, exception_bp, exception_sys,
+                          vaddr, pc, in_delay_slot, input ext_int, output interrupt_info);
 endinterface
 
 interface pcselect_intf();
-    word_t pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F;
-    logic exception_valid, branch_taken, jr, jump;
-    modport pcselect(input pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F,
-                           exception_valid, branch_taken, jr, jump);
+    word_t pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F, epc;
+    logic exception_valid, branch_taken, jr, jump, is_eret;
+    modport pcselect(input pcexception, pcbranchD, pcjrD, pcjumpD, pcplus4F, epc,
+                           exception_valid, branch_taken, jr, jump, is_eret);
     modport fetch(output pcplus4F);
     modport decode(output pcbranchD, pcjumpD, pcjrD, branch_taken, jr, jump);
     modport excep(output exception_valid, pcexception);
+    modport cp0(output is_eret, epc);
 endinterface
 
 `endif

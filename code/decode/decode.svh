@@ -2,49 +2,7 @@
 `define __DECODE_SVH
 
 `include "mips.svh"
-typedef logic[5:0] op_t;
-typedef logic[5:0] func_t;
-typedef logic[4:0] shamt_t;
-// typedef logic[3:0] alufunc_t;
-// typedef logic[2:0] aluop_t;
 
-
-// // signed
-// `define ALU_AND 4'b0000
-// `define ALU_OR  4'b0001
-// `define ALU_ADD 4'b0010
-// `define ALU_SLL 4'b0011
-// `define ALU_SRL 4'b0100
-// `define ALU_SRA 4'b0101
-// `define ALU_SUB 4'b0110
-// `define ALU_SLT 4'b0111
-
-// `define ALU_NOR  4'b1000
-// `define ALU_XOR  4'b1001
-// `define ALU_UADD 4'b1010
-// // `define ALU_USLL 4'b1011
-// // `define ALU_USRL 4'b1100
-// // `define ALU_USRA 4'b1101
-// `define ALU_USUB 4'b1110
-// `define ALU_USLT 4'b1111
-
-typedef enum logic[3:0] {
-    ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
-    ALU_ADDU, ALU_SUBU, ALU_SLTU
-} alufunc_t;
-
-// // aluop
-// `define ALUOP_ADD       4'b0000
-// `define ALUOP_UADD      4'b0001
-// `define ALUOP_RT        4'b0010
-// `define ALUOP_SUB       4'b0011
-// `define ALUOP_USUB      4'b0100
-// `define ALUOP_SLT       4'b0101
-// `define ALUOP_USLT      4'b0110
-// `define ALUOP_AND       4'b0111
-// `define ALUOP_SLL       4'b1000
-// `define ALUOP_OR        4'b1001
-// `define ALUOP_XOR       4'b1010
 
 // op
 `define OP_RT           6'b000000
@@ -56,7 +14,7 @@ typedef enum logic[3:0] {
 `define OP_LUI          6'b001111
 `define OP_ORI          6'b001101
 `define OP_XORI         6'b001110
-`define OP_BEQ          6'b000110
+`define OP_BEQ          6'b000100
 `define OP_BNE          6'b000101
 `define OP_BGEZ         6'b000001
 `define OP_BGTZ         6'b000111
@@ -91,7 +49,7 @@ typedef enum logic[3:0] {
 `define F_MULT          6'b011000
 `define F_MULTU         6'b011001
 `define F_AND           6'b100100
-`define F_NOR           6'b100110
+`define F_NOR           6'b100111
 `define F_OR            6'b100101
 `define F_XOR           6'b100110
 `define F_SLLV          6'b000100
@@ -118,50 +76,6 @@ typedef enum logic[3:0] {
 `define C_MFC0          5'b00000
 `define C_MTC0          5'b00100
 
-typedef enum logic { IMM, REG } alusrc_t;
-typedef enum logic { RD, RT } regdst_t;
-typedef struct packed {
-    // logic memtoreg, memwrite;
-    // logic branch, alusrc;
-    // logic regdst, regwrite;
-    // logic jump;
-    // logic [3:0]aluop;
-    alufunc_t alufunc;
-    logic memread, memwrite;
-    logic regwrite;
-    alusrc_t alusrc;
-    regdst_t regdst;
-    logic branch;
-    logic jump;
-    logic jr;
-    logic shift;
-} control_t;
 
-typedef enum logic [5:0] { 
-    // ADDI, ADDIU, SLTI, SLTIU, ANDI, LUI, ORI, XORI, 
-    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
-    LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
-    ADD, ADDU, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
-    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
-    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
-} decoded_op_t;
-
-typedef struct packed {
-    creg_addr_t rs, rt, rd;
-    decoded_op_t op;
-    word_t extended_imm;
-    control_t ctl;
-    shamt_t shamt;
-} decoded_instr_t;
-
-typedef struct packed {
-    decoded_instr_t instr;
-    word_t pcplus4;
-    logic exception_instr, exception_ri;
-    word_t srca, srcb;
-} decode_data_t;
-
-typedef enum logic { RD1 } srca_source_t;
-typedef enum logic { RD2 } srcb_source_t;
 
 `endif

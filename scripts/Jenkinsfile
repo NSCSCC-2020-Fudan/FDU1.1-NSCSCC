@@ -6,16 +6,21 @@ pipeline {
       steps {
         deleteDir() // clean up workspace
         // git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
-        git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
-        sh 'vivado -mode tcl -source scripts/add_directory.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
+        git branch: 'docker-jenkins',
+          credentialsId: 'b18376fc-d1e2-453b-b019-5f4d587dcd5b',
+          url: 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
+        // 'https://git@github.com:NSCSCC-2020-Fudan/FDU1.1-MIPS.git'
+        sh 'vivado -mode tcl -source scripts/add_directory.tcl ../loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
       }
     }
     stage('Run sram_func_test') {
+      environment {
+        SIMULATION="sim_1"
+        LOG_PATH="../loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log"
+        FLAG="\\-\\-\\-\\-PASS!!!"
+      }
       steps {
-        sh 'export SIMULATION=sim_1'
-        sh 'export LOG_PATH=loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log'
-        sh 'export FLAG=\\-\\-\\-\\-PASS!!!'
-        sh 'vivado -mode tcl -source scripts/run_simulation.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
+        sh 'vivado -mode tcl -source scripts/run_simulation.tcl ../loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
         sh 'bash scripts/check_simulation.sh'
       }
     }

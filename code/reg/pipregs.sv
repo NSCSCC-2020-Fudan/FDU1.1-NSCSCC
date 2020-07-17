@@ -3,19 +3,21 @@
 module Freg (
     input logic clk, reset,
     pcselect_freg_fetch.freg ports,
-    hazard_intf hazard
+    hazard_intf.freg hazard
 );
     logic en;
+    word_t pc, pc_new;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            ports.pc <= '0;
+            pc <= 32'hbfc00000;
         end
         else if(en) begin
-            ports.pc <= ports.pc_new;
+            pc <= pc_new;
         end
     end
     assign en = ~hazard.stallF;
-    
+    assign ports.pc = pc;
+    assign pc_new = ports.pc_new;
 endmodule
 
 module Dreg (

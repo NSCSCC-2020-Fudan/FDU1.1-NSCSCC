@@ -2,23 +2,17 @@
 
 module cp0(
     input logic clk, reset,
-
-    // read
-    input cp0_addr_t ra,
-    output word_t rd,
-
-    // write
-    input logic we,
-    input cp0_addr_t wa,
-    input word_t wd,
-
-    // exception
-    input exception_t exception,
-    input logic eret,
-
-    output cp0_regs_t cp0
+    cp0_intf.cp0 ports,
+    exception_intf.cp0 excep,
+    pcselect_intf.cp0 pcselect
 );
-    CP0_REGS cp0_new;
+    logic is_eret;
+    cp0_regs_t cp0, cp0_new;
+    word_t wd;
+    rf_w_t cwrite; 
+    exception_t exception;
+    creg_addr_t ra;
+    word_t rd;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             cp0 <= `CP0_INIT;
@@ -37,7 +31,6 @@ module cp0(
             count_switch <= ~count_switch;
         end
     end
-
     // read
     always_comb begin
         case (ra)
@@ -50,24 +43,32 @@ module cp0(
             default:rd = '0;
         endcase
     end
-
+    
     // update cp0 registers
     always_comb begin
         cp0_new = cp0;
-
+        
+        cp0_new.count = cp0_new.count + count_switch;
+        if (reset) begin
+            ports.timer_interrupt = 1'b0;
+        end else if (cp0_new.count == cp0_new.compare) begin
+            ports.timer_interrupt = 1'b1;
+        end else if (cwrite.wen & cwrite.addr == 5'd11) begin
+            ports.timer_interrupt = 1'b0;
+        end
         // write
-        if (we) begin
-            case (wa)
-                5'd9:   cp0_new.count   = wd;
-                5'd11:  cp0_new.compare = wd;
+        if (cwrite.wen) begin
+            case (cwrite.addr)
+                5'd9:   cp0_new.count   = cwrite.wd;
+                5'd11:  cp0_new.compare = cwrite.wd;
                 5'd12:  
                 begin
-                        cp0_new.status.IM = wd[15:8];
-                        cp0_new.status.EXL = wd[1];
-                        cp0_new.status.IE = wd[0];
+                        cp0_new.status.IM = cwrite.wd[15:8];
+                        cp0_new.status.EXL = cwrite.wd[1];
+                        cp0_new.status.IE = cwrite.wd[0];
                 end
-                5'd13:  cp0_new.cause.IP[7:2] = wd[15:10];
-                5'd14:  cp0_new.epc = wd;
+                5'd13:  cp0_new.cause.IP[7:2] = cwrite.wd[15:10];
+                5'd14:  cp0_new.epc = cwrite.wd;
                 default: ;
             endcase
         end
@@ -76,10 +77,10 @@ module cp0(
         if (exception.valid) begin
             if (~cp0.status.EXL) begin
                 if (exception.in_delay_slot) begin
-                    cp0_new.status.bd = 1'b1;
+                    cp0_new.cause.BD = 1'b1;
                     cp0_new.epc = exception.pc - 32'd4;
                 end else begin
-                    cp0_new.status.bd = 1'b0;
+                    cp0_new.cause.BD = 1'b0;
                     cp0_new.epc = exception.pc;
                 end
             end
@@ -92,7 +93,7 @@ module cp0(
             end
         end
 
-        if (eret) begin
+        if (is_eret) begin
             if (cp0.status.ERL) begin
                 cp0_new.status.ERL = 1'b0;
             end else begin
@@ -101,5 +102,13 @@ module cp0(
             // llbit = 1'b0;
         end
     end
-
+    assign cwrite = ports.cwrite;
+    assign ports.cp0_data = cp0;
+    assign is_eret = ports.is_eret;
+    assign exception = excep.exception;
+    assign ra = ports.ra;
+    assign ports.rd = rd;
+    assign excep.cp0_data = cp0;
+    assign pcselect.is_eret = is_eret;
+    assign pcselect.epc = cp0.epc;
 endmodule

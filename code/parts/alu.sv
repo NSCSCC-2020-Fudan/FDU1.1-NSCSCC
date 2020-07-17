@@ -7,7 +7,7 @@ module alu (
     output logic exception_of
 );
     shamt_t shamt;
-    assign shamt = b[5:0];
+    assign shamt = a[4:0];
     logic [32:0]temp;
     always_comb begin
         exception_of = 0;
@@ -25,13 +25,13 @@ module alu (
                 c = a | b;
             end
             ALU_SLL: begin
-                c = a << shamt;
+                c = b << shamt;
             end
             ALU_SRL: begin
-                c = a >> shamt; 
+                c = b >> shamt; 
             end
             ALU_SRA: begin
-                c = a >>> shamt;
+                c = signed'(b) >>> shamt;
             end
             ALU_SUB: begin
                 c = a - b;
@@ -42,7 +42,7 @@ module alu (
                 c = (signed'(a) < signed'(b)) ? 32'b1 : 32'b0; 
             end
             ALU_NOR: begin
-                c = ~(a & b);
+                c = ~(a | b);
             end
             ALU_XOR: begin
                 c = a ^ b;
@@ -55,6 +55,15 @@ module alu (
             end
             ALU_SLTU: begin
                 c = (a < b) ? 32'b1 : 32'b0;
+            end
+            ALU_PASSA: begin
+                c = a;
+            end
+            ALU_LUI : begin
+                c = {b[15:0], 16'b0};
+            end
+            ALU_PASSB: begin
+                c = b;
             end
             default: begin
                 c = '0;

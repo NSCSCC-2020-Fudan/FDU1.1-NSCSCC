@@ -1,6 +1,6 @@
 #!/bin/bash
 
-grep "${FLAG}" ${LOG_PATH} > /dev/null
+grep $FLAG $LOG_PATH > /dev/null
 
 if [ $? -eq 0 ]; then
     echo "Simulation ${SIMULATION} succeeded."
