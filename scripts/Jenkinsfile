@@ -1,0 +1,34 @@
+pipeline {
+  agent any
+ 
+  stages {
+    stage('Add directory') {
+      steps {
+        deleteDir() // clean up workspace
+        // git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
+        git 'https://github.com/NSCSCC-2020-Fudan/FDU1.1-MIPS'
+        sh 'vivado -mode tcl -source scripts/add_directory.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
+      }
+    }
+    stage('Run sram_func_test') {
+      steps {
+        sh 'export SIMULATION=sim_1'
+        sh 'export LOG_PATH=loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log'
+        sh 'export FLAG=\\-\\-\\-\\-PASS!!!'
+        sh 'vivado -mode tcl -source scripts/run_simulation.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
+        sh 'bash scripts/check_simulation.sh'
+      }
+    }
+  }
+  post {
+    failure {
+      emailext attachLog: true,
+      body: '''Project name: $PROJECT_NAME
+Build number: $BUILD_NUMBER
+Build Status: $BUILD_STATUS
+Build URL: $BUILD_URL''',
+      recipientProviders: [culprits()],
+      subject: 'Project \'$PROJECT_NAME\' is broken'
+    }
+  }
+}

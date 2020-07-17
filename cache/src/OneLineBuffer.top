@@ -1,0 +1,13 @@
+# ports
+mem: mem
+valid
+tag
+state
+tag_hit
+offset_hit
+req_addr
+saved_addr
+dirty
+offset
+req_strb
+saved_strb
