@@ -79,7 +79,7 @@ module OneLineBuffer #(
                     if (sramx_req.wr) begin
                         for (int i = 0; i < BYTES_PER_WORD; i++) begin
                             if (req_strb[i])
-                                mem[offset].bytes[i] <= sramx_req.wdata.bytes[i];
+                                mem[req_addr.offset].bytes[i] <= sramx_req.wdata.bytes[i];
                         end
                     end
                 end else begin
@@ -110,7 +110,7 @@ module OneLineBuffer #(
 
                 // update meta info
                 if (cbus_resp.last) begin
-                    dirty <= 0;
+                    dirty <= saved_req.wr;
                     valid <= 1;
                     tag   <= saved_addr.tag;
                 end

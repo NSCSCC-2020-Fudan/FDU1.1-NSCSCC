@@ -106,8 +106,12 @@ auto _set_posttest_hook() -> PosttestHook& { \
     return _posttest_hook; \
 }
 
-u32 randu(u32 l, u32 r) {
+u32 randu() {
     constexpr u32 SEED = 0x19260817;
     static std::mt19937 gen(SEED);
-    return gen() % (r - l + 1) + l;
+    return gen();
+}
+
+u32 randu(u32 l, u32 r) {
+    return randu() % (r - l + 1) + l;
 }
