@@ -16,6 +16,7 @@ pipeline {
     stage('Run sram_func_test') {
       steps {
         sh 'export SIMULATION=sim_1'
+        sh 'echo $SIMULATION'
         sh 'export LOG_PATH=loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log'
         sh 'export FLAG=\\-\\-\\-\\-PASS!!!'
         sh 'vivado -mode tcl -source scripts/run_simulation.tcl loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
