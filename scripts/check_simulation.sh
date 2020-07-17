@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo $FLAG
+echo $LOG_PATH
 
 grep $FLAG $LOG_PATH > /dev/null
 
