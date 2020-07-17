@@ -137,7 +137,7 @@ WITH {
     }
 } AS("sequential write");
 
-WITH {
+WITH SKIP {
     constexpr int OP_COUNT = 500000;
 
     enum OpType : int {

@@ -91,6 +91,7 @@ private:
 // #define STATISTICS { _.defer([] { \
 //     dev->print_statistics(); \
 // }); }
+#define SKIP { return; }
 
 // invoke in `main`:
 void run_tests();
