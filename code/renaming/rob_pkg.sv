@@ -1,16 +1,6 @@
 //  Package: rob_pkg
 //
 package rob_pkg;
-    //  Group: Typedefs
-    
-
-    //  Group: Parameters
-    
-endpackage: rob_pkg
-
-//  Package: rob_pkg
-//
-package rob_pkg;
     import common::*;
     //  Group: Parameters
     parameter ROB_TABLE_SIZE = 4;

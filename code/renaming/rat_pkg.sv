@@ -15,9 +15,12 @@ package rat_pkg;
         logic wen;
         logic is_dst;
         areg_addr_t areg_id;
-        preg_addr_t preg_id;
+        // preg_addr_t preg_id;
     } w_req_t;
     typedef struct packed {
         areg_addr_t areg_id;
     } r_req_t;
+    typedef struct packed {
+        preg_addr_t preg_id;
+    } r_resp_t;
 endpackage: rat_pkg

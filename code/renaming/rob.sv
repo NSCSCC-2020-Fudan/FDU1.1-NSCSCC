@@ -1,7 +1,7 @@
 module rob (
     
 );
-    import common::*;
+    // import common::*;
     import rob_pkg::*;
 
     // table

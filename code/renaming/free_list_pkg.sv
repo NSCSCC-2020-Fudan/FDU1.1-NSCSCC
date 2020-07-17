@@ -10,5 +10,5 @@ package free_list_pkg;
         logic busy;
     } entry_t;
     typedef entry_t[PREG_NUM-1:0] free_list_t;
-    
+    typedef 
 endpackage: free_list_pkg
