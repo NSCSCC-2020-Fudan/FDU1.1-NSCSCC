@@ -16,7 +16,7 @@ pipeline {
     stage('Run sram_func_test') {
       environment {
         SIMULATION='sim_1'
-        LOG_PATH='../loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/${env.SIMULATION}/behav/xsim/simulate.log'
+        LOG_PATH='../loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/'+$SIMULATION+'/behav/xsim/simulate.log'
         FLAG='\\-\\-\\-\\-PASS!!!'
       }
       steps {
