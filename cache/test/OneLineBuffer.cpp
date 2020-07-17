@@ -72,7 +72,7 @@ WITH {
     assert(top->cmem->mem[7] == 7);
 } AS("single write");
 
-WITH LOG TRACE {
+WITH {
     u32 data[256];
 
     top->tick();
@@ -136,3 +136,90 @@ WITH LOG TRACE {
         assert(data[i] == top->cmem->mem[i]);
     }
 } AS("sequential write");
+
+WITH {
+    constexpr int OP_COUNT = 500000;
+
+    enum OpType : int {
+        READ, WRITE
+    };
+
+    u32 ref_mem[256];
+    for (int i = 0; i < 256; i++) {
+        ref_mem[i] = i;
+    }
+
+    top->tick(8);
+    for (int _t = 0; _t < OP_COUNT; _t++) {
+        int op = randu(0, 1);
+        int index = randu(0, 255);
+        int addr = index * 4;
+        u32 data = randu();
+
+        switch (op) {
+            case READ: {
+                info("test: read @0x%x[%d]\n", addr, index);
+                top->issue_read(2, addr);
+
+                int count = 0;
+                while (!top->inst->sramx_resp_x_addr_ok) {
+                    top->tick();
+                    assert(++count < 256);
+                }
+
+                if (!top->inst->sramx_resp_x_data_ok) {
+                    top->tick();
+                    top->inst->sramx_req_x_req = 0;
+                    top->inst->eval();
+
+                    while (!top->inst->sramx_resp_x_data_ok) {
+                        top->tick();
+                        assert(++count < 256);
+                    }
+                }
+
+                u32 rdata = top->inst->sramx_resp_x_rdata;
+                top->tick();
+
+                info("ref_mem[%d] = %08x, rdata = %08x\n", index, ref_mem[index], rdata);
+                assert(ref_mem[index] == rdata);
+            } break;
+
+            case WRITE: {
+                info("test: write @0x%x[%d]: %08x\n", addr, index, data);
+                ref_mem[index] = data;
+                top->issue_write(2, addr, data);
+
+                int count = 0;
+                while (!top->inst->sramx_resp_x_addr_ok) {
+                    top->tick();
+                    assert(++count < 256);
+                }
+
+                if (!top->inst->sramx_resp_x_data_ok) {
+                    top->tick();
+                    top->inst->sramx_req_x_req = 0;
+                    top->inst->eval();
+
+                    while (!top->inst->sramx_resp_x_data_ok) {
+                        top->tick();
+                        assert(++count < 256);
+                    }
+                }
+
+                top->tick();
+            } break;
+        };
+    }
+
+    // force writing back
+    top->issue_read(2, 0);
+    top->tick(256);
+    top->issue_read(2, 256);
+    top->tick(256);
+
+    for (int i = 0; i < 256; i++) {
+        info("ref_mem[%d] = %08x, mem[%d] = %08x\n", i, ref_mem[i], i, top->cmem->mem[i]);
+        assert(ref_mem[i] == top->cmem->mem[i]);
+    }
+} AS("random read/write");

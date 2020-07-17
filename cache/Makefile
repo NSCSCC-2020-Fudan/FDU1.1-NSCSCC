@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := all
 
 top := OneLineBuffer
+FAST_SIMULATION := 0
 
 ifeq ($(top), )
 $(warning No top module specified.)
@@ -49,6 +50,12 @@ $(SV_TARGET): $(SV_WRAPPER)
 	$(SV) $(SVFLAGS) $(SV_WRAPPER)
 
 # C++
+ifeq ($(FAST_SIMULATION), 1)
+CXX_OPTFLAGS := -O2
+else
+CXX_OPTFLAGS := -g -fsanitize=undefined
+endif
+
 CXX             := g++
 CXX_INCLUDE     := $(addprefix -I, $(VERILATOR) $(UTIL) $(BUILD))
 CXX_HEADERS     := $(shell find $(TEST) -name "*.h")
@@ -60,7 +67,8 @@ CXX_TEST_TARGET := $(BUILD)/$(top).o
 CXXLIBS         := $(addprefix $(BUILD)/, main.o util.o verilated.o trace_fst.o)
 CXXFLAGS        := \
 	-Wall -Wextra -Wno-comment \
-	-g -std=c++17 -fsanitize=undefined \
+	-std=c++17 \
+	$(CXX_OPTFLAGS) \
 	-lz \
 	$(CXX_INCLUDE)
 

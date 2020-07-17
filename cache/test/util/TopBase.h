@@ -5,14 +5,15 @@
 
 inline void escape_space(std::string &s) {
     for (auto &c : s) {
-        if (c == ' ')
+        if (c == ' ' || c == '/')
             c = '-';
     }
 }
 
 #define TRACE { \
-    auto path = std::string("trace/") + name + ".fst"; \
+    auto path = std::string(name); \
     escape_space(path); \
+    path = "trace/" + path + ".fst"; \
     top->start_trace(path.c_str()); \
     _.defer([] { top->stop_trace(); }); \
 }

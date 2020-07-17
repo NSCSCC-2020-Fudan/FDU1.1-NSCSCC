@@ -77,6 +77,7 @@ module OneLineBuffer #(
             IDLE: if (sramx_req.req) begin
                 if (tag_hit) begin
                     if (sramx_req.wr) begin
+                        dirty <= 1;
                         for (int i = 0; i < BYTES_PER_WORD; i++) begin
                             if (req_strb[i])
                                 mem[req_addr.offset].bytes[i] <= sramx_req.wdata.bytes[i];

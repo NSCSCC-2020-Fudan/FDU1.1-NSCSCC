@@ -107,7 +107,7 @@ public:
         for (int i = 0; i < 16; i++) {
             info("%x ", inst->mem[i]);
         }
-        puts("");
+        info("\n");
     }
 
 private:
