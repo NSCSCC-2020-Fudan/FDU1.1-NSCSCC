@@ -17,7 +17,7 @@ pipeline {
       environment {
         SIMULATION='sim_1'
         LOG_PATH='../loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.sim/$SIMULATION/behav/xsim/simulate.log'
-        FLAG='\\-\\-\\-\\-PASS!!!'
+        FLAG='----PASS!!!'
       }
       steps {
         sh 'vivado -mode tcl -source scripts/run_simulation.tcl ../loongson/soc_sram_func/run_vivado/mycpu_prj1/mycpu.xpr'
