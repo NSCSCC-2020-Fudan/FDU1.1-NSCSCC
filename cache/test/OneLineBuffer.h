@@ -105,7 +105,7 @@ public:
 
     void print_cache() {
         for (int i = 0; i < 16; i++) {
-            printf("%x ", inst->mem[i]);
+            info("%x ", inst->mem[i]);
         }
         puts("");
     }

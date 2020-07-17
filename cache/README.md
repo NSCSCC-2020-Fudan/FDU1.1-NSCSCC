@@ -12,7 +12,7 @@
     * `util/`：辅助模块、总线转接模块。
     * `xsim/`：Vivado 下的测试源码。
 * `test/`：测试代码。
-* `trace/`：保存波形图的文件夹。默认不上传波形图文件。
+* `trace/`：保存波形图的文件夹。默认不上传波形图文件（`.fst` 和 `.vcd`），只上传 GTKWave 的配置文件（`.gtkw`）。
 * `.gitignore`
 * `Makefile`：使用 `make run` 运行测试。
 * `README.md`：本文件。

@@ -12,7 +12,7 @@ WITH {
     int count = 0;
     while (!top->inst->sramx_resp_x_data_ok) {
         top->tick();
-        // top->print_cache();
+        top->print_cache();
         count++;
         assert(count < 256);
     }
@@ -43,7 +43,7 @@ WITH {
             }
         }
 
-        // printf("%x ?= %x\n", top->inst->sramx_resp_x_rdata, i);
+        info("%x ?= %x\n", top->inst->sramx_resp_x_rdata, i);
         assert(top->inst->sramx_resp_x_rdata == i);
     }
 } AS("sequential read");
@@ -54,7 +54,7 @@ WITH {
     int count = 0;
     while (!top->inst->sramx_resp_x_data_ok) {
         top->tick();
-        // top->print_cache();
+        top->print_cache();
         count++;
         assert(count < 256);
     }
@@ -72,7 +72,7 @@ WITH {
     assert(top->cmem->mem[7] == 7);
 } AS("single write");
 
-WITH TRACE {
+WITH LOG TRACE {
     u32 data[256];
 
     top->tick();
@@ -123,7 +123,7 @@ WITH TRACE {
         u32 rdata = top->inst->sramx_resp_x_rdata;
         top->tick();
 
-        printf("data[%d] = %08x, rdata = %08x\n", i, data[i], rdata);
+        info("data[%d] = %08x, rdata = %08x\n", i, data[i], rdata);
         assert(rdata == data[i]);
     }
 
@@ -132,7 +132,7 @@ WITH TRACE {
     top->tick(256);
 
     for (int i = 0; i < 256; i++) {
-        printf("data[%d] = %08x, mem[%d] = %08x\n", i, data[i], i, top->cmem->mem[i]);
+        info("data[%d] = %08x, mem[%d] = %08x\n", i, data[i], i, top->cmem->mem[i]);
         assert(data[i] == top->cmem->mem[i]);
     }
 } AS("sequential write");

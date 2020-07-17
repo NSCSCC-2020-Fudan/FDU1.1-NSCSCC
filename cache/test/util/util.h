@@ -100,3 +100,23 @@ auto _set_posttest_hook() -> PosttestHook&;
 
 u32 randu();
 u32 randu(u32 l, u32 r);
+
+/**
+ * basic logging
+ *
+ * info: write to stdout.
+ * warn: write to stderr.
+ * notify: write to stderr, not controlled by the enable flag.
+ */
+
+#define LOG { \
+    enable_logging(true); \
+    _.defer([] { \
+        enable_logging(false); \
+    }); \
+}
+
+void enable_logging(bool enable = true);
+void info(const char *message, ...);
+void warn(const char *message, ...);
+void notify(const char *message, ...);

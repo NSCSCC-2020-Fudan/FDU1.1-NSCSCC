@@ -45,7 +45,7 @@ public:
             if (!_delayed) {
                 if (_bus->is_write()) {
                     int index = get_index();
-                    printf("$bus: write: mem[%d] = %x\n", index, _bus->wdata());
+                    info("$bus: write: mem[%d] = %x\n", index, _bus->wdata());
                     mem[index] = _bus->wdata();
                 }
 

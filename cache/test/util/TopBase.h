@@ -87,7 +87,7 @@ public:
 
     void stop_trace() {
         if (_trace_fp) {
-            printf("trace: stop @%d\n", tickcount());
+            notify("trace: stop @%d\n", tickcount());
             tick();
             _trace_fp->dump(tickcount() + 10);
             _trace_fp->flush();
