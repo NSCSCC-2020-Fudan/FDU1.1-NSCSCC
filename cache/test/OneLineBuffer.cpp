@@ -223,3 +223,22 @@ WITH SKIP {
         assert(ref_mem[i] == top->cmem->mem[i]);
     }
 } AS("random read/write");
+
+WITH LOG TRACE {
+    top->issue_write(1, 2, 0x0000cccc);
+    top->tick(256);
+    top->issue_read(1, 2);
+    assert(top->inst->sramx_resp_x_rdata == 0x00000000);
+    top->tick();
+    top->issue_write(1, 2, 0xcccccccc);
+    top->tick();
+    top->issue_read(1, 0);
+    assert(top->inst->sramx_resp_x_rdata == 0xcccc0000);
+    top->tick();
+    top->issue_write(0, 0, 0x12345678);
+    top->tick();
+    top->issue_write(0, 1, 0x87654321);
+    top->tick();
+    top->issue_read(2, 0);
+    assert(top->inst->sramx_resp_x_rdata == 0xcccc4378);
+} AS("partial write");

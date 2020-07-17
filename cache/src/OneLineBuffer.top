@@ -9,3 +9,5 @@ req_addr
 saved_addr
 dirty
 offset
+req_strb
+saved_strb
