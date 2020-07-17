@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo $LOG_PATH
-
 grep $FLAG $LOG_PATH > /dev/null
 
 if [ $? -eq 0 ]; then
