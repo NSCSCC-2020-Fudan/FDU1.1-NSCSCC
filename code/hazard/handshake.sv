@@ -7,13 +7,37 @@ module handshake (
     output logic cpu_data_ok, req
 );
     assign cpu_data_ok = ~cpu_req | data_ok;
+    typedef enum logic[1:0] { INIT, WAIT_ADDR, WAIT_DATA } handshake_state_t;
+    handshake_state_t state, state_new;
     always_ff @(posedge clk) begin
         if (reset) begin
-            req <= 1'b0;
-        end else if (~req) begin
-            req <= cpu_req;
+            state <= '0;
         end else begin
-            req <= ~addr_ok;
+            state <= state_new;
         end
     end
+    always_comb begin
+        state_new = state;
+        case (state)
+                INIT: begin
+                    if (cpu_req) begin
+                        state_new = WAIT_ADDR;
+                    end
+                end
+                WAIT_ADDR: begin
+                    if (addr_ok) begin
+                        state_new = WAIT_DATA;
+                    end
+                end
+                WAIT_DATA: begin
+                    if (data_ok) begin
+                        state_new = INIT;
+                    end
+                end
+                default: begin
+                    state_new = INIT;
+                end
+            endcase
+    end
+    assign req = state == WAIT_ADDR;
 endmodule
