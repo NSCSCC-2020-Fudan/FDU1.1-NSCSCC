@@ -133,8 +133,8 @@ module OneLineBuffer #(
     // SRAMx driver
     assign sramx_resp.addr_ok = state == IDLE;
     assign sramx_resp.data_ok =
-        (state == IDLE && tag_hit) ||
-        (state == READ && offset_hit && cbus_resp.okay);
+        (state == IDLE && sramx_req.req && tag_hit) ||
+        (state == READ && cbus_resp.okay && offset_hit);
     assign sramx_resp.rdata = state == IDLE ?
         mem[req_addr.offset] : cbus_resp.rdata;  // direct forwarding
 

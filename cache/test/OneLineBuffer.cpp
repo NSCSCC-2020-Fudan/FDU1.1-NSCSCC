@@ -174,3 +174,41 @@ WITH {
     top->issue_read(2, 0);
     assert(top->inst->sramx_resp_x_rdata == 0xcccc4378);
 } AS("partial write");
+
+WITH {
+    u32 mem_cpy[16];
+    memcpy(mem_cpy, top->inst->mem, sizeof(mem_cpy));
+
+    top->issue_read(2, 0);
+    top->inst->sramx_req_x_req = 0;  // fake it
+    top->inst->eval();
+
+    top->tick(256);
+
+    assert(top->inst->sramx_resp_x_addr_ok == true);
+    assert(top->inst->sramx_resp_x_data_ok == false);
+    assert(top->inst->valid == 0);
+    assert(top->inst->dirty == 0);
+    for (int i = 0; i < 16; i++) {
+        assert(top->inst->mem[i] == mem_cpy[i]);
+    }
+} AS("fake request 1");
+
+WITH {
+    top->issue_read(2, 0);
+    top->tick(256);
+    top->inst->sramx_req_x_req = 0;
+    top->tick();
+
+    top->issue_write(2, 4, 0xcccccccc);
+    top->inst->sramx_req_x_req = 0;  // fake it
+    top->inst->eval();
+    assert(top->inst->sramx_resp_x_data_ok == false);
+
+    top->tick(2);
+
+    for (int i = 0; i < 16; i++) {
+        info("mem[%d] = %08x\n", i, top->inst->mem[i]);
+        assert(top->inst->mem[i] == i);
+    }
+} AS("fake request 2");
