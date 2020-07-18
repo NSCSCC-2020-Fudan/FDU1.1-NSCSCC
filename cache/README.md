@@ -67,3 +67,10 @@ Master 需要读写时，只用准备好 `is_write`、`addr` 和 `order`，然�
 ## 类 SRAM 总线（`sramx`/`SRAMx`/SRAM*）
 
 参考 “`A12_类SRAM接口说明.pdf`” 中的规定。
+
+关于握手信号的规定：
+
+* Slave 可以无视 master 的 `req` 信号而拉起 `addr_ok`，表示 slave 当前随时可以接收新的请求。
+* Slave 需要保证只在必要的时候拉起 `data_ok`，表示之前收到的请求处理完成。当 slave 当前没有处理任何请求时，不能拉起 `data_ok`，即便 master 的 `req` 信号没有拉起。
+* 对于同一个周期的请求，`addr_ok` 和 `data_ok` 可以同时为 1，表示数据可以在当前周期准备好（读取）或者是在下一个时钟上升沿更新（写入）。
+* 如果 slave 支持同时接收多个请求，则按照文档中关于处理连续读写的要求来。

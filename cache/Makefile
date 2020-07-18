@@ -29,6 +29,7 @@ SVFLAGS        := \
 	-Wall -Wpedantic -cc \
 	-Mdir $(BUILD) \
 	--prefix $(SV_PREFIX) \
+	-DCACHE_WITHOUT_MIPS \
 	$(SV_INCLUDE) -O2 --trace-fst --trace-structs
 
 $(BUILD)/default.top:
