@@ -1,4 +1,4 @@
-`include "mips.svh"
+// `include "mips.svh"
 
 `include "axi.svh"
 `include "sramx.svh"
@@ -105,7 +105,7 @@ module mycpu_top (
     assign imem_req.wdata = inst_wdata;
     assign inst_addr_ok   = imem_resp.addr_ok;
     assign inst_data_ok   = imem_resp.data_ok;
-    assign inst_rdata     = imem.rdata;
+    assign inst_rdata     = imem_resp.rdata;
 
     assign dmem_req.req   = data_req;
     assign dmem_req.wr    = data_wr;
@@ -114,7 +114,7 @@ module mycpu_top (
     assign dmem_req.wdata = data_wdata;
     assign data_addr_ok   = dmem_resp.addr_ok;
     assign data_data_ok   = dmem_resp.data_ok;
-    assign data_rdata     = dmem.rdata;
+    assign data_rdata     = dmem_resp.rdata;
 
     // address translation & request dispatching
     sramx_req_t  icache_req,  dcache_req,  uncached_req;
@@ -128,7 +128,7 @@ module mycpu_top (
 
     OneLineBuffer ibuf(
         .clk(aclk), .reset(areset),
-        .sramx_req(icache_req), .sramx_resp(imem_resp),
+        .sramx_req(icache_req), .sramx_resp(icache_resp),
         .cbus_req(icbus_req), .cbus_resp(icbus_resp)
     );
     OneLineBuffer dbuf(
@@ -203,7 +203,9 @@ module mycpu_top (
     logic [5 :0] s_axi_rresp;
     logic [2 :0] s_axi_rlast;
     logic [2 :0] s_axi_rvalid;
-    logic [2 :0] s_axi_rread;
+    logic [2 :0] s_axi_rready;
+
+    logic [3:0] awqos, arqos;  // ignored
 
     CrossbarWrap _wrap_inst(
         .*,
