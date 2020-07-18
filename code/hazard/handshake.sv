@@ -28,6 +28,9 @@ module handshake (
                 WAIT_ADDR: begin
                     if (addr_ok) begin
                         state_new = WAIT_DATA;
+                        if (data_ok) begin
+                            state_new = INIT;
+                        end
                     end
                 end
                 WAIT_DATA: begin
