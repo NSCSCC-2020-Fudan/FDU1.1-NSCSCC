@@ -42,8 +42,8 @@ module mycpu(
     assign inst_size = 2'b10;
     assign inst_wdata = '0;
     logic inst_req_;
-    assign inst_req = inst_req_ & d_data_ok;
-    handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req_));
+    // assign inst_req = inst_req_ & d_data_ok;
+    handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req));
     // assign data_req = (|mread.ren) | (|mwrite.wen);
     assign data_wr = mwrite.wen;
     assign vaddr = (mwrite.wen) ? mwrite.addr : mread.addr;
