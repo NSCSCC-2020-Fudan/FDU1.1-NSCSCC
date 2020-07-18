@@ -12,9 +12,13 @@ parameter int BITS_PER_WORD  = BYTES_PER_WORD * 8;
  * utility macros
  */
 
+`ifdef CACHE_WITHOUT_MIPS
 `define ASSERT(expr, message) \
     if (!(expr)) \
         $error(message);
+`else
+`define ASSERT(expr, message) /* nothing */
+`endif
 
 /**
  * primitive datatypes

@@ -45,14 +45,18 @@ module CacheBusToAXI(
     // assign transaction_ok = axi_req.b.ready && axi_resp.b.valid;
     assign transaction_ok = axi_resp.b.valid;
 
+    // state variables
+    enum logic [1:0] {
+        IDLE, TRANSFER, REQUEST, WAITING
+    } state;
+    addr_t    current_addr;
+    round_t   round_cnt;
+    axi_len_t len_cnt;
+
     // detect completion
     logic is_last, is_final;
     assign is_last  = len_cnt == 0;
     assign is_final = is_last && round_cnt == 0;
-
-    // only in WAITING state, `transaction_ok` will be asserted.
-    assign cbus_resp.last = is_final &&
-        (cbus_req.is_write ? transaction_ok : rw_handshake);
 
     // since we never issue both AR & AW request in one clock cycle,
     // it's okay to ignore `cbus_req.is_write`.
@@ -65,13 +69,9 @@ module CacheBusToAXI(
     assign cbus_resp.okay = (cbus_req.is_write && is_last) ?
         transaction_ok : rw_handshake;
 
-    // state variables
-    enum logic [1:0] {
-        IDLE, TRANSFER, REQUEST, WAITING
-    } state;
-    addr_t    current_addr;
-    round_t   round_cnt;
-    axi_len_t len_cnt;
+    // only in WAITING state, `transaction_ok` will be asserted.
+    assign cbus_resp.last = is_final &&
+        (cbus_req.is_write ? transaction_ok : rw_handshake);
 
     // AXI driver
     `define APPLY_AXI_DEFAULTS(channel) \
