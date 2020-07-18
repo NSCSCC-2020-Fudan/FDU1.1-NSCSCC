@@ -6,12 +6,13 @@ module handshake (
     input logic addr_ok, data_ok,
     output logic cpu_data_ok, req
 );
-    assign cpu_data_ok = ~cpu_req | data_ok;
+    
     typedef enum logic[1:0] { INIT, WAIT_ADDR, WAIT_DATA } handshake_state_t;
     handshake_state_t state, state_new;
+    assign cpu_data_ok = state_new == INIT;
     always_ff @(posedge clk) begin
         if (reset) begin
-            state <= '0;
+            state <= INIT;
         end else begin
             state <= state_new;
         end
