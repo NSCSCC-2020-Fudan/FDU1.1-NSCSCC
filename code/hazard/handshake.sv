@@ -12,8 +12,8 @@ module handshake (
             req <= 1'b0;
         end else if (~req) begin
             req <= cpu_req;
-        end else if (addr_ok) begin
-            req <= 1'b0;
+        end else begin
+            req <= ~addr_ok;
         end
     end
 endmodule
