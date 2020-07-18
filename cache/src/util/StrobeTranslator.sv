@@ -2,9 +2,10 @@
  * translate to AXI strobe mask for 32bit data.
  */
 module StrobeTranslator #(
-    localparam type size_t   = logic [1:0],
-    localparam type offset_t = logic [1:0],
-    localparam type strobe_t = logic [3:0]
+    // use parameter: https://www.xilinx.com/support/answers/73178.html
+    /*localparam*/ parameter type size_t   = logic [1:0],
+    /*localparam*/ parameter type offset_t = logic [1:0],
+    /*localparam*/ parameter type strobe_t = logic [3:0]
 ) (
     input  size_t   size,
     input  offset_t offset,
