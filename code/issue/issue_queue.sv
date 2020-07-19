@@ -36,6 +36,21 @@ module issue_queue
         tail_new = tail;
         full = 1'b0;
         read = '0;
+        // wake up
+        for (int i=0; i<WAKEUP_LEN; i++) begin
+            for (int j=0; j<2**ADDR_WIDTH; j++) begin
+                if (queue_new.src1.id == wake_up[i]) begin
+                    queue_new.src1.valid = 1'b1;
+                end
+                if (queue_new.src2.id == wake_up[i]) begin
+                    queue_new.src2.valid = 1'b1;
+                end
+                if (j == tail_new) begin
+                    break;
+                end
+            end
+        end
+
         // read first
         read_num = '0;
         for (int i=0; i<2**ADDR_WIDTH; i++) begin
