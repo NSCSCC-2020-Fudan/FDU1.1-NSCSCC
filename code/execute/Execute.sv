@@ -2,7 +2,8 @@
 module execute (
     decode_ereg_exec.exec in,
     exec_mreg_memory.exec out,
-    hazard_intf.exec hazard
+    hazard_intf.exec hazard,
+    cp0_intf.exec cp0
 );
     word_t alusrcaE, alusrcbE, writedataE, srcaE0;
     exec_data_t dataE;
@@ -76,7 +77,20 @@ module execute (
     assign dataE.hi = hi;
     assign dataE.lo = lo;;
     assign dataE.pcplus4 = dataD.pcplus4;
+    // assign dataE.in_delay_slot = dataD.in_delay_slot;
     assign dataE.in_delay_slot = dataD.in_delay_slot;
+    always_comb begin
+        dataE.cp0_cause = dataD.cp0_cause;
+        dataE.cp0_status = dataD.cp0_status;
+        // if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) begin
+        //     dataE.cp0_cause.IP[1:0] = cp0.cwrite.wd[9:8];
+        // end
+        // if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) begin
+        //     dataE.cp0_status.IM = cp0.cwrite.wd[15:8];
+        //     dataE.cp0_status.EXL = cp0.cwrite.wd[1];
+        //     dataE.cp0_status.IE = cp0.cwrite.wd[0];
+        // end
+    end
     // ports
     // decode_ereg_exec.exec in
     assign dataD = in.dataD;
