@@ -1,4 +1,4 @@
-#include "VTop.h"
+#include "SimpleTopBase.h"
 #include "verilated_fst_c.h"
 
 #include <string>
@@ -18,12 +18,9 @@ inline void escape_space(std::string &s) {
     _.defer([] { top->stop_trace(); }); \
 }
 
-class TopBase {
+class TopBase : public SimpleTopBase {
 public:
-    VTop *inst;
-
-    TopBase() : inst(new VTop), _tickcount(0), _trace_fp(nullptr) {}
-    ~TopBase() {
+    virtual ~TopBase() {
         stop_trace();
     }
 

@@ -1,7 +1,6 @@
 .DEFAULT_GOAL := all
 
-top := OneLineBuffer
-FAST_SIMULATION := 0
+top ?=
 
 ifeq ($(top), )
 $(warning No top module specified.)
@@ -32,16 +31,15 @@ SVFLAGS        := \
 	-DCACHE_WITHOUT_MIPS \
 	$(SV_INCLUDE) -O2 --trace-fst --trace-structs
 
-$(BUILD)/default.top:
-	echo "# ports" > $@
-
+DEFAULT_PORTS_FILE := $(BUILD)/default.top
 $(SV_PORTS):
-	cp -n  $@
+	echo "# ports" > $(DEFAULT_PORTS_FILE)
+	cp -n $(DEFAULT_PORTS_FILE) $@
 
 $(SV_METAXML): $(SV_SOURCE_TREE) $(SV_TOP_FILE)
 	$(SV) $(SVFLAGS) --xml-only --xml-output "$@" $(SV_TOP_FILE)
 
-$(SV_METAINFO): $(SV_METAXML) $(BUILD)/default.top
+$(SV_METAINFO): $(SV_METAXML)
 	python3 ./wrap.py dump $< > $@
 
 $(SV_WRAPPER): $(SV_PORTS) $(SV_METAINFO)
