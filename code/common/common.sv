@@ -4,7 +4,9 @@ package common;
     //  Group: Parameters
     parameter AREG_NUM = 32;
     parameter PREG_NUM = 128;
-    parameter ISSUE_NUM = 4;
+    // parameter ISSUE_NUM = 4;
+    parameter ISSUE_WIDTH = 6; // maximum issue
+    parameter MACHINE_WIDTH = 2; // maximum decode&renaming
     //  Group: Typedefs
     typedef logic[31:0] word_t;
     typedef logic[31:0] vaddr_t;
