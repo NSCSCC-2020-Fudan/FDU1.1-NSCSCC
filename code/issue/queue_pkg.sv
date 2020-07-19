@@ -22,10 +22,10 @@ package queue_pkg;
     typedef entry_t[MEM_QUEUE_LEN-1:0] mem_queue_t;
     typedef entry_t[BRANCH_QUEUE_LEN-1:0] branch_queue_t;
     typedef entry_t[MULT_QUEUE_LEN-1:0] mult_queue_t;
-    typedef logic[$clog2(ALU_QUEUE_LEN):0] alu_queue_ptr_t;
-    typedef logic[$clog2(MEM_QUEUE_LEN):0] mem_queue_ptr_t;
-    typedef logic[$clog2(BRANCH_QUEUE_LEN):0] branch_queue_ptr_t;
-    typedef logic[$clog2(MULT_QUEUE_LEN):0] mult_queue_ptr_t;
+    typedef logic[$clog2(ALU_QUEUE_LEN)-1:0] alu_queue_ptr_t;
+    typedef logic[$clog2(MEM_QUEUE_LEN)-1:0] mem_queue_ptr_t;
+    typedef logic[$clog2(BRANCH_QUEUE_LEN)-1:0] branch_queue_ptr_t;
+    typedef logic[$clog2(MULT_QUEUE_LEN)-1:0] mult_queue_ptr_t;
 
     // write
     typedef enum logic[1:0] { ALU, MEM, BRANCH, MULT } entry_type_t;
