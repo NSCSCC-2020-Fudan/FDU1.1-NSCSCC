@@ -40,6 +40,7 @@ typedef struct packed {
     word_t instr_;
     word_t pcplus4;
     logic exception_instr;
+    logic in_delay_slot;
 } fetch_data_t;
 
 typedef logic[5:0] op_t;
@@ -120,6 +121,8 @@ typedef struct packed {
     word_t hi, lo;
     word_t pcplus4;
     logic in_delay_slot;
+    cp0_cause_t cp0_cause;
+    cp0_status_t cp0_status;
 } exec_data_t;
 
 typedef struct packed {

@@ -53,11 +53,35 @@ module decode (
 	srcbdmux srcbdmux(.regfile(regfile.src2),.m(hazard.aluoutM),.w(hazard.resultW),.alusrcaE(hazard.alusrcaE),
 					  .forward(hazard.forwardBD), .srcb(dataD.srcb));
 
-	assign dataD.in_delay_slot = out.in_delay_slot;
+	assign dataD.in_delay_slot = dataF.in_delay_slot;
+    always_comb begin
+        dataD.cp0_cause = cp0.cp0_data.cause;
+		dataD.cp0_status = cp0.cp0_data.status;
+		if (hazard.dataE.instr.ctl.cp0write && hazard.dataE.instr.rd == 5'd13) begin
+			dataD.cp0_cause.IP[1:0] = hazard.dataE.aluout[9:8];
+		end else if (hazard.dataM.instr.ctl.cp0write && hazard.dataM.instr.rd == 5'd13) begin
+			dataD.cp0_cause.IP[1:0] = hazard.dataM.aluout[9:8];
+		end else if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) begin
+            dataD.cp0_cause.IP[1:0] = cp0.cwrite.wd[9:8];
+		end
+		if (hazard.dataE.instr.ctl.cp0write && hazard.dataE.instr.rd == 5'd12) begin
+			dataD.cp0_status.IM = hazard.dataE.aluout[15:8];
+            dataD.cp0_status.EXL = hazard.dataE.aluout[1];
+            dataD.cp0_status.IE = hazard.dataE.aluout[0];
+		end else if (hazard.dataM.instr.ctl.cp0write && hazard.dataM.instr.rd == 5'd12) begin
+			dataD.cp0_status.IM = hazard.dataM.aluout[15:8];
+            dataD.cp0_status.EXL = hazard.dataM.aluout[1];
+            dataD.cp0_status.IE = hazard.dataM.aluout[0];
+		end else if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) begin
+            dataD.cp0_status.IM = cp0.cwrite.wd[15:8];
+            dataD.cp0_status.EXL = cp0.cwrite.wd[1];
+            dataD.cp0_status.IE = cp0.cwrite.wd[0];
+        end
+    end
 	// ports
 	// 	fetch_dreg_decode.decode in
 	assign dataF = in.dataF;
-
+	assign in.in_delay_slot = dataD.instr.ctl.branch | dataD.instr.ctl.jump;
 	// decode_ereg_exec.decode out
 	assign out.dataD_new = dataD;
 

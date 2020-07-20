@@ -67,7 +67,7 @@ module cp0(
                         cp0_new.status.EXL = cwrite.wd[1];
                         cp0_new.status.IE = cwrite.wd[0];
                 end
-                5'd13:  cp0_new.cause.IP[7:2] = cwrite.wd[15:10];
+                5'd13:  cp0_new.cause.IP[1:0] = cwrite.wd[9:8];
                 5'd14:  cp0_new.epc = cwrite.wd;
                 default: ;
             endcase
@@ -108,7 +108,7 @@ module cp0(
     assign exception = excep.exception;
     assign ra = ports.ra;
     assign ports.rd = rd;
-    assign excep.cp0_data = cp0;
+    // assign excep.cp0_data = cp0;
     assign pcselect.is_eret = is_eret;
     assign pcselect.epc = cp0.epc;
 endmodule
