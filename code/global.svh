@@ -14,7 +14,7 @@ typedef logic[5:0] func_t;
 typedef logic[4:0] shamt_t;
 
 typedef enum logic[3:0] {
-    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
+    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR,
     ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
 } alufunc_t;
 typedef enum logic { ZERO_EXT, SIGN_EXT } ext_mode;
@@ -75,49 +75,15 @@ typedef struct packed {
     logic hitoreg, lotoreg, cp0toreg;
 } control_t;
 
-typedef enum logic [5:0] { 
-    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, 
+typedef enum logic [5:0] {
+    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI,
     ADDU, RESERVED,
-    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
+    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL,
     LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
-    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
-    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
+    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU,
+    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL,
     JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
 } decoded_op_t;
-
-typedef logic[5:0] op_t;
-typedef logic[5:0] func_t;
-typedef logic[4:0] shamt_t;
-
-typedef enum logic[3:0] {
-    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR,
-    ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
-} alufunc_t;
-
-typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
-typedef enum logic { RT, RD } regdst_t;
-typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
-typedef struct packed {
-    alufunc_t alufunc;
-    logic memtoreg, memwrite;
-    logic regwrite;
-    alusrcb_t alusrc;
-    regdst_t regdst;
-    logic branch;
-    logic branch1, branch2;
-    branch_t branch_type;
-    logic jump;
-    logic jr;
-    logic shamt_valid;
-    logic zeroext;
-    logic cp0write;
-    logic is_eret;
-    logic hiwrite;
-    logic lowrite;
-    logic is_bp;
-    logic is_sys;
-    logic hitoreg, lotoreg, cp0toreg;
-} control_t;
 
 typedef struct packed {
     creg_addr_t rs, rt, rd;
