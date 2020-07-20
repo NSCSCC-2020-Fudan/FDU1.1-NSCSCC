@@ -8,7 +8,8 @@
  * NOTE: assume the widths of $Bus & AXI are 32 bits.
  */
 module CacheBusToAXI #(
-    parameter string AXI_MODE = "wrap"  // "wrap" or "incr"
+    // Vivado synthesis does not allow "string" in parameters
+    parameter AXI_MODE = "wrap"  // "wrap" or "incr"
 ) (
     input logic clk, resetn,
 
