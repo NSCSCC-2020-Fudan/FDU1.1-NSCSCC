@@ -32,9 +32,20 @@ public:
     auto get_index() const -> int {
         assert((_bus->addr() % 4) == 0);
         int index;
-        if (_in_operation)
-            index = _bus->addr() / 4 + _count;
-        else
+        if (_in_operation) {
+            // support AXI wrap burst access.
+            // this may not be compatible with AXI incr burst, but
+            // it is generally okay in cache read/write settings.
+
+            // index = _bus->addr() / 4 + _count;
+
+            int req_size = 1 << _bus->order();
+            int req_index = _bus->addr() / 4;
+            int wrap_boundary = req_index / req_size * req_size;
+            int req_offset = req_index - wrap_boundary;
+            int cur_offset = (req_offset + _count) % req_size;
+            index = wrap_boundary + cur_offset;
+        } else
             index = _bus->addr() / 4;
         assert(0 <= index && index < size);
         return index;

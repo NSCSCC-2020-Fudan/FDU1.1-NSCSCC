@@ -66,6 +66,7 @@ WITH {
     }
 
     top->tick();  // handshake at posedge
+    top->tick(256);
 
     for (int i = 0; i < 8; i++) {
         if (i == 7)

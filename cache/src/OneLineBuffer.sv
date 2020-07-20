@@ -70,7 +70,7 @@ module OneLineBuffer #(
     // the FSM
     always_ff @(posedge clk)
     if (reset) begin
-        {valid, dirty, offset} <= 0;
+        {valid, dirty} <= 0;
         state <= IDLE;
     end else begin
         unique case (state)
@@ -84,9 +84,15 @@ module OneLineBuffer #(
                         end
                     end
                 end else begin
-                    state     <= dirty ? WRITE : READ;
                     saved_req <= sramx_req;
-                    // offset <= 0;
+
+                    if (dirty) begin
+                        state  <= WRITE;
+                        offset <= 0;
+                    end else begin
+                        state  <= READ;
+                        offset <= req_addr.offset;
+                    end
                 end
             end
 
@@ -104,10 +110,11 @@ module OneLineBuffer #(
                     end else begin
                         mem[offset] <= cbus_resp.rdata;
                     end
-
-                    // `offset`: see "WRITE"
-                    offset <= offset + 1;
                 end
+
+                // NOTE: be careful about offset overflow
+                if (cbus_resp.okay)
+                    offset <= offset + 1;
 
                 // update meta info
                 if (cbus_resp.last) begin
@@ -120,9 +127,10 @@ module OneLineBuffer #(
             WRITE: begin
                 state <= cbus_resp.last ? READ : WRITE;
 
-                // it is assumed that `offset` will overflow to zero
-                // when `cbus_resp.last` is asserted.
-                if (cbus_resp.okay)
+                // NOTE: be careful about offset overflow
+                if (cbus_resp.last)
+                    offset <= saved_addr.offset;
+                else if (cbus_resp.okay)
                     offset <= offset + 1;
             end
 
@@ -144,8 +152,11 @@ module OneLineBuffer #(
     assign cbus_req.order    = cbus_order_t'(BUFFER_ORDER);
     assign cbus_req.wdata    = mem[offset];
     assign cbus_req.addr     = {
-        (state == WRITE ? tag : saved_addr.tag),
-        {(OFFSET_BITS + ALIGN_BITS){1'b0}}
+        (state == WRITE ?
+            {tag, {OFFSET_BITS{1'b0}}} :
+            {saved_addr.tag, saved_addr.offset}
+        ),
+        {ALIGN_BITS{1'b0}}
     };
 
     logic __unused_ok = &{1'b0, saved_req, 1'b0};
