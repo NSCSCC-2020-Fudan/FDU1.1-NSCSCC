@@ -17,7 +17,7 @@ module rat (
         else begin
             for (int j=0; j<WRITE_NUM; j++) begin
                 if (w_req[j].req) begin
-                    pass
+                    
                 end
             end
         end
@@ -41,7 +41,7 @@ module rat (
     // read
     r_req_t [READ_NUM-1:0] r_req;
     r_resp_t [READ_NUM-1:0] r_resp;
-    for (int i=0; i<READ_NUM; i++) begin
+    for (genvar i=0; i<READ_NUM; i++) begin
         assign r_resp[i].preg_id = mapping_table[r_req[i].areg_id];
     end
     // r0 is always 0
