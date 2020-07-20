@@ -59,7 +59,7 @@ public:
         _tickcount = 0;
 
         inst->clk = 0;
-        inst->reset = 0;
+        inst->resetn = 1;
         inst->sramx_req_x_addr = 0;
         inst->sramx_req_x_req = 0;
         inst->sramx_req_x_size = 0;
@@ -69,9 +69,9 @@ public:
         inst->cbus_resp_x_okay = 0;
         inst->cbus_resp_x_rdata = 0;
 
-        inst->reset = 1;
+        inst->resetn = 0;
         tick();
-        inst->reset = 0;
+        inst->resetn = 1;
         tick();
 
         cmem->reset();

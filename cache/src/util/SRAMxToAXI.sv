@@ -2,7 +2,7 @@
 `include "axi.svh"
 
 module SRAMxToAXI(
-    input logic clk, reset,
+    input logic clk, resetn,
 
     input  sramx_req_t  sramx_req,
     output sramx_resp_t sramx_resp,
@@ -102,12 +102,12 @@ module SRAMxToAXI(
     end
 
     always_ff @(posedge clk)
-    if (reset) begin
-        in_issue  <= 0;
-        saved_req <= 0;
-    end else begin
+    if (resetn) begin
         in_issue <= remain;
         if (!busy)
             saved_req <= take_body(sramx_req);
+    end else begin
+        in_issue  <= 0;
+        saved_req <= 0;
     end
 endmodule

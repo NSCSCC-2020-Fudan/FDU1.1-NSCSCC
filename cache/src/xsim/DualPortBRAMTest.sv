@@ -5,10 +5,11 @@ module DualPortBRAMTest();
     always
         #5 clk = ~clk;
 
-    logic reset, en;
+    logic reset, resetn, en;
     logic [3:0] write_en_1, write_en_2;
     logic [9:0] addr_1, addr_2;
     logic [31:0] data_in_1, data_in_2, data_out_1, data_out_2;
+    assign resetn = ~reset;
 
     DualPortBRAM #(
         .RESET_VALUE("23333333")

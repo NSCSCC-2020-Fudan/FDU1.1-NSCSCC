@@ -10,7 +10,7 @@
 module CacheBusToAXI #(
     parameter string AXI_MODE = "wrap"  // "wrap" or "incr"
 ) (
-    input logic clk, reset,
+    input logic clk, resetn,
 
     input  cbus_req_t  cbus_req,
     output cbus_resp_t cbus_resp,
@@ -141,10 +141,7 @@ module CacheBusToAXI #(
 
     // the FSM
     always_ff @(posedge clk)
-    if (reset) begin
-        state <= IDLE;
-        {current_addr, round_cnt, len_cnt} <= 0;
-    end else begin
+    if (resetn) begin
         unique case (state)
             IDLE: if (cbus_req.valid && addr_ok) begin
                 state        <= TRANSFER;
@@ -174,6 +171,9 @@ module CacheBusToAXI #(
                 state <= is_final ? IDLE : REQUEST;
             end
         endcase
+    end else begin
+        state <= IDLE;
+        {current_addr, round_cnt, len_cnt} <= 0;
     end
 
     logic _unused_ok = &{1'b0, axi_resp, 1'b0};

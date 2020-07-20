@@ -20,7 +20,7 @@ module OneLineBuffer #(
         align_t  index;
     }
 ) (
-    input logic clk, reset,
+    input logic clk, resetn,
 
     input  sramx_req_t  sramx_req,
     output sramx_resp_t sramx_resp,
@@ -69,10 +69,7 @@ module OneLineBuffer #(
 
     // the FSM
     always_ff @(posedge clk)
-    if (reset) begin
-        {valid, dirty} <= 0;
-        state <= IDLE;
-    end else begin
+    if (resetn) begin
         unique case (state)
             IDLE: if (sramx_req.req) begin
                 if (tag_hit) begin
@@ -136,6 +133,9 @@ module OneLineBuffer #(
 
             RESERVED: /* do nothing */;
         endcase
+    end else begin
+        {valid, dirty} <= 0;
+        state <= IDLE;
     end
 
     // SRAMx driver
