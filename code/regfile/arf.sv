@@ -1,6 +1,9 @@
-module arf (
+module arf 
+	import common::*;
+	(
     
 );
-    logic word_t[AREG_NUM-1:0] regfile;
+    
+    word_t[AREG_NUM-1:0] regfile;
     
 endmodule
