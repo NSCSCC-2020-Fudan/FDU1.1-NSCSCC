@@ -7,7 +7,9 @@
  *
  * NOTE: assume the widths of $Bus & AXI are 32 bits.
  */
-module CacheBusToAXI(
+module CacheBusToAXI #(
+    parameter string AXI_MODE = "wrap"  // "wrap" or "incr"
+) (
     input logic clk, reset,
 
     input  cbus_req_t  cbus_req,
@@ -17,10 +19,13 @@ module CacheBusToAXI(
 );
     localparam axi_burst_size AXI_BURST_SIZE =
         axi_burst_size'($clog2(CBUS_DATA_BYTES));
+    localparam axi_burst_type AXI_BURST_TYPE =
+        AXI_MODE == "wrap" ? BURST_WRAP : BURST_INCR;
 
     localparam int EXCEED_BITS = CBUS_LEN_BITS - AXI_LEN_BITS;
     `ASSERT(EXCEED_BITS > 0,
         "CBUS_LEN_BITS muse be larger than AXI_LEN_BITS.");
+
 
     typedef logic [EXCEED_BITS - 1:0] round_t;
 
@@ -76,7 +81,7 @@ module CacheBusToAXI(
     // AXI driver
     `define APPLY_AXI_DEFAULTS(channel) \
         axi_req.channel.size  = AXI_BURST_SIZE; \
-        axi_req.channel.burst = BURST_INCR; \
+        axi_req.channel.burst = AXI_BURST_TYPE; \
         axi_req.channel.lock  = LOCK_NORMAL; \
         axi_req.channel.cache = MEM_DEFAULT; \
         axi_req.channel.prot  = 0;
@@ -84,7 +89,8 @@ module CacheBusToAXI(
     always_comb begin
         axi_req = 0;
 
-        unique0 case (state)
+        // "verilator" updated to 4.036, which doesn't accept unique0
+        unique case (state)
             IDLE: if (cbus_req.valid) begin
                 if (cbus_req.is_write) begin
                     axi_req.aw.valid = 1;

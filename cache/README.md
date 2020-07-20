@@ -64,6 +64,8 @@ Cache 总线用于 cache 读取/写回一整条 cache line。在时钟上升沿�
 
 Master 需要读写时，只用准备好 `is_write`、`addr` 和 `order`，然后全程拉起 `valid` 信号。之后等待 slave 反馈 `okay` 信息。每次收到 `okay` 时，如果是读取，则 `rdata` 是读取到的数据；如果是写入，则 `wdata` 应换上下一个要写入的数据。读/写都是顺序读写。当 slave 返回 `last` 时，表明操作已经完成，此时可以撤去 `valid` 信号。该总线要求在 `valid` 等于 1 的时候，`is_write`、`addr` 和 `order` 不能改变；在 slave 反馈 `last` 前，`valid` 不能撤下。
 
+$bus 并没有规定 AXI burst 传输的类型，也没有规定 `addr` 是否需要和 cache line 的大小对齐。可以根据需要选择 `INCR` 类型或者 `WRAP` 类型。
+
 ## 类 SRAM 总线（`sramx`/`SRAMx`/SRAM*）
 
 参考 “`A12_类SRAM接口说明.pdf`” 中的规定。
