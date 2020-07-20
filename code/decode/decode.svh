@@ -77,32 +77,5 @@
 `define C_MTC0          5'b00100
 
 
-typedef enum logic [5:0] {
-    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI,
-    ADDU, RESERVED,
-    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL,
-    LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
-    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU,
-    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL,
-    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
-} decoded_op_t;
-
-typedef struct packed {
-    creg_addr_t rs, rt, rd;
-    decoded_op_t op;
-    word_t extended_imm;
-    control_t ctl;
-    shamt_t shamt;
-} decoded_instr_t;
-
-typedef struct packed {
-    decoded_instr_t instr;
-    word_t pcplus4;
-    logic exception_instr, exception_ri;
-    word_t srca, srcb;
-    logic in_delay_slot;
-    cp0_cause_t cp0_cause;
-    cp0_status_t cp0_status;
-} decode_data_t;
 
 `endif
