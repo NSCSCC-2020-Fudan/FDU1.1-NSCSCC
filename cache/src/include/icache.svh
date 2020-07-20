@@ -10,6 +10,7 @@ parameter int ICACHE_OFFSET_BITS = 3;                      // pffset bits
 parameter int ICACHE_INDEX_BITS  = 6;                      // index bits (set)
 parameter int ICACHE_IDX_BITS    = 3;                      // id bits
 parameter int ICACHE_NUM_WAYS    = 2**ICACHE_IDX_BITS;     // degree of associativity
+parameter int ICACHE_NUM_SETS    = 2**ICACHE_INDEX_BITS;
 
 // NOTE: in order to utilize VIPT, ICACHE_NONTAG_BITS must be within 4KB page.
 parameter int ICACHE_NONTAG_BITS = ICACHE_ALIGN_BITS + ICACHE_OFFSET_BITS + ICACHE_INDEX_BITS;
