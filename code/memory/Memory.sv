@@ -19,16 +19,16 @@ module memory (
     // assign cp0_status = (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) ? cp0.cwrite.wd : cp0.cp0_data.status;
 
     always_comb begin
-        cp0_cause = cp0.cp0_data.cause;
-        cp0_status = cp0.cp0_data.status;
-        if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) begin
-            cp0_cause.IP[7:2] = cp0.cwrite.wd[15:10];
-        end
-        if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) begin
-            cp0_status.IM = cp0.cwrite.wd[15:8];
-            cp0_status.EXL = cp0.cwrite.wd[1];
-            cp0_status.IE = cp0.cwrite.wd[0];
-        end
+        cp0_cause = dataE.cp0_cause;
+        cp0_status = dataE.cp0_status;
+        // if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd13) begin
+        //     cp0_cause.IP[1:0] = cp0.cwrite.wd[9:8];
+        // end
+        // if (cp0.cwrite.wen && cp0.cwrite.addr == 5'd12) begin
+        //     cp0_status.IM = cp0.cwrite.wd[15:8];
+        //     cp0_status.EXL = cp0.cwrite.wd[1];
+        //     cp0_status.IE = cp0.cwrite.wd[0];
+        // end
     end
     assign aluoutM = dataE.aluout;
     // assign mwrite.en = dataE.memwrite;
@@ -69,6 +69,8 @@ module memory (
     assign dataM.pcplus4 = dataE.pcplus4;
     // ports
     // exec_mreg_memory.memory in
+    // logic in_delay_slot;
+    // assign in.in_delay_slot = dataE.instr.ctl.branch | dataE.instr.ctl.jump;
     assign dataE = in.dataE;
 
     // memory_wreg_writeback.memory out
@@ -90,6 +92,7 @@ module memory (
     assign exception.pc = dataE.pcplus4 - 32'd4;
     assign exception.vaddr = (dataE.exception_instr) ? exception.pc : aluoutM;
     assign exception.interrupt_info = ({exception.ext_int, 2'b00} | cp0_cause.IP | {cp0.timer_interrupt, 7'b0}) & cp0_status.IM;
+    assign exception.cp0_status = cp0_status;
     // memory_dram.memory dram    
     assign dram.mread = mread;
     assign dram.mwrite = mwrite;

@@ -40,6 +40,7 @@ typedef struct packed {
     word_t instr_;
     word_t pcplus4;
     logic exception_instr;
+    logic in_delay_slot;
 } fetch_data_t;
 
 typedef logic[5:0] op_t;
@@ -47,7 +48,7 @@ typedef logic[5:0] func_t;
 typedef logic[4:0] shamt_t;
 
 typedef enum logic[3:0] {
-    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
+    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR,
     ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
 } alufunc_t;
 
@@ -76,32 +77,6 @@ typedef struct packed {
     logic hitoreg, lotoreg, cp0toreg;
 } control_t;
 
-typedef enum logic [5:0] { 
-    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, 
-    ADDU, RESERVED,
-    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
-    LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
-    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
-    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
-    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
-} decoded_op_t;
-
-typedef struct packed {
-    creg_addr_t rs, rt, rd;
-    decoded_op_t op;
-    word_t extended_imm;
-    control_t ctl;
-    shamt_t shamt;
-} decoded_instr_t;
-
-typedef struct packed {
-    decoded_instr_t instr;
-    word_t pcplus4;
-    logic exception_instr, exception_ri;
-    word_t srca, srcb;
-    logic in_delay_slot;
-} decode_data_t;
-
 typedef struct packed {
     decoded_instr_t instr;
     word_t rd;
@@ -120,6 +95,8 @@ typedef struct packed {
     word_t hi, lo;
     word_t pcplus4;
     logic in_delay_slot;
+    cp0_cause_t cp0_cause;
+    cp0_status_t cp0_status;
 } exec_data_t;
 
 typedef struct packed {

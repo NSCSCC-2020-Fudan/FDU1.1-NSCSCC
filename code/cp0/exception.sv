@@ -9,7 +9,6 @@ module exception(
 
     // input logic reset,
     logic exception_instr, exception_ri, exception_of, exception_load, exception_bp, exception_sys;
-    cp0_regs_t cp0;
     interrupt_info_t interrupt_info;
     logic exception_valid;
     exc_code_t exccode;
@@ -17,13 +16,14 @@ module exception(
     logic in_delay_slot;
     word_t pc;
     exception_t exception;
+    cp0_status_t cp0_status;
     // interrupt
     logic interrupt_valid;
     assign interrupt_valid = (interrupt_info != 0) // request
-                           & (cp0.status.IE)
+                           & (cp0_status.IE)
                         //    & (~cp0.debug.DM)
-                           & (~cp0.status.EXL)
-                           & (~cp0.status.ERL);
+                           & (~cp0_status.EXL)
+                           & (~cp0_status.ERL);
 //    assign interrupt_valid = '0;
 
     always_comb begin
@@ -95,5 +95,5 @@ module exception(
     assign in_delay_slot = ports.in_delay_slot;
     assign ports.exception = exception;
     assign interrupt_info = ports.interrupt_info;
-    assign cp0 = ports.cp0_data;
+    assign cp0_status = ports.cp0_status;
 endmodule

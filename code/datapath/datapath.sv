@@ -61,7 +61,8 @@ module datapath (
                .hazard(hazard_intf.ereg));
     execute execute(.in(decode_ereg_exec.exec),
                      .out(exec_mreg_memory.exec),
-                     .hazard(hazard_intf.exec));
+                     .hazard(hazard_intf.exec),
+                     .cp0(cp0_intf.exec));
     
     Mreg mreg0(.clk, .reset,
                .ports(exec_mreg_memory.mreg),

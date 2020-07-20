@@ -30,4 +30,5 @@ module fetch (
     assign dataF.exception_instr = exception_instr;
     assign out.dataF_new = dataF;
     assign pcselect.pcplus4F = pcplus4;
+    assign dataF.in_delay_slot = out.in_delay_slot;
 endmodule
