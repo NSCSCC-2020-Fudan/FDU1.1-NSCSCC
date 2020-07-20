@@ -2,14 +2,7 @@
 `define __DECODE_SVH
 
 `include "mips.svh"
-typedef logic[5:0] op_t;
-typedef logic[5:0] func_t;
-typedef logic[4:0] shamt_t;
 
-typedef enum logic[3:0] {
-    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
-    ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
-} alufunc_t;
 
 // op
 `define OP_RT           6'b000000
@@ -83,57 +76,6 @@ typedef enum logic[3:0] {
 `define C_MFC0          5'b00000
 `define C_MTC0          5'b00100
 
-typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
-typedef enum logic { RT, RD } regdst_t;
-typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
-typedef struct packed {
-    alufunc_t alufunc;
-    logic memtoreg, memwrite;
-    logic regwrite;
-    alusrcb_t alusrc;
-    regdst_t regdst;
-    logic branch;
-    logic branch1, branch2;
-    branch_t branch_type;
-    logic jump;
-    logic jr;
-    logic shamt_valid;
-    logic zeroext;
-    logic cp0write;
-    logic is_eret;
-    logic hiwrite;
-    logic lowrite;
-    logic is_bp;
-    logic is_sys;
-    logic hitoreg, lotoreg, cp0toreg;
-} control_t;
 
-typedef enum logic [5:0] { 
-    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, 
-    ADDU, RESERVED,
-    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
-    LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
-    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
-    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
-    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
-} decoded_op_t;
-
-typedef struct packed {
-    creg_addr_t rs, rt, rd;
-    decoded_op_t op;
-    word_t extended_imm;
-    control_t ctl;
-    shamt_t shamt;
-} decoded_instr_t;
-
-typedef struct packed {
-    decoded_instr_t instr;
-    word_t pcplus4;
-    logic exception_instr, exception_ri;
-    word_t srca, srcb;
-    logic in_delay_slot;
-    cp0_cause_t cp0_cause;
-    cp0_status_t cp0_status;
-} decode_data_t;
 
 `endif
