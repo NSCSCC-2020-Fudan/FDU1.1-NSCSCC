@@ -70,7 +70,7 @@ module mycpu_top #(
     logic inst_addr_ok, data_addr_ok;
     logic inst_data_ok, data_data_ok;
 
-    mycpu mycpu(
+    mycpu #(.DO_ADDR_TRANSLATION(~USE_CACHE)) mycpu(
         .clk(aclk), .resetn(aresetn), .ext_int,
         .inst_req, .inst_wr, .inst_size, .inst_addr, .inst_wdata, .inst_rdata, .inst_addr_ok, .inst_data_ok,
         .data_req, .data_wr, .data_size, .data_addr, .data_wdata, .data_rdata, .data_addr_ok, .data_data_ok,

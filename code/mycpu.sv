@@ -1,7 +1,9 @@
 `include "mips.svh"
 
 // sram
-module mycpu(
+module mycpu #(
+    parameter int DO_ADDR_TRANSLATION = 1
+) (
     input logic clk,
     input logic resetn,  //low active
     input logic[5:0] ext_int,  //interrupt,high active
@@ -48,27 +50,26 @@ module mycpu(
     assign data_wr = mwrite.wen;
     assign vaddr = (mwrite.wen) ? mwrite.addr : mread.addr;
 
-    /**
-     * address translation has been moved to `mycpu_top`
-     */
-    // always_comb begin
-    //     case (vaddr[31:28])
-    //         4'h8: data_addr[31:28] = 4'b0;
-    //         4'h9: data_addr[31:28] = 4'b1;
-    //         4'ha: data_addr[31:28] = 4'b0;
-    //         4'hb: data_addr[31:28] = 4'b1;
-    //         default: begin
-    //             data_addr[31:28] = vaddr[31:28];
-    //         end
-    //     endcase
-    // end
-    // always_comb begin
-    //
-    // end
-    // assign data_addr[27:0] = vaddr[27:0];
+    if (DO_ADDR_TRANSLATION == 1) begin
+        always_comb begin
+            case (vaddr[31:28])
+                4'h8: data_addr[31:28] = 4'b0;
+                4'h9: data_addr[31:28] = 4'b1;
+                4'ha: data_addr[31:28] = 4'b0;
+                4'hb: data_addr[31:28] = 4'b1;
+                default: begin
+                    data_addr[31:28] = vaddr[31:28];
+                end
+            endcase
+        end
+        always_comb begin
 
-    // pass virtual address
-    assign data_addr = vaddr;
+        end
+        assign data_addr[27:0] = vaddr[27:0];
+    end else begin
+        // pass virtual address
+        assign data_addr = vaddr;
+    end
 
     assign data_wdata = mwrite.wd;
     assign data_size = mwrite.wen ? mwrite.size : mread.size;
