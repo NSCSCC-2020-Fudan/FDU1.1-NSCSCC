@@ -11,21 +11,20 @@ module arf
 	// write
 	always_comb begin
 		regfile_new = regfile;
-		for (int i=0; i<WRITE_PORTS; i++) begin
-			if (writes[i].valid) begin
-				regfile_new[writes[i].id] = regfile_new.data;
-			end		
+		for (int i=1; i<AREG_NUM; i++) begin
+			for (int j=0; j<WRITE_PORTS; j++) begin
+				if (writes[j].valid && writes[j].id == i) begin
+					regfile_new[i] = writes[j].data;
+				end
+			end	
 		end
 	end
 
-	// read
-	always_comb begin
-		for (int i=0; i<READ_PORTS; i++) begin
-			read_resps[i].data = reads[i].mode == READ_FIRST ? 
-							     regfile[reads[i].id] : regfile_new[reads[i].id];
-		end
-	end
-
+	// read		
+	for (genvar i=0; i<READ_PORTS; i++) 
+		assign read_resps[i].data = reads[i].mode == READ_FIRST ? 
+									  regfile[reads[i].id] : regfile_new[reads[i].id];
+	
 	always_ff @(posedge clk) begin
 		if (~resetn) begin
 			regfile <= '0;
