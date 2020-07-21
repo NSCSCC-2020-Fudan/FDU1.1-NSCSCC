@@ -46,20 +46,25 @@ module issue(
                     (aD.instr.ctl.lowrite && bD.instr.ctl.lotoreg);
     assign RAW_reg = (aD.instr.ctl.regwrite && aD.destreg == bD.srcrega) || 
                      (aD.instr.ctl.regwrite && aD.destreg == bD.srcregb);
-    assign RAW_cp0 = (aD.instr.ctl.cp0write && aD.cp0_addr == bD.cp0_addr) || 
-                     (aD.instr.ctl.cp0write && aD.cp0_addr == bD.cp0_addr); 
-    //to be updated                     
-    assign RAW = RAW_hl | RAW_reg;
+    assign RAW_cp0 = (aD.instr.ctl.cp0write && aD.cp0_addr == bD.cp0_addr && bD.instr.ctl.cp0toreg); 
+    assign RAW = RAW_hl | RAW_reg | RAW_cp0;
+    //read after write
+                         
     assign BJa = aD.instr.ctl.branch || aD.instr.ctl.jump || aD.instr.ctl.jr;
     assign BJb = bD.instr.ctl.branch || bD.instr.ctl.jump || bD.instr.ctl.jr;
     assign BJ = (BJa & free[6]) | (BJb);
+    //issue together
+    //~ and link needs extra bypass!
     
-    logic ERETb, CAUSEa, STATUSa;
+    logic ERETb, CAUSEa, STATUSa, PRIV;
     assign ERETb = (bD.instr.op == ERET);
     assign CAUSEa = (aD.instr.ctl.cp0write && aD.cp0_addr == 5'd12);
     assign STATUSa = (aD.instr.ctl.cp0write && aD.cp0_addr == 5'd13);
+    assign PRIV = ERETb || CAUSEa || STATUSa;
+    //an instr changes epc before ERET
+    //an instr changes cause/status before exception 
     
-    assign enb = ~(BJ || RAW || MM || ERETb || CAUSEa || STATUSa);
+    assign enb = ~(BJ || RAW || MM || PRIV);
 
     logic [1: 0] issue_en;
     assign issue_en[1] = ~(BJa && free[6]) && ~(free[7]);
