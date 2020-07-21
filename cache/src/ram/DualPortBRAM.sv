@@ -10,10 +10,10 @@
  * Default configuration: 4KB / 32bit width / write-first
  */
 module DualPortBRAM #(
-    parameter int DATA_WIDTH     = 32,
-    parameter int ADDR_WIDTH     = 10,
-    parameter string RESET_VALUE = "00000000",
-    parameter string WRITE_MODE  = "write_first",
+    parameter int DATA_WIDTH  = 32,
+    parameter int ADDR_WIDTH  = 10,
+    parameter     RESET_VALUE = "00000000",
+    parameter     WRITE_MODE  = "write_first",
 
     localparam int MEM_NUM_WORDS  = 2**ADDR_WIDTH,
     localparam int BYTES_PER_WORD = DATA_WIDTH / 8,
