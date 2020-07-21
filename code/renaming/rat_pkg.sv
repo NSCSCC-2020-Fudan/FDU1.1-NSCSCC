@@ -9,6 +9,7 @@ package rat_pkg;
     //  Group: Typedefs
     typedef struct packed {
         preg_addr_t preg_id;
+        rob_pkg::rob_addr_t rob_addr;
     } entry_t;
     typedef entry_t [AREG_NUM-1:0] table_t; 
     typedef struct packed {
