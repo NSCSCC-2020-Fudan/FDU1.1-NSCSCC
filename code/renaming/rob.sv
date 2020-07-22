@@ -5,7 +5,7 @@ module rob (
     import rob_pkg::*;
 
     // table
-    rob_table_t rob_table, rob_table_new;
+    entry_t[2**ROB_ADDR_LEN-1:0] rob_table, rob_table_new;
 
     // fifo ptrs
     rob_ptr_t head_ptr, tail_ptr;

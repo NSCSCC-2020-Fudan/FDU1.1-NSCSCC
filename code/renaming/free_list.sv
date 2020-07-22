@@ -10,7 +10,7 @@ module free_list
 
 
     // free list
-    free_list_t list, list_new, list_release;
+    entry_t[LIST_LEN-1:0]  list, list_new, list_release;
     assign list[0] = 1'b1;
 
     // read and write
