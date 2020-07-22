@@ -70,6 +70,11 @@ parameter logic[4:0] C_MFC0   =       5'b00000;
 parameter logic[4:0] C_MTC0   =       5'b00100;
 
     //  Group: Typedefs
+typedef enum logic[3:0] {
+    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
+    ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
+} alufunc_t;
+
 typedef struct packed {
     alufunc_t alufunc;
     logic memtoreg, memwrite;
