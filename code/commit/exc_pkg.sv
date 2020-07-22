@@ -5,7 +5,13 @@ package exc_pkg;
     
 
     //  Group: Typedefs
-    typedef enum logic[4:0] { NONE, INTERUPT, INSTR, LOAD, SAVE, BP, SYS } exception_info_t;
-
+    typedef struct packed {
+        logic interrupt;
+        logic instr;
+        logic load;
+        logic save;
+        logic bp;
+        logic sys;
+    } exception_info_t;
     
 endpackage: exc_pkg
