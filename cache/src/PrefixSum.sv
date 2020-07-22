@@ -1,4 +1,3 @@
-// verilator lint_off LITENDIAN
 
 /**
  * NOTE: be careful about endianness
@@ -9,6 +8,7 @@
 module PrefixSum #(
     parameter int ARRAY_LENGTH = 8,
 
+    // verilator lint_off LITENDIAN
     localparam type array_t = logic [1:ARRAY_LENGTH]
 ) (
     input array_t arr,

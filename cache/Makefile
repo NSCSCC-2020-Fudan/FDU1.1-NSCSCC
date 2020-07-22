@@ -25,7 +25,7 @@ SV_METAINFO	   := $(BUILD)/$(top).meta.top
 SV_WRAPPER	   := $(BUILD)/$(top)Top.sv
 SV_TARGET      := $(BUILD)/$(SV_PREFIX).mk
 SVFLAGS        := \
-	-Wall -Wpedantic -cc \
+	-Wall -Wpedantic -Wno-LITENDIAN -cc \
 	-Mdir $(BUILD) \
 	--prefix $(SV_PREFIX) \
 	-DCACHE_WITHOUT_MIPS \
