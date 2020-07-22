@@ -40,4 +40,11 @@ typedef logic [31:0] word_t;
 
 typedef word_t addr_t;
 
+// Vivado Synthesis does not support string parameters.
+`ifdef VERILATOR
+`define STRING string
+`else
+`define STRING /* f**k vivado */
+`endif
+
 `endif

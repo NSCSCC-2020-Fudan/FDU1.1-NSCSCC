@@ -9,11 +9,14 @@
  *
  * Default configuration: 4KB / 32bit width / write-first
  */
+
+// verilator lint_off VARHIDDEN
 module DualPortBRAM #(
     parameter int DATA_WIDTH  = 32,
     parameter int ADDR_WIDTH  = 10,
-    parameter     RESET_VALUE = "00000000",
-    parameter     WRITE_MODE  = "write_first",
+
+    parameter `STRING RESET_VALUE = "00000000",
+    parameter `STRING WRITE_MODE  = "write_first",
 
     localparam int MEM_NUM_WORDS  = 2**ADDR_WIDTH,
     localparam int BYTES_PER_WORD = DATA_WIDTH / 8,
@@ -43,8 +46,8 @@ module DualPortBRAM #(
     output word_t  data_out_2
 );
 `ifdef VERILATOR
-    localparam word_t _RESET_VALUE = RESET_VALUE.atohex();
-    localparam word_t DEADBEEF     = 'hdeadbeef;
+    localparam word_t _RESET_VALUE = word_t'(RESET_VALUE.atohex());
+    localparam word_t DEADBEEF     = word_t'('hdeadbeef);
 
     `ASSERT(WRITE_MODE == "write_first", "Only \"write_first\" mode is supported.");
 
