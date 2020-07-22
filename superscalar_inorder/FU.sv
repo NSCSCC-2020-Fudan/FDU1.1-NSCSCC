@@ -3,7 +3,8 @@
 module FU(
         input issue_data_t in,
         output exec_data_t out,
-        output logic finish
+        output logic finish,
+        input logic mul_timeok, div_timeok
     );
 
     decoded_op_t op;
@@ -24,7 +25,7 @@ module FU(
     MULU MULU (alusrcaE, alusrcbE, op, multype, hi_mul, lo_mul, mul_finish);
     ALU ALU (alusrcaE, alusrcbE, func, result, exception_of);
     JUDGE JUDGE(alusrcaE, alusrcbE, in.instr.ctl.branch_type, taken);
-    assign finish = div_finish && mul_finish;
+    assign finish = (~divtype || div_timeok) && (~multype || mul_timeok);
     
     word_t hi, lo;
     assign hi = (multype) ? (hi_mul) : (hi_div);
@@ -42,6 +43,7 @@ module FU(
     assign out.cp0_addr = in.cp0_addr;
     assign out.cp0_cause = in.cp0_cause;
     assign out.cp0_status = in.cp0_status;
+    assign out.cp0_epc = in.cp0_epc;
     
     word_t pcplus8;
     adder adderpcplus8(in.pcplus4, 32'b0100, pcplus8);

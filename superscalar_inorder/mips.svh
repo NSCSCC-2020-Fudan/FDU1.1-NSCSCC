@@ -1,6 +1,10 @@
 `ifndef __MIPS_SVH
 `define __MIPS_SVH
 
+`define MUL_DELAY       4
+`define DIV_DELAY       10
+`define ALU_DELAY       1
+
 typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;
 typedef logic[4:0] shamt_t;
@@ -357,6 +361,7 @@ typedef struct packed {
     logic in_delay_slot;
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
+    word_t cp0_epc;
 } issue_data_t;
 
 typedef struct packed {
@@ -370,6 +375,7 @@ typedef struct packed {
     logic in_delay_slot;
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
+    word_t cp0_epc;
 } exec_data_t;
 
 typedef struct packed{

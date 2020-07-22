@@ -10,7 +10,7 @@ module exception(
         output word_t pcexception,
         //fetch control
         output exception_t exception,
-        input cp0_regs_t cp0
+        input cp0_status_t cp0_status
         //cp0
         //input cp0_status_t cp0_status,
         //input cp0_cause_t cp0_cause
@@ -27,10 +27,10 @@ module exception(
     assign interrupt_info = pipe.interrupt_info;
     logic interrupt_valid;
     assign interrupt_valid = (interrupt_info != 0) // request
-                           & (cp0.status.IE)
+                           & (cp0_status.IE)
                         //    & (~cp0.debug.DM)
-                           & (~cp0.status.EXL)
-                           & (~cp0.status.ERL);
+                           & (~cp0_status.EXL)
+                           & (~cp0_status.ERL);
 //    assign interrupt_valid = '0;
 
     always_comb begin

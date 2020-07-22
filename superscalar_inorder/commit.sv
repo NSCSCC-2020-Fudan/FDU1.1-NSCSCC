@@ -23,9 +23,7 @@ module commit(
         input logic timer_interrupt,
         output logic exception_valid,
         output exception_t exception_data,
-        output logic is_eret,
-        input word_t epc,
-        input cp0_regs_t cp0_data
+        output logic is_eret
         //cp0
     );
     
@@ -100,7 +98,7 @@ module commit(
     assign fetch.exception_valid = exception_valid;
     assign fetch.is_eret = (out[1].instr.op == ERET) | (out[0].instr.op == ERET); 
     assign fetch.pcexception = pcexception; 
-    assign fetch.epc = epc;
+    assign fetch.epc = (out[1].instr.op == ERET) ? (out[1].cp0_epc) : (out[0].cp0_epc);
     assign fetch.branch = out[1].instr.ctl.branch & in[1].taken;
     assign fetch.jump = out[1].instr.ctl.jump;  
     assign fetch.jr = out[1].instr.ctl.jr;

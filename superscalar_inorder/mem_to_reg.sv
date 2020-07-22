@@ -22,4 +22,5 @@ module mem_to_reg(
     assign out.cp0_status = in.cp0_status;
     assign out.cp0_cause = in.cp0_cause;
     assign out.cp0_addr = in.cp0_addr;
+    assign out.cp0_epc = in.cp0_epc;
 endmodule

@@ -54,10 +54,11 @@ module datapath(
     word_t pc;
     
     logic timer_interrupt, exception_valid, is_eret; 
-    word_t pcexception, epc;
+    word_t pcexception, cp0_epcI, cp0_epcW;
     exception_t exceptionE;
     exception_pipeline_t exception_pipeline;
     
+    logic mul_timeok, div_timeok;
     logic [1: 0] hitF_out, hitD_in, hitD_out;
     fetch fetch (clk, reset, 1'b0, stallF,
                  pc_new, pc, pc_new_commit,
@@ -80,13 +81,15 @@ module datapath(
                  reg_addrI, reg_dataI, 
                  hiloreadI, hilodataI,
                  cp0_addrI, cp0_dataI,
-                 cp0_statusI, cp0_causeI);  
+                 cp0_statusI, cp0_causeI, cp0_epcI,
+                 mul_timeok, div_timeok);  
     
     execute execute (clk, reset,
                      issue_data_out,
                      exec_data_out,
                      finishE, flushE, stallE,
-                     exec_bypass);
+                     exec_bypass,
+                     mul_timeok, div_timeok);
     
     logic first_cycleC;
     creg creg (clk, reset, stallC, flushC,
@@ -106,8 +109,7 @@ module datapath(
                    timer_interrupt,
                    exception_valid, 
                    exceptionE,
-                   is_eret, epc,
-                   cp0_data);
+                   is_eret);
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,
@@ -142,15 +144,14 @@ module datapath(
     cp0 cp0(clk, reset,
             cp0w,
             cp0_addrW, cp0_dataW,
-            is_eret, epc,
+            is_eret, 
             timer_interrupt,
             exceptionE,
-            cp0_causeW, cp0_statusW,
-            cp0_data);        
+            cp0_causeW, cp0_statusW, cp0_epcW);        
             
     cp0status_bypass cp0status_bypass(exec_bypass, commit_bypass, retire_bypass, 
-                                      cp0_statusW, cp0_causeW,
-                                      cp0_statusI, cp0_causeI);                             
+                                      cp0_statusW, cp0_causeW, cp0_epcW,
+                                      cp0_statusI, cp0_causeI, cp0_epcI);                             
     
     assign rfw_out = rfw;
     assign rt_pc_out = rt_pc;                                                                                                                                    

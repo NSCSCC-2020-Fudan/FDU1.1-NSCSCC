@@ -7,7 +7,6 @@ module cp0(
         output word_t [1: 0] rd,
         //read or write
         input logic is_eret, 
-        output word_t epc,
         //commit or fetch, updata pc
         output logic timer_interrupt,
         //commit
@@ -15,7 +14,7 @@ module cp0(
         //exception
         output cp0_cause_t cp0_cause,
         output cp0_status_t cp0_status,
-        output cp0_regs_t cp0_data
+        output word_t cp0_epc
         //bypass
     );
     
@@ -140,6 +139,6 @@ module cp0(
     assign cp0_data = cp0;
     assign cp0_status = cp0.status;
     assign cp0_cause = cp0.cause;
-    assign epc = cp0.epc;
+    assign cp0_epc = cp0.epc;
     
 endmodule

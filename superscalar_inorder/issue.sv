@@ -17,8 +17,10 @@ module issue(
         output creg_addr_t [1: 0] cp0_addrI,
         input word_t [1: 0] cp0_dataI,
         input cp0_status_t cp0_statusI,
-        input cp0_cause_t cp0_causeI
+        input cp0_cause_t cp0_causeI,
+        input word_t cp0_epcI,
         // data_forward
+        output logic mul_timeok, div_timeok
     );
 
     logic [7: 0] free;
@@ -69,7 +71,12 @@ module issue(
     logic [1: 0] issue_en;
     assign issue_en[1] = ~(BJa && free[6]) && ~(free[7]);
     assign issue_en[0] = enb && ~(free[6]);
-
+    
+    logic [`MUL_DELAY - 1: 0] MULU_TIMER;
+    logic [`DIV_DELAY - 1: 0] DIVU_TIMER;
+    assign mul_timeok = MULU_TIMER[0];
+    assign div_timeok = DIVU_TIMER[0];
+    
     always_ff @(posedge clk, posedge reset) 
         begin
             if (reset)
@@ -80,17 +87,31 @@ module issue(
                     tail <= '0;
                     free = {(8){1'b1}};
                     issue_queue <= '0;
+                    MULU_TIMER <= {(`MUL_DELAY){1'b1}};
+                    DIVU_TIMER <= {(`DIV_DELAY){1'b1}};
                 end
             else
                 begin
                     if (flushE)
-                        out <= '0;
+                        begin
+                            out <= '0;
+                            MULU_TIMER <= {(`MUL_DELAY){1'b1}};
+                            DIVU_TIMER <= {(`DIV_DELAY){1'b1}};
+                        end
                     else
                         if (~stallE)
                             begin
                                 out[1] <= (issue_en[1]) ? (aI) : ('0);
-                                out[0] <= (issue_en[0]) ? (bI) : ('0); 
+                                out[0] <= (issue_en[0]) ? (bI) : ('0);
+                                MULU_TIMER <= {1'b1, {(`MUL_DELAY - 1){1'b0}}};
+                                DIVU_TIMER <= {1'b1, {(`DIV_DELAY - 1){1'b0}}}; 
                             end
+                        else
+                            begin
+                                MULU_TIMER <= {1'b1, MULU_TIMER[`MUL_DELAY - 1: 1]};
+                                DIVU_TIMER <= {1'b1, DIVU_TIMER[`DIV_DELAY - 1: 1]};
+                            end
+                            
                     if (~stallI)
                         begin
                             case (issue_en)
@@ -152,7 +173,7 @@ module issue(
     assign {hi, lo} = hilodataI;
     assign cp0_addrI = {aD.cp0_addr, bD.cp0_addr};
 
-    decode_to_issue_t decode_to_issue_t1(aD, hi, lo, reg_dataI[3], reg_dataI[2], cp0_dataI[1], cp0_statusI, cp0_causeI, aI, 'b0);
-    decode_to_issue_t decode_to_issue_t0(bD, hi, lo, reg_dataI[1], reg_dataI[0], cp0_dataI[0], cp0_statusI, cp0_causeI, bI, BJa);
+    decode_to_issue_t decode_to_issue_t1(aD, hi, lo, reg_dataI[3], reg_dataI[2], cp0_dataI[1], cp0_statusI, cp0_causeI, cp0_epcI, aI, 'b0);
+    decode_to_issue_t decode_to_issue_t0(bD, hi, lo, reg_dataI[1], reg_dataI[0], cp0_dataI[0], cp0_statusI, cp0_causeI, cp0_epcI, bI, BJa);
 
 endmodule 

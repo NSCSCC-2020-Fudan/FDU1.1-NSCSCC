@@ -4,8 +4,10 @@ module cp0status_bypass(
         input bypass_upd_t execute, commit, retire,
         input cp0_status_t cp0_status, 
         input cp0_cause_t cp0_cause,
+        input word_t epc,
         output cp0_status_t cp0_status_out,
-        output cp0_cause_t cp0_cause_out
+        output cp0_cause_t cp0_cause_out,
+        output word_t epc_out
     );
     
     rf_w_t _execute, _commit, _retire;
@@ -23,6 +25,7 @@ module cp0status_bypass(
         begin
             cp0_status_out = cp0_status;
             cp0_cause_out = cp0_cause;
+            epc_out = epc;
             if (_execute.wen && _execute.addr == 5'd13) begin
                 cp0_cause_out.IP[1:0] = _execute.wd[9:8];
             end else if (_retire.wen && _commit.addr == 5'd13) begin
@@ -43,6 +46,14 @@ module cp0status_bypass(
                 cp0_status_out.IM = _retire.wd[15:8];
                 cp0_status_out.EXL = _retire.wd[1];
                 cp0_status_out.IE = _retire.wd[0];
+            end
+            
+            if (_execute.wen && _execute.addr == 5'd14) begin
+                epc_out = _execute.wd;
+            end else if (_commit.wen && _commit.addr == 5'd14) begin
+                epc_out = _commit.wd;
+            end else if (_retire.wen && _retire.addr == 5'd14) begin
+                epc_out = _retire.wd;
             end
         end                                                
     

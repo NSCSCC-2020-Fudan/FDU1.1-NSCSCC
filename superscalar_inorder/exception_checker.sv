@@ -46,6 +46,6 @@ module exception_checker(
                          pipe,
                          exception_valid, pcexception, 
                          exception_data, 
-                         cp0_data);                            
+                         data.cp0_status);                            
     
 endmodule

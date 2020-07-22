@@ -7,6 +7,7 @@ module decode_to_issue_t(
         input word_t cp0_data, 
         input cp0_status_t cp0_statusI, 
         input cp0_cause_t cp0_causeI,
+        input word_t cp0_epcI,
         output issue_data_t out,
         input logic BJp
     );
@@ -24,5 +25,6 @@ module decode_to_issue_t(
     assign out.in_delay_slot = BJp;
     assign out.cp0_status = cp0_statusI;
     assign out.cp0_cause = cp0_causeI;
+    assign out.cp0_epc = cp0_epcI;
 
 endmodule
