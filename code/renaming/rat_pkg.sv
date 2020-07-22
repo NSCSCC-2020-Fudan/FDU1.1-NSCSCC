@@ -3,8 +3,8 @@
 package rat_pkg;
     import common::*;
     //  Group: Parameters
-    parameter READ_PORTS = 12;
-    parameter WRITE_PORTS = 4;
+    parameter READ_PORTS = MACHINE_WIDTH * 3;
+    parameter WRITE_PORTS = MACHINE_WIDTH;
     parameter TABLE_LEN = AREG_NUM;
     //  Group: Typedefs
     typedef struct packed {

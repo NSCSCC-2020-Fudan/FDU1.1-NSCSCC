@@ -5,7 +5,8 @@ module rat
     input logic clk, resetn,
     input w_req_t [WRITE_PORTS-1:0] write,
     input r_req_t [READ_PORTS-1:0] read,
-    output r_resp_t [READ_PORTS-1:0] resp
+    output r_resp_t [READ_PORTS-1:0] resp,
+    input free_list_pkg::r_resp_t [free_list_pkg::READ_PORTS-1:0] free_list_resp
 );
     
     // table
