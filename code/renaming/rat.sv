@@ -4,11 +4,12 @@ module rat
     import rat_pkg::*;(
     input logic clk, resetn,
     input w_req_t [WRITE_PORTS-1:0] write,
-    output r_resp_t 
+    input r_req_t [READ_PORTS-1:0] read,
+    output r_resp_t [READ_PORTS-1:0] resp
 );
     
     // table
-    table_t mapping_table;
+    entry_t [TABLE_LEN-1:0] mapping_table, mapping_table_new;
 
     // write
     w_req_t [WRITE_PORTS-1:0] write;
@@ -16,13 +17,8 @@ module rat
     always_ff @(posedge clk) begin
         if (reset) begin
             mapping_table <= '0;
-        end
-        else begin
-            for (int j=0; j<WRITE_PORTS; j++) begin
-                if (write[j].req) begin
-                    
-                end
-            end
+        end else begin
+            mapping_table <= mapping_table_new;
         end
     end
     assign wen[WRITE_PORTS-1] = (write[WRITE_PORTS].id != '0);
@@ -38,6 +34,15 @@ module rat
                 end
             end else begin
                 wen[i] = 1'b0;
+            end
+        end
+    end
+    always_comb begin
+        for (int i=0; i<TABLE_LEN; i++) begin
+            for (int j=0; j<WRITE_PORTS; j++) begin
+                if (wen[j] && write[j].id == i) begin
+                    mapping_table_new[i].id = free_list_resp[j];
+                end
             end
         end
     end
