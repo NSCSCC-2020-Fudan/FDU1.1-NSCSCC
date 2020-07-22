@@ -3,8 +3,8 @@
 package rat_pkg;
     import common::*;
     //  Group: Parameters
-    parameter READ_NUM = 12;
-    parameter WRITE_NUM = 4;
+    parameter READ_PORTS = 12;
+    parameter WRITE_PORTS = 4;
 
     //  Group: Typedefs
     typedef struct packed {
