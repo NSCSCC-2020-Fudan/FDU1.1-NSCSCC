@@ -51,7 +51,8 @@ module commit(
                                           
     m_q_t mem, __mem;
     m_q_t [1: 0] _mem;                                      
-    writedata_format writedata_format [1: 0] (_out, _mem);                                                                                    
+    writedata_format writedata_format1 (_out[1], _mem[1]);
+    writedata_format writedata_format0 (_out[0], _mem[0]);                                                                                    
                     
     decoded_op_t __op;
     control_t [1: 0] ctl;

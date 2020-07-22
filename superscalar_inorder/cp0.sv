@@ -21,7 +21,6 @@ module cp0(
     
     cp0_regs_t cp0, cp0_new;
     word_t wd;
-    word_t rd;
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
             cp0 <= `CP0_INIT;

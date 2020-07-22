@@ -14,7 +14,8 @@ module execute(
     
     logic [1: 0] FU_finish;
     exec_data_t [1: 0] FU_result;
-    FU FU [1: 0] (in, FU_result, FU_finish);
+    FU FU1 (in[1], FU_result[1], FU_finish[1]);
+    FU FU0 (in[0], FU_result[0], FU_finish[0]);
     
     logic finish;
     assign finish = FU_finish[1] && FU_finish[0];

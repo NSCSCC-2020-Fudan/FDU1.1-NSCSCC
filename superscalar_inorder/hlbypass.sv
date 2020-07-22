@@ -27,10 +27,10 @@ module hlbypass(
     end
 
     logic [2: 0] lohits;
-    assign hihits = {execute_hit[0], commit_hit[0], retire_hit[0]};
-    assign hihit = execute_hit[0] | commit_hit[0] | retire_hit[0];
+    assign lohits = {execute_hit[0], commit_hit[0], retire_hit[0]};
+    assign lohit = execute_hit[0] | commit_hit[0] | retire_hit[0];
     always_comb begin
-        case (hihits)
+        case (lohits)
             3'b100: lodata <= (execute.lowrite[0]) ? (execute.lodata[0]) : (execute.lodata[1]);
             3'b010: lodata <= (commit.lowrite[0]) ? (commit.lodata[0]) : (commit.lodata[1]);
             3'b001: lodata <= (retire.lowrite[0]) ? (retire.lodata[0]) : (retire.lodata[1]);
