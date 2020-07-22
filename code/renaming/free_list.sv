@@ -27,6 +27,10 @@ module free_list (
         list_new = list_release;
         // read
         full = 1'b0;
+        for (int i=0; i<READ_PORTS; i++) begin
+            
+        end
+        // write
     end
 
     always_ff @(posedge clk) begin
