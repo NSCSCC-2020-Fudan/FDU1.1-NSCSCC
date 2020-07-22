@@ -1,13 +1,13 @@
 module raw_check 
     import common::*;(
-    input areg_addr_t[ISSUE_NUM-1:0] src1, src2, dst,
-    input preg_addr_t[ISSUE_NUM-1:0] psrc1_rat, psrc2_rat, pdst_fl,
-    output preg_addr_t[ISSUE_NUM-1:0] psrc1, psrc2
+    input areg_addr_t[MACHINE_WIDTH-1:0] src1, src2, dst,
+    input preg_addr_t[MACHINE_WIDTH-1:0] psrc1_rat, psrc2_rat, pdst_fl,
+    output preg_addr_t[MACHINE_WIDTH-1:0] psrc1, psrc2
 );
     assign psrc1[0] = psrc1_rat[0];
     assign psrc2[0] = psrc2_rat[0];
     always_comb begin
-        for (int i=1; i<ISSUE_NUM; i++) begin
+        for (int i=1; i<MACHINE_WIDTH; i++) begin
             // select psrc1, psrc2
             psrc1[i] = psrc1_rat[i];
             for (int j=i-1; j>=0; j--) begin
