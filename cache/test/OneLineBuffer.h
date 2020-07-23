@@ -2,9 +2,6 @@
 #include "VTop.h"
 #include "TopBase.h"
 #include "CacheBusMemory.h"
-#include "verilated_fst_c.h"
-
-#include <cassert>
 
 constexpr int MEMORY_DEPTH = 256;
 
@@ -50,7 +47,7 @@ public:
         _bus = new CacheBusSlave(inst);
         cmem = new CacheBusMemory(MEMORY_DEPTH, _bus, true);
     }
-    ~Top() {
+    virtual ~Top() {
         delete _bus;
         delete cmem;
     }

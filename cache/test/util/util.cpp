@@ -34,9 +34,9 @@ ITestbench::ITestbench(cstr _name) : name(_name) {
 void ITestbench::run() {
     _current_test = this;
 
-    _pretest_hook();
-    bool skipped = _run();
-    _posttest_hook();
+    // _pretest_hook();
+    bool skipped = _run(_pretest_hook, _posttest_hook);
+    // _posttest_hook();
 
     auto fmt = isatty(STDOUT_FILENO) ?
         GREEN "[OK]" RESET " %s" :

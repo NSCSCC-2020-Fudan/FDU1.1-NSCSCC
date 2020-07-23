@@ -342,6 +342,7 @@ def parse(name: Text):
                     port_name, reference = line.split(':', maxsplit=1)
                 else:
                     port_name = reference = line.strip()
+                port_name = port_name.replace('.', SEP)
                 assigns.append(Assign(port_name.strip(), reference.strip()))
             elif section == 'top':
                 direction, type_name, port_name = line.split(' ')

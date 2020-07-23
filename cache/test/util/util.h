@@ -25,7 +25,7 @@ public:
     void run();
 
 private:
-    virtual bool _run() = 0;
+    virtual bool _run(const PretestHook &pre_fn, const PosttestHook &post_fn) = 0;
 };
 
 class DeferList {
@@ -66,8 +66,10 @@ private:
 #define _TESTBENCH_BEGIN(id) \
     static class id : public ITestbench { \
         using ITestbench::ITestbench; \
-        bool _run() { \
+        bool _run(const PretestHook &pre_fn, const PosttestHook &post_fn) { \
+            pre_fn(); \
             DeferList _; \
+            _.defer(post_fn); \
             {
 
 #define _TESTBENCH_END(id, name) \
