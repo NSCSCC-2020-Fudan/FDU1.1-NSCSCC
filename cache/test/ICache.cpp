@@ -16,7 +16,7 @@ WITH {
     assert(top->inst->ibus_resp_x_data == ((u64(remap(1)) << 32) | remap(0)));
 } AS("single read");
 
-WITH LOG TRACE {
+WITH LOG {
     Pipeline p(top);
     p.expect32(123 * 4, remap(123));
     p.wait();
@@ -29,3 +29,27 @@ WITH LOG TRACE {
     p.expect(126);
     p.wait();
 } AS("on pipeline");
+
+WITH {
+    Pipeline p(top);
+    for (int i = 0; i < MEMORY_SIZE; i += 2) {
+        p.expect(i);
+    }
+    p.wait();
+} AS("sequential read 1");
+
+WITH {
+    Pipeline p(top);
+    for (int i = 1; i < MEMORY_SIZE; i += 2) {
+        p.expect(i);
+    }
+    p.wait();
+} AS("sequential read 2");
+
+/**
+ * TODO:
+ * * [ ] random block read
+ * * [ ] random read
+ * * [ ] fake read
+ * * [ ] backward read
+ */

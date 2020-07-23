@@ -20,3 +20,4 @@ req_miss_ready
 miss_ready
 miss_mark
 miss_count
+req_iaddr

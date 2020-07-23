@@ -5,7 +5,7 @@
 
 #include <queue>
 
-constexpr int MEMORY_SIZE = 262144;  // 256KB
+constexpr int MEMORY_SIZE = 262144;  // 1MB
 
 inline u64 remap(int a, int b) {
     assert(a < b);

@@ -276,9 +276,20 @@ module ICache #(
         if (req_to_hit) begin
             for (int i = 0; i < NUM_SETS; i++) begin
                 sets[i].lines  <= sets[i].lines;
-                sets[i].select <= req_iaddr.idx == idx_t'(i) ?
+                sets[i].select <= req_iaddr.index == index_t'(i) ?
                     req_new_select : sets[i].select;
             end
+        end
+
+        // update miss stage
+        // NOTE: "req_to_miss" needs to reste "miss_mark" & "miss_count"
+        if (cbus_resp.okay) begin
+            for (int i = 0; i <= MAX_COUNT; i++) begin
+                miss_mark[i] <=
+                    (miss_count == count_t'(i)) ? 1 : miss_mark[i];
+            end
+
+            miss_count <= miss_count + 1;
         end
 
         // to miss stage
@@ -295,23 +306,14 @@ module ICache #(
                 sets[i].select <= sets[i].select;
 
                 for (int j = 0; j < NUM_WAYS; j++) begin
-                    if (req_victim_idx == idx_t'(j)) begin
+                    if (req_iaddr.index == index_t'(i) &&
+                        req_victim_idx == idx_t'(j)) begin
                         sets[i].lines[j].valid <= 1;
                         sets[i].lines[j].tag   <= req_paddr.tag;
                     end else
                         sets[i].lines[j] <= sets[i].lines[j];
                 end
             end
-        end
-
-        // update miss stage
-        if (cbus_resp.okay) begin
-            for (int i = 0; i <= MAX_COUNT; i++) begin
-                miss_mark[i] <=
-                    (miss_count == count_t'(i)) ? 1 : miss_mark[i];
-            end
-
-            miss_count <= miss_count + 1;
         end
     end else begin
         for (int i = 0; i < NUM_SETS; i++) begin
