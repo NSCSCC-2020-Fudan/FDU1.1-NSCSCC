@@ -46,10 +46,36 @@ WITH {
     p.wait();
 } AS("sequential read 2");
 
+WITH SKIP {
+    constexpr int T = 100000;
+
+    Pipeline p(top);
+    for (int _t = 0; _t < T; _t++) {
+        int n = randu(1, 128);
+        int addr = randu(0, MEMORY_SIZE - n - 1);
+        for (int i = 0; i < n; i++) {
+            p.expect(addr + i);
+        }
+        p.wait();
+    }
+} AS("random block read");
+
+WITH SKIP {
+    constexpr int T = 500000;
+
+    Pipeline p(top);
+    for (int i = 0; i < T; i++) {
+        int addr = randu(0, MEMORY_SIZE - 1);
+        p.expect(addr);
+    }
+
+    p.wait();
+} AS("random read");
+
 /**
  * TODO:
- * * [ ] random block read
- * * [ ] random read
+ * * [x] random block read
+ * * [x] random read
  * * [ ] fake read
  * * [ ] backward read
  */
