@@ -2,17 +2,19 @@
 `include "cache_bus.svh"
 
 module ICache #(
+`ifndef IN_SIMULATION
     // 8-way 32KB configuration:
-    // parameter int IDX_BITS    = 3,
-    // parameter int INDEX_BITS  = 6,
-    // parameter int OFFSET_BITS = 3,
-    // parameter int ALIGN_BITS  = 3,
-
+    parameter int IDX_BITS    = 3,
+    parameter int INDEX_BITS  = 6,
+    parameter int OFFSET_BITS = 3,
+    parameter int ALIGN_BITS  = 3,
+`else
     // for simulation: 8-way 1KB
     parameter int IDX_BITS    = 3,
     parameter int INDEX_BITS  = 2,
     parameter int OFFSET_BITS = 2,
     parameter int ALIGN_BITS  = 3,
+`endif
 
     localparam int LINE_LENGTH     = 2**OFFSET_BITS,
     localparam int DATA_BYTES      = 2**ALIGN_BITS,
@@ -21,14 +23,14 @@ module ICache #(
     localparam int SHAMT_BITS      = ALIGN_BITS - CBUS_DATA_ORDER,
     localparam int NUM_WAYS        = 2**IDX_BITS,
     localparam int NUM_SETS        = 2**INDEX_BITS,
-    localparam int COUNT_BITS      = OFFSET_BITS + ALIGN_BITS,
+    localparam int COUNT_BITS      = OFFSET_BITS + SHAMT_BITS,
     localparam int MAX_COUNT       = 2**(COUNT_BITS) - 1,
 
     // for BRAM, the size of "iaddr_t"
     localparam int MEM_ADDR_BITS = IDX_BITS + INDEX_BITS + OFFSET_BITS,
 
     // NOTE: in order to utilize VIPT, NONTAG_BITS must be within 4KB page.
-    localparam int NONTAG_BITS = INDEX_BITS + COUNT_BITS,
+    localparam int NONTAG_BITS = INDEX_BITS + OFFSET_BITS + ALIGN_BITS,
     localparam int TAG_BITS    = BITS_PER_WORD - NONTAG_BITS,
 
     localparam type data_t   = logic [DATA_WIDTH - 1:0],
@@ -342,7 +344,7 @@ module ICache #(
     assign cbus_req.valid    = miss_busy;
     assign cbus_req.is_write = 0;
     assign cbus_req.addr     = miss_addr;
-    assign cbus_req.order    = cbus_order_t'(COUNT_BITS - CBUS_DATA_ORDER);
+    assign cbus_req.order    = cbus_order_t'(COUNT_BITS);
     assign cbus_req.wdata    = 0;
 
     /**

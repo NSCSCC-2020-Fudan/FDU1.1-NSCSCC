@@ -21,3 +21,5 @@ miss_ready
 miss_mark
 miss_count
 req_iaddr
+req_paddr
+req_hit_bits

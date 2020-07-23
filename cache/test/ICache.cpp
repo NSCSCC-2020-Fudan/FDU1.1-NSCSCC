@@ -19,15 +19,15 @@ WITH {
 WITH LOG {
     Pipeline p(top);
     p.expect32(123 * 4, remap(123));
-    p.wait();
+    p.wait(256);
     p.expect(124);
     p.expect(126);
     p.expect64(122 * 4, remap(122, 123));
-    p.wait();
+    p.wait(256);
     p.expect(122);
     p.expect(124);
     p.expect(126);
-    p.wait();
+    p.wait(256);
 } AS("on pipeline");
 
 WITH {

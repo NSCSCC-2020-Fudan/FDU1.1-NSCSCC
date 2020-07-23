@@ -155,10 +155,13 @@ public:
             expect64(addr, remap(index, index + 1));
     }
 
-    void wait() {
-        while (!empty()) {
+    void wait(int max_count = -1) {
+        int count = 0;
+        while (!empty() && count != max_count) {
             tick();
+            count++;
         }
+        assert(count != max_count);
     }
 
     void tick() {
