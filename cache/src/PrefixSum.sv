@@ -8,8 +8,7 @@
 module PrefixSum #(
     parameter int ARRAY_LENGTH = 8,
 
-    // verilator lint_off LITENDIAN
-    localparam type array_t = logic [1:ARRAY_LENGTH]
+    localparam type array_t = logic [ARRAY_LENGTH - 1:0]
 ) (
     input array_t arr,
     output array_t sum
@@ -28,7 +27,7 @@ module PrefixSum #(
         partial = arr;
         for (int i = 1; i <= ARRAY_LENGTH; i++) begin
             for (int j = i - 1; j > 0; j = prev(j)) begin
-                partial[i] &= partial[j];
+                partial[ARRAY_LENGTH - i] &= partial[ARRAY_LENGTH - j];
             end
         end
     end
@@ -37,7 +36,7 @@ module PrefixSum #(
         sum = partial;
         for (int i = 1; i <= ARRAY_LENGTH; i++) begin
             for (int j = prev(i); j > 0; j = prev(j)) begin
-                sum[i] &= partial[j];
+                sum[ARRAY_LENGTH - i] &= partial[ARRAY_LENGTH - j];
             end
         end
     end

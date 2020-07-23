@@ -2,9 +2,16 @@
 `include "cache_bus.svh"
 
 module ICache #(
+    // 8-way 32KB configuration:
+    // parameter int IDX_BITS    = 3,
+    // parameter int INDEX_BITS  = 6,
+    // parameter int OFFSET_BITS = 3,
+    // parameter int ALIGN_BITS  = 3,
+
+    // for simulation: 8-way 1KB
     parameter int IDX_BITS    = 3,
-    parameter int INDEX_BITS  = 6,
-    parameter int OFFSET_BITS = 3,
+    parameter int INDEX_BITS  = 2,
+    parameter int OFFSET_BITS = 2,
     parameter int ALIGN_BITS  = 3,
 
     localparam int LINE_LENGTH     = 2**OFFSET_BITS,
@@ -14,8 +21,8 @@ module ICache #(
     localparam int SHAMT_BITS      = ALIGN_BITS - CBUS_DATA_ORDER,
     localparam int NUM_WAYS        = 2**IDX_BITS,
     localparam int NUM_SETS        = 2**INDEX_BITS,
-    localparam int MAX_SHAMT       = 2**SHAMT_BITS - 1,
     localparam int COUNT_BITS      = OFFSET_BITS + ALIGN_BITS,
+    localparam int MAX_COUNT       = 2**(COUNT_BITS) - 1,
 
     // for BRAM, the size of "iaddr_t"
     localparam int MEM_ADDR_BITS = IDX_BITS + INDEX_BITS + OFFSET_BITS,
@@ -95,7 +102,8 @@ module ICache #(
 
     assign req_hit = |req_hit_bits;
     for (genvar i = 0; i < NUM_WAYS; i++) begin
-        assign req_hit_bits[i] = req_paddr.tag == req_set.lines[i].tag;
+        assign req_hit_bits[i] = req_set.lines[i].valid &&
+            req_paddr.tag == req_set.lines[i].tag;
     end
 
     // part 2: one-hot to binary decoder
@@ -114,7 +122,8 @@ module ICache #(
         .NUM_WAYS(NUM_WAYS)
     ) replacement_inst(
         .select(req_set.select),
-        .idx(req_victim_idx),
+        .victim_idx(req_victim_idx),
+        .idx(req_idx),
         .new_select(req_new_select)
     );
 
@@ -143,9 +152,10 @@ module ICache #(
      * miss stage
      */
     localparam int WIDTH_RATIO = DATA_WIDTH / CBUS_DATA_WIDTH;
+    localparam int READY_BITS  = LINE_LENGTH * WIDTH_RATIO;
 
-    typedef logic [DATA_BYTES  - 1:0] bram_wrten_t;
-    typedef logic [WIDTH_RATIO - 1:0] ready_bits_t;
+    typedef logic [DATA_BYTES - 1:0] bram_wrten_t;
+    typedef logic [READY_BITS - 1:0] ready_bits_t;
 
     localparam bram_wrten_t MISS_MASK = {
         {(DATA_BYTES - CBUS_DATA_BYTES){1'b0}},
@@ -168,13 +178,10 @@ module ICache #(
     // "miss_busy": current cycle
     // "miss_avail": next cycle
     logic        miss_avail;
-    logic        miss_data_last;  // is the last data of a cache word?
     bram_wrten_t miss_write_en;
     data_t       miss_wdata;
-    data_t       miss_rdata;      // no use
 
     assign miss_avail      = !miss_busy || cbus_resp.last;
-    assign miss_data_last  = miss_count.shamt == {SHAMT_BITS{1'b1}};
     assign miss_pos.offset = miss_count.offset;
     assign miss_write_en   = cbus_resp.okay ?
         (MISS_MASK << miss_count.shamt) : bram_wrten_t'(0);
@@ -186,13 +193,17 @@ module ICache #(
     end
 
     // ready bits
-    ready_bits_t [LINE_LENGTH - 1:0] miss_mark;
-    ready_bits_t [LINE_LENGTH - 1:0] miss_ready;
+    ready_bits_t miss_mark, miss_ready;
 
     for (genvar i = 0; i < LINE_LENGTH; i++) begin: miss_presum
+        localparam int hi = WIDTH_RATIO * (i + 1) - 1;
+        localparam int lo = WIDTH_RATIO * i;
         PrefixSum #(
             .ARRAY_LENGTH(WIDTH_RATIO)
-        ) fenwick_inst(.arr(miss_mark[i]), .sum(miss_ready[i]));
+        ) fenwick_inst(
+            .arr(miss_mark[hi:lo]),
+            .sum(miss_ready[hi:lo])
+        );
     end
 
     /**
@@ -205,20 +216,28 @@ module ICache #(
     logic req_in_miss, req_miss_ready, req_ready;
     assign req_in_miss = miss_busy &&
         req_iaddr.idx == miss_pos.idx && req_iaddr.index == miss_pos.index;
-    assign req_miss_ready =
-        miss_ready[req_count.offset][req_count.shamt] ||
-        (req_count.offset == miss_count.offset && miss_data_last);  // include pending write
+
+    // TODO: "miss_ready" has a one cycle delay
+    assign req_miss_ready = miss_ready[req_count];
     assign req_ready = req_hit && (!req_in_miss || req_miss_ready);
 
     logic req_to_hit, req_to_miss;
     assign req_to_hit = ibus_req.req && req_ready;
-    assign req_to_miss = miss_avail && !req_hit;
+    assign req_to_miss = ibus_req.req && miss_avail && !req_hit;
 
     /**
      * the BRAM
      * port 1 is used for read only
      * port 2 is used for miss replacement
+     *
+     * "bram_out_port": a register, to avoid read/write collision.
+     *
+     * TODO: maybe simple dual port bram is more appropriate.
      */
+    logic bram_out_port;
+    logic bram_addr_eq, bram_on_write;
+    ibus_data_t [1:0] bram_data;
+
     DualPortBRAM #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(MEM_ADDR_BITS)
@@ -228,19 +247,25 @@ module ICache #(
         .write_en_1(0),
         .addr_1(hit_pos),
         .data_in_1(0),
-        .data_out_1(hit_data),
+        .data_out_1(bram_data[0]),
 
         .write_en_2(miss_write_en),
         .addr_2(miss_pos),
         .data_in_2(miss_wdata),
-        .data_out_2(miss_rdata)
+        .data_out_2(bram_data[1])
     );
+
+    assign bram_addr_eq = hit_pos == miss_pos;
+    assign bram_on_write = |miss_write_en;
+    assign hit_data = bram_data[bram_out_port];
 
     /**
      * pipelining & state transitions
      */
     always_ff @(posedge clk)
     if (resetn) begin
+        bram_out_port <= (bram_addr_eq && bram_on_write) ? 1 : 0;
+
         // to hit stage
         hit_data_ok    <= req_to_hit;
         hit_resp_index <= req_paddr.aligned.shamt;
@@ -248,28 +273,40 @@ module ICache #(
         // update hit stage
         if (req_to_hit) begin
             for (int i = 0; i < NUM_SETS; i++) begin
-                sets[i].lines <= sets[i].lines;
+                sets[i].lines  <= sets[i].lines;
                 sets[i].select <= req_iaddr.idx == idx_t'(i) ?
                     req_new_select : sets[i].select;
             end
         end
 
         // to miss stage
-        miss_busy <= req_to_miss;
+        miss_busy <= miss_avail ? req_to_miss : 1;
         if (req_to_miss) begin
-            miss_addr      <= req_paddr;
-            miss_pos.idx   <= req_victim_idx;
-            miss_pos.index <= req_iaddr.index;
+            miss_addr         <= req_paddr;
+            miss_pos.idx      <= req_victim_idx;
+            miss_pos.index    <= req_iaddr.index;
+            miss_count.offset <= req_iaddr.offset;
+            miss_count.shamt  <= req_paddr.aligned.shamt;
+            miss_mark         <= 0;
+
+            for (int i = 0; i < NUM_SETS; i++) begin
+                sets[i].select <= sets[i].select;
+
+                for (int j = 0; j < NUM_WAYS; j++) begin
+                    if (req_victim_idx == idx_t'(j)) begin
+                        sets[i].lines[j].valid <= 1;
+                        sets[i].lines[j].tag   <= req_paddr.tag;
+                    end else
+                        sets[i].lines[j] <= sets[i].lines[j];
+                end
+            end
         end
 
         // update miss stage
         if (cbus_resp.okay) begin
-            for (int i = 0; i < LINE_LENGTH; i++)
-            for (int j = 0; j <= MAX_SHAMT; j++) begin
-                miss_mark[i][j] <= (
-                        miss_count.offset == offset_t'(i) &&
-                        miss_count.shamt  == shamt_t'(j)
-                    ) ? 1 : miss_mark[i][j];
+            for (int i = 0; i <= MAX_COUNT; i++) begin
+                miss_mark[i] <=
+                    (miss_count == count_t'(i)) ? 1 : miss_mark[i];
             end
 
             miss_count <= miss_count + 1;
@@ -308,6 +345,6 @@ module ICache #(
      * unused (for Verilator)
      */
     logic __unused_ok = &{1'b0,
-        req_vaddr, miss_rdata,
+        req_vaddr,
     1'b0};
 endmodule
