@@ -22,6 +22,7 @@ module hazard (
     logic is_multM, is_multW;
     logic is_eret;
     creg_addr_t cp0_addrE, cp0_addr_M, cp0_addrW;
+    logic mult_ok;
     always_comb begin
         if (rsD != 0) begin
             if (rsD == writeregE && regwriteE && (alufuncE == ALU_PASSA)) begin
@@ -89,13 +90,13 @@ module hazard (
                          ((opD == BEQ || opD == BNE) && (regwriteE && (writeregE == rtD))||(memtoregM && (writeregM == rtD))));
 
 
-    assign stallF = (lwstall | branchstall | ~i_data_ok) & ~exception_validM & ~is_eret; // meet eret?
+    assign stallF = (lwstall | branchstall | ~i_data_ok | ~mult_ok) & ~exception_validM & ~is_eret; // meet eret?
     assign stallD = stallF;
-    assign stallE = '0;
+    assign stallE = ~mult_ok & ~exception_validM;
     assign stallM = '0;
     assign flushD = exception_validM | is_eret;
     assign flushE = stallF | exception_validM | is_eret;
-    assign flushM = exception_validM | is_eret;
+    assign flushM = exception_validM | is_eret | ~mult_ok;
     assign flushW = exception_validM;
 
     assign rtD = ports.dataD.instr.rt;
@@ -152,4 +153,5 @@ module hazard (
     assign ports.loM = ports.dataM.lo;
     assign ports.hiW = ports.dataW.hi;
     assign ports.loW = ports.dataW.lo;
+    assign mult_ok = ports.mult_ok;
 endmodule

@@ -79,7 +79,7 @@ interface hazard_intf(input i_data_ok, output stallF);
     exec_data_t dataE;
     mem_data_t dataM;
     wb_data_t dataW;
-    logic exception;
+    logic mult_ok;
     logic         flushD, flushE, flushM, flushW;
     logic         stallD, stallE, stallM;
     word_t aluoutM, resultW;
@@ -89,7 +89,7 @@ interface hazard_intf(input i_data_ok, output stallF);
     logic is_eret;
     // exception_t exception;
     logic exception_valid;
-    modport hazard(input dataD, dataE, dataM, dataW, exception_valid, i_data_ok, is_eret,
+    modport hazard(input dataD, dataE, dataM, dataW, exception_valid, i_data_ok, is_eret, mult_ok,
                    output flushD, flushE, flushM, flushW,
                           stallF, stallD, stallE, stallM,
                           forwardAE, forwardBE, forwardAD, forwardBD,
@@ -100,7 +100,7 @@ interface hazard_intf(input i_data_ok, output stallF);
     modport mreg(input stallM, flushM);
     modport wreg(input flushW);
     modport decode(output dataD, input aluoutM, resultW, forwardAD, forwardBD, hiM, loM, hiW, loW, alusrcaE);
-    modport exec(output dataE, alusrcaE, input aluoutM, resultW, forwardAE, forwardBE, hiM, loM, hiW, loW);
+    modport exec(output dataE, alusrcaE, mult_ok, input aluoutM, resultW, forwardAE, forwardBE, hiM, loM, hiW, loW);
     modport memory(output dataM, is_eret);
     modport writeback(output dataW);
     modport excep(output exception_valid);
