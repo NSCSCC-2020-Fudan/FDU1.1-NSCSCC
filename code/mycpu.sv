@@ -2,7 +2,7 @@
 
 // sram
 module mycpu #(
-    parameter int DO_ADDR_TRANSLATION = 1
+    parameter logic DO_ADDR_TRANSLATION = 1
 ) (
     input logic clk,
     input logic resetn,  //low active
