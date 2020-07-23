@@ -1,6 +1,30 @@
 module execute 
-    import common::*;(
+    import common::*;
+    import execute_pkg::*;(
     
 );
+    // forward
+    forward forward();
     
+    // ALU
+    for (genvar i=0; i<ALU_NUM; i++) begin
+        alu alu();
+    end
+
+    // AGU
+    for (genvar i=0; i<AGU_NUM; i++) begin
+        agu agu();
+    end
+
+    // BRU
+    for (genvar i=0; i<BRU_NUM; i++) begin
+        bru bru();
+    end
+
+    // MULT
+    for (genvar i=0; i<MULT_NUM; i++) begin
+        mult mult();
+    end
+
+    // wake in execute
 endmodule
