@@ -16,7 +16,8 @@ module SRAMxToInstrBus(
     assign sramx_resp.data_ok = ibus_resp.data_ok;
 
     typedef logic [IBUS_DATA_WIDTH:1] ibus_view_t;
-    ibus_view_t data_view = ibus_resp.data;
+    ibus_view_t data_view;
+    assign data_view = ibus_resp.data;
     assign sramx_resp.rdata   = data_view[
         {ibus_resp.index, {SRAMX_DATA_BITS{1'b0}}} -: SRAMX_DATA_WIDTH
     ];
