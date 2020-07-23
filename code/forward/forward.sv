@@ -2,10 +2,10 @@ module forward
     import common::*;
     import forward_pkg::*;
     import execute_pkg::*;(
-    
+    forward_intf.forward ports
 );
     forward_t [FU_NUM-1:0] forwards; // to execute
-    preg_addr_t [ALU_NUM-1:0] src1, src2; // from execute
+    preg_addr_t [FU_NUM-1:0] src1, src2; // from execute
     preg_addr_t [ALU_NUM-1:0] dst; // from commit
     always_comb begin
         for (int i=0; i<FU_NUM; i++) begin
@@ -22,4 +22,9 @@ module forward
             end
         end
     end
+
+    assign ports.forwards = forwards;
+    assign src1 = ports.src1;
+    assign src2 = ports.src2;
+    assign dst = ports.dst;
 endmodule
