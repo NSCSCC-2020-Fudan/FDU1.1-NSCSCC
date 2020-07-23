@@ -151,8 +151,9 @@ module ICache #(
     /**
      * miss stage
      */
-    localparam int WIDTH_RATIO = DATA_WIDTH / CBUS_DATA_WIDTH;
-    localparam int READY_BITS  = LINE_LENGTH * WIDTH_RATIO;
+    localparam int WIDTH_RATIO     = DATA_WIDTH / CBUS_DATA_WIDTH;
+    localparam int READY_BITS      = LINE_LENGTH * WIDTH_RATIO;
+    localparam int CBUS_ALIGN_BITS = $clog2(CBUS_DATA_BYTES);
 
     typedef logic [DATA_BYTES - 1:0] bram_wrten_t;
     typedef logic [READY_BITS - 1:0] ready_bits_t;
@@ -184,7 +185,8 @@ module ICache #(
     assign miss_avail      = !miss_busy || cbus_resp.last;
     assign miss_pos.offset = miss_count.offset;
     assign miss_write_en   = cbus_resp.okay ?
-        (MISS_MASK << miss_count.shamt) : bram_wrten_t'(0);
+        (MISS_MASK << {miss_count.shamt, {CBUS_ALIGN_BITS{1'b0}}}) :
+        bram_wrten_t'(0);
 
     for (genvar i = 0; i < WIDTH_RATIO; i++) begin: miss_wdata_echo
         localparam int hi = CBUS_DATA_WIDTH * (i + 1) - 1;

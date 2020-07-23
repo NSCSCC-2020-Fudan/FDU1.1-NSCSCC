@@ -46,7 +46,7 @@ public:
 
     Top() {
         _bus = new CacheBusSlave(inst);
-        cmem = new CacheBusMemory(MEMORY_SIZE, _bus, true);
+        cmem = new CacheBusMemory(MEMORY_SIZE, _bus, true, true);
     }
     virtual ~Top() {
         delete _bus;

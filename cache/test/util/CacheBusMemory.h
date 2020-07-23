@@ -3,13 +3,22 @@
 #include <cstdio>
 #include <cassert>
 
+inline u32 remap(int i) {
+    // Knuth's multiplicative hash
+    return (i + 1) * 2654435761u;
+}
+
 class CacheBusMemory {
 public:
     int size;
     u32 *mem;
 
-    CacheBusMemory(int _size, ICacheBusSlave *bus, bool random_delay = false)
-        : size(_size), mem(new u32[size]), _bus(bus), _random_delay(random_delay) {
+    CacheBusMemory(
+        int _size, ICacheBusSlave *bus,
+        bool random_delay = false,
+        bool use_hash = false
+    ) : size(_size), mem(new u32[size]), _bus(bus),
+        _random_delay(random_delay), _use_hash(use_hash) {
         reset();
     }
     ~CacheBusMemory() {
@@ -21,7 +30,10 @@ public:
         _in_operation = false;
         _count = 0;
         for (int i = 0; i < size; i++) {
-            mem[i] = i;
+            if (_use_hash)
+                mem[i] = remap(i);
+            else
+                mem[i] = i;
         }
 
         _bus->okay() = 0;
@@ -87,7 +99,9 @@ public:
 
 private:
     ICacheBusSlave *_bus;
-    bool _random_delay, _delayed;
+    bool _random_delay;
+    bool _use_hash;
+    bool _delayed;
     bool _in_operation;
     int _count;
 };
