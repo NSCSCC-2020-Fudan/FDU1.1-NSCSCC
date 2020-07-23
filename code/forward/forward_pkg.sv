@@ -11,5 +11,4 @@ package forward_pkg;
         logic[$clog2(execute_pkg::ALU_NUM)-1:0] fw1, fw2;
     } forward_t;
     
-    
 endpackage: forward_pkg

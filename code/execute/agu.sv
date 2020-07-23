@@ -13,6 +13,7 @@ module agu
     vaddr_t addr;
     assign addr = src1 + src2;
 endmodule
+
 module readdata (
     input word_t _rd,
     output word_t rd,
