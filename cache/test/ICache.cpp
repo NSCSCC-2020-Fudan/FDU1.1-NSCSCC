@@ -72,10 +72,28 @@ WITH SKIP {
     p.wait();
 } AS("random read");
 
-/**
- * TODO:
- * * [x] random block read
- * * [x] random read
- * * [ ] fake read
- * * [ ] backward read
- */
+WITH {
+    top->issue_read(7 * 4);
+    top->inst->ibus_req_x_req = 0;
+    top->eval();
+    for (int i = 0; i < 256; i++) {
+        assert(top->inst->ibus_resp_x_data_ok == 0);
+        top->tick();
+    }
+} AS("fake read");
+
+WITH {
+    Pipeline p(top);
+    for (int i = MEMORY_SIZE - 2; i >= 0; i -= 2) {
+        p.expect(i);
+    }
+    p.wait();
+} AS("backward read 1");
+
+WITH {
+    Pipeline p(top);
+    for (int i = MEMORY_SIZE - 1; i >= 0; i -= 2) {
+        p.expect(i);
+    }
+    p.wait();
+} AS("backward read 2");
