@@ -3,15 +3,26 @@ module agu
     import common::*;
     import mem_pkg::*;
     (
-    
+    input logic clk, resetn,
+    input word_t src1, src2,
+    input word_t wd_,
+    output word_t wd
 );
     read_req_t read;
     write_req_t write;
 
-    readdata readdata();
-    writedata writedata();
-    vaddr_t addr;
-    assign addr = src1 + src2;
+    readdata readdata(._rd(), .rd(), .addr(addr[1:0]), .op());
+    writedata writedata(.addr(addr[1:0]), ._wd(), .op(), .wd());
+    vaddr_t addr, addr_new;
+    assign addr_new = src1 + src2;
+    
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
+            addr <= '0;
+        end else begin
+            addr <= addr_new;
+        end
+    end
 endmodule
 
 module readdata (
@@ -69,13 +80,11 @@ module writedata (
     input logic[1:0] addr,
     input word_t _wd,
     input decoded_op_t op,
-    output logic en,
     output word_t wd
 );
     always_comb begin
         case (op)
             SW : begin
-                en = 1'b1;
                 wd = _wd;
             end 
             SH: begin
@@ -97,29 +106,23 @@ module writedata (
             SB: begin
                 case (addr)
                     2'b00: begin
-                        en = 1'b1;
                         wd = _wd;
                     end 
                     2'b01: begin
-                        en = 1'b1;
                         wd = {_wd[23:0], 8'b0};
                     end 
                     2'b10: begin
-                        en = 1'b1;
                         wd = {_wd[15:0], 16'b0};
                     end 
                     2'b11: begin
-                        en = 1'b1;
                         wd = {_wd[7:0], 24'b0};
                     end 
                     default: begin
-                        en = 'b0;
                         wd = 'b0;
                     end
                 endcase
             end
             default: begin
-                en = '0;
                 wd = '0;
             end
         endcase

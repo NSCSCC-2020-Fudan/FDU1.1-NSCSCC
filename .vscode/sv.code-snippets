@@ -18,5 +18,13 @@
 	"import": {
 		"prefix": "import",
 		"body": "import ${1:common}::*;$0"
+	},
+	"interface": {
+		"prefix": "interface",
+		"body": [
+			"interface $1();",
+			"\t$2",
+			"endinterface"
+		]
 	}
 }

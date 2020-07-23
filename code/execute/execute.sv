@@ -1,14 +1,19 @@
+`include "../interface.svh"
+
 module execute 
     import common::*;
     import execute_pkg::*;(
-    
+    forward_intf.execute forward
 );
     // forward
-    forward forward();
+    
     
     // ALU
     for (genvar i=0; i<ALU_NUM; i++) begin
-        alu alu();
+        alu alu(.a(), .b(),
+                .alufunc(),
+                .c(),
+                .exception_of());
     end
 
     // AGU
