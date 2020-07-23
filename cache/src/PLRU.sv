@@ -32,8 +32,8 @@ module PLRU #(
     // generate idx
     assign bits = s & mask;
     for (genvar i = 0; i < IDX_BITS; i++) begin: plru_idx
-        localparam int hi = 2 * lo - 1;
         localparam int lo = 2**i;
+        localparam int hi = 2 * lo - 1;
         assign victim_idx[IDX_BITS - i - 1] = |bits[hi:lo];
     end
 
