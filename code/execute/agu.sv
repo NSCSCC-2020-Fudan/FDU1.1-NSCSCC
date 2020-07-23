@@ -5,14 +5,14 @@ module agu
     (
     input logic clk, resetn,
     input word_t src1, src2,
-    input word_t wd_,
-    output word_t wd
+    input word_t rd_, wd_,
+    output word_t rd, wd
 );
     read_req_t read;
     write_req_t write;
 
-    readdata readdata(._rd(), .rd(), .addr(addr[1:0]), .op());
-    writedata writedata(.addr(addr[1:0]), ._wd(), .op(), .wd());
+    readdata readdata(._rd(), .rd, .addr(addr[1:0]), .op());
+    writedata writedata(.addr(addr[1:0]), ._wd, .op(), .wd);
     vaddr_t addr, addr_new;
     assign addr_new = src1 + src2;
     
