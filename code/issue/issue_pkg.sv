@@ -6,9 +6,6 @@ package issue_pkg;
 
 
     //  Group: Typedefs
-    typedef struct packed {
-        logic en;
-    } struct_name;
 
     
 endpackage: issue_pkg

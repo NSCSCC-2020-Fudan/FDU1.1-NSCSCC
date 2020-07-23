@@ -1,28 +1,29 @@
 module issue_queue 
     import common::*;
-    import queue_pkg::*;
+    import issue_queue_pkg::*;
     #(
-    parameter type queue_t = alu_queue_t,
-    parameter type ptr_t = alu_queue_ptr_t,
-    parameter ADDR_WIDTH = $clog2(ALU_QUEUE_LEN),
-    parameter entry_type_t ENTRY_TYPE = ALU
+    parameter QUEUE_LEN = ALU_QUEUE_LEN,
+    parameter entry_type_t ENTRY_TYPE = ALU,
+    parameter READ_NUM = execute_pkg::ALU_NUM
 )(
-    
+    input logic clk, resetn, flush,
+    input write_req_t [WRITE_NUM-1:0] write,
+    output read_resp_t [READ_NUM-1:0] read,
+    input wake_req_t [WAKE_NUM-1:0] wake,
+    output logic full
 );
+    localparam type queue_ptr_t = logic[$clog2(QUEUE_LEN)-1:0];
+    localparam type queue_t = entry_t[QUEUE_LEN-1:0];
+    localparam ADDR_WIDTH = $clog2(QUEUE_LEN);
+
     queue_t queue, queue_new, queue_after_read;
-    write_req_t [WRITE_NUM-1:0] write;
-    read_t [READ_NUM-1:0] read;
-    ptr_t head, tail, head_new, tail_new;
-    logic full, empty, full_new, empty_new;
+    
+    queue_ptr_t head, tail, head_new, tail_new;
     logic[3:0] read_num;
-    // assign full = tail == {ADDR_WIDTH{1'b1}};
-    // assign empty = tail == {ADDR_WIDTH{1'b0}};
-    assign full_new = tail_new == {ADDR_WIDTH{1'b1}};
-    assign empty_new = tail_new == {ADDR_WIDTH{1'b0}};
 
     // write
     always_ff @(posedge clk) begin
-        if (~resetn) begin
+        if (~resetn | flush) begin
             queue <= '0;
             tail <= '0;
         end else begin
@@ -38,7 +39,7 @@ module issue_queue
         read = '0;
         // wake up
         for (int i=0; i<WAKEUP_LEN; i++) begin
-            for (int j=0; j<2**ADDR_WIDTH; j++) begin
+            for (int j=0; j<QUEUE_LEN; j++) begin
                 if (queue_new.src1.id == wake_up[i]) begin
                     queue_new.src1.valid = 1'b1;
                 end
@@ -53,16 +54,16 @@ module issue_queue
 
         // read first
         read_num = '0;
-        for (int i=0; i<2**ADDR_WIDTH; i++) begin
+        for (int i=0; i<QUEUE_LEN; i++) begin
             // unable to read more
-            if (read_num == MAX_READ) begin
+            if (read_num == READ_NUM) begin
                 break;
             end
             // ready
             if (queue_new[i].src1.valid && queue_new[i].src2.valid) begin
                 read[read_num] = queue_new[i].entry;
                 // remove from issue queue: queue_new[tail-1:i] = queue_new[tail:i+1];
-                for (int j=0; j<2**ADDR_WIDTH; j++) begin
+                for (int j=0; j<QUEUE_LEN; j++) begin
                     if (j > i) begin
                         tail[j - 1] = tail[j];
                         if (j == tail_new) begin
@@ -84,7 +85,7 @@ module issue_queue
         for (int i=0; i<WRITE_NUM; i++) begin
             if (write[i].entry.entry_type != ENTRY_TYPE) begin
                 continue; // not this type
-            end else if (read_num != MAX_READ && write[i].entry.src1.valid && write[i].entry.src2.valid) begin
+            end else if (read_num != READ_NUM && write[i].entry.src1.valid && write[i].entry.src2.valid) begin
                 read[read_num] = write[i].entry; // issue immediately
             end else if (~full_new) begin
                 queue_new[tail_new] = write[i].entry; // push into the queue
