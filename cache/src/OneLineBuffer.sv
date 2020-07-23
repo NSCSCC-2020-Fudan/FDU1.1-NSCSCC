@@ -75,9 +75,14 @@ module OneLineBuffer #(
                 if (tag_hit) begin
                     if (sramx_req.wr) begin
                         dirty <= 1;
-                        for (int i = 0; i < BYTES_PER_WORD; i++) begin
-                            if (req_strb[i])
-                                mem[req_addr.offset].bytes[i] <= sramx_req.wdata.bytes[i];
+                        for (int i = 0; i < BUFFER_LENGTH; i++) begin
+                            if (req_addr.offset == offset_t'(i)) begin
+                                for (int j = 0; j < BYTES_PER_WORD; j++) begin
+                                    mem[i].bytes[j] <= req_strb[j] ?
+                                        sramx_req.wdata.bytes[j] :
+                                        mem[i].bytes[j];
+                                end
+                            end
                         end
                     end
                 end else begin
@@ -99,13 +104,20 @@ module OneLineBuffer #(
                 if (cbus_resp.okay) begin
                     if (saved_req.wr && offset_hit) begin
                         // direct overwrite
-                        for (int i = 0; i < BYTES_PER_WORD; i++) begin
-                            mem[offset].bytes[i] <= saved_strb[i] ?
-                                saved_req.wdata.bytes[i] :
-                                cbus_resp.rdata.bytes[i];
+                        for (int i = 0; i < BUFFER_LENGTH; i++) begin
+                            if (offset == offset_t'(i)) begin
+                                for (int j = 0; j < BYTES_PER_WORD; j++) begin
+                                    mem[i].bytes[j] <=saved_strb[j] ?
+                                        saved_req.wdata.bytes[j] :
+                                        cbus_resp.rdata.bytes[j];
+                                end
+                            end
                         end
                     end else begin
-                        mem[offset] <= cbus_resp.rdata;
+                        for (int i = 0; i < BUFFER_LENGTH; i++) begin
+                            mem[i] <= offset == offset_t'(i) ?
+                                cbus_resp.rdata : mem[i];
+                        end
                     end
                 end
 

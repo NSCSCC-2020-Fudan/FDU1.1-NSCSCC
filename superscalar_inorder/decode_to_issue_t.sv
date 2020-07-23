@@ -26,5 +26,6 @@ module decode_to_issue_t(
     assign out.cp0_status = cp0_statusI;
     assign out.cp0_cause = cp0_causeI;
     assign out.cp0_epc = cp0_epcI;
+    assign out.pred = in.pred;
 
 endmodule

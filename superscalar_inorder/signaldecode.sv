@@ -43,6 +43,7 @@ module signaldecode (
 	assign dataD.instr.pcbranch = pcbranch;
 	assign dataD.instr.extended_imm = ext_imm;
 	assign dataD.instr.pcjump = pcjump;
+	assign dataD.pred = dataF.pred;
     
 	assign dataD.pcplus4 = dataF.pcplus4;
 	assign dataD.exception_instr = dataF.exception_instr;

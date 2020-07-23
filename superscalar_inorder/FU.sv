@@ -26,7 +26,7 @@ module FU(
     ALU ALU (alusrcaE, alusrcbE, func, result, exception_of);
     JUDGE JUDGE(alusrcaE, alusrcbE, in.instr.ctl.branch_type, taken);
     assign finish = (~divtype || div_timeok) && (~multype || mul_timeok);
-    
+        
     word_t hi, lo;
     assign hi = (multype) ? (hi_mul) : (hi_div);
     assign lo = (multype) ? (lo_mul) : (lo_div);
@@ -44,6 +44,7 @@ module FU(
     assign out.cp0_cause = in.cp0_cause;
     assign out.cp0_status = in.cp0_status;
     assign out.cp0_epc = in.cp0_epc;
+    assign out.pred = in.pred;
     
     word_t pcplus8;
     adder adderpcplus8(in.pcplus4, 32'b0100, pcplus8);

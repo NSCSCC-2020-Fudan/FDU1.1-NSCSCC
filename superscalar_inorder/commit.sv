@@ -23,8 +23,12 @@ module commit(
         input logic timer_interrupt,
         output logic exception_valid,
         output exception_t exception_data,
-        output logic is_eret
+        output logic is_eret,
         //cp0
+        output word_t pc_commit,
+        output bpb_result_t destpc_commit,
+        output logic bpb_wen_commti
+        //bpb
     );
     
     exec_data_t [1: 0] _out;
@@ -73,7 +77,7 @@ module commit(
 //    assign mem.rd = dmem_rd;
     
     assign finishC = (first_cycleC) ? (~mem.en) : (~mem.en | dmem_dataOK);
-    assign pc_mC = (_out[1].instr.ctl.branch & _out[1].taken) | _out[1].instr.ctl.jump | _out[1].instr.ctl.jr;
+    assign pc_mC = (_out[1].instr.ctl.branch && (_out[1].taken ^ _out[1].pred)) | _out[1].instr.ctl.jr;
     
     exec_data_t [1: 0] __out;
     mem_to_reg mem_to_reg1(_out[1], mem, __out[1]);
@@ -99,14 +103,20 @@ module commit(
     assign fetch.is_eret = (out[1].instr.op == ERET) | (out[0].instr.op == ERET); 
     assign fetch.pcexception = pcexception; 
     assign fetch.epc = (out[1].instr.op == ERET) ? (out[1].cp0_epc) : (out[0].cp0_epc);
-    assign fetch.branch = out[1].instr.ctl.branch & in[1].taken;
-    assign fetch.jump = out[1].instr.ctl.jump;  
+    assign fetch.branch = (out[1].instr.ctl.branch && (out[1].taken ^ out[1].pred));
+    assign fetch.jump = 1'b0;//out[1].instr.ctl.jump;  
     assign fetch.jr = out[1].instr.ctl.jr;
-    assign fetch.pcbranch = out[1].instr.pcbranch;
+    assign fetch.pcbranch = (out[1].taken) ? (out[1].pcbranch) : (out[0].pcplus4); // out[1].instr.pcbranch;
     assign fetch.pcjr = out[1].srca;
     assign fetch.pcjump = out[1].instr.pcjump;
     // to fetch select pc
     
     assign is_eret = (_out[1].instr.op == ERET) | (_out[0].instr.op == ERET);
+    //
+    
+    assign pc_commit = out[1].pcplus4 - 5'd4;
+    assign destpc_commit.taken = out[1].taken;
+    assign destpc_commit.destpc = out[1].pcbranch;
+    assign bpb_wen_commit = out[1].instr.ctl.branch & finishC;
       
 endmodule

@@ -4,7 +4,7 @@ module datapath(
         input logic clk, reset,
         input logic [5: 0] ext_int,
         output word_t iaddr,  
-        input logic ihit, idataOK,
+        input logic ihit, iaddrOK, idataOK,
         input word_t [1: 0] idata, 
         //imem
         output logic dwt,
@@ -60,10 +60,18 @@ module datapath(
     
     logic mul_timeok, div_timeok;
     logic [1: 0] hitF_out, hitD_in, hitD_out;
+    
+    word_t [1: 0] pc_predict, instr_predict;
+    bpb_result_t [1: 0] destpc_predict;
+    logic bpb_wen_commit;
+    word_t pc_commit;
+    bpb_result_t destpc_commit;
+    
     fetch fetch (clk, reset, 1'b0, stallF,
                  pc_new, pc, pc_new_commit,
-                 iaddr, ihit, idata, idataOK,
-                 fetch_data, hitF_out, finishF);
+                 iaddr, ihit, idata, iaddrOK, idataOK,
+                 fetch_data, hitF_out, finishF,
+                 pc_predict, instr_predict, destpc_predict);
     
     dreg dreg (clk, reset, stallD, flushD,
                fetch_data, decode_data_in,
@@ -152,6 +160,14 @@ module datapath(
     cp0status_bypass cp0status_bypass(exec_bypass, commit_bypass, retire_bypass, 
                                       cp0_statusW, cp0_causeW, cp0_epcW,
                                       cp0_statusI, cp0_causeI, cp0_epcI);                             
+    
+    branchpredict branchpredict(clk, reset, 1'b0,
+                                pc_predict,
+                                instr_predict,
+                                destpc_predict,
+                                pc_commit,
+                                bpb_wen_commit,
+                                destpc_commit);
     
     assign rfw_out = rfw;
     assign rt_pc_out = rt_pc;                                                                                                                                    

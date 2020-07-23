@@ -1,8 +1,8 @@
 `ifndef __MIPS_SVH
 `define __MIPS_SVH
 
-`define MUL_DELAY       4
-`define DIV_DELAY       10
+`define MUL_DELAY       5
+`define DIV_DELAY       16
 `define ALU_DELAY       1
 
 typedef logic[5:0] op_t;
@@ -294,7 +294,7 @@ typedef struct packed {
     word_t instr_;
     word_t pcplus4;
     logic exception_instr;
-    logic en;
+    logic pred, en;
 } fetch_data_t;
 
 `define EXC_BASE 32'hbfc0_0000
@@ -338,7 +338,7 @@ typedef struct packed {
     creg_addr_t srcrega, srcregb, destreg, cp0_addr;
     logic exception_instr, exception_ri;
     word_t srca, srcb;
-    logic in_delay_slot;
+    logic in_delay_slot, pred;
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
 } decode_data_t;
@@ -354,7 +354,7 @@ typedef struct packed {
     decoded_instr_t instr;
     word_t pcplus4;
     logic exception_instr, exception_ri; 
-    logic taken;
+    logic pred;
     word_t srca, srcb;
     creg_addr_t destreg, cp0_addr;
     word_t result; //, resulthi, resultlo;
@@ -368,7 +368,7 @@ typedef struct packed {
     decoded_instr_t instr;
     word_t pcplus4;
     logic exception_instr, exception_ri, exception_of;
-    logic taken;
+    logic taken, pred;
     word_t srca, srcb;
     creg_addr_t destreg, cp0_addr;
     word_t result, hiresult, loresult;
@@ -392,5 +392,24 @@ typedef struct packed{
     logic exception_valid, is_eret, branch, jump, jr;
     word_t pcexception, epc, pcbranch, pcjump, pcjr; 
 } pc_data_t;
+
+
+`define BPB_ENTRIES         10'd64
+`define BPB_ENTRY_WIDTH     5'd6
+`define BPB_ENTRY_WIDTH0    5'd6
+`define BPB_TAG_WIDTH0      5'd24
+`define BPB_GLOBAL_WIDTH0   5'd0
+`define BPB_ENTRY_WIDTH1    5'd5
+`define BPB_TAG_WIDTH1      5'd25
+`define BPB_GLOBAL_WIDTH1   5'd1
+`define BPB_ENTRY_WIDTH2    5'd4
+`define BPB_TAG_WIDTH2      5'd26
+`define BPB_GLOBAL_WIDTH2   5'd2
+
+
+typedef struct packed{
+    logic taken;
+    word_t destpc;
+} bpb_result_t;
 
 `endif
