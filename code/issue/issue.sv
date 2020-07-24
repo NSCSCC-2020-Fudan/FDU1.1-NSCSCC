@@ -2,10 +2,10 @@ module issue
     import common::*;
     import issue_queue_pkg::*;
     import issue_pkg::*;(
-    input clk, resetn, flush,
-    input renaming_data_t dataR,
-    output issue_data_t dataI
+    input clk, resetn, flush
 );
+    renaming_data_t[MACHINE_WIDTH-1:0] dataR;
+    issue_data_t dataI;
     write_req_t[WRITE_NUM-1:0] write;
     wake_req_t[WAKE_NUM-1:0] wake;
     read_resp_t[execute_pkg::ALU_NUM-1:0] alu_issue;
@@ -16,15 +16,16 @@ module issue
     // generate write from dataR
     for (genvar i=0; i<WRITE_NUM; i++) begin
         write[i].valid = 1'b1;
-        write[i].entry_type = ;
-        write[i].entry.dst = ;
+        write[i].entry_type = dataR[i].ctl.entry_type;
+        write[i].entry.dst = dataR[i].dst;
         write[i].entry.src1.valid = ;
-        write[i].entry.src1.id = ;
+        write[i].entry.src1.id = dataR[i].src1;
         write[i].entry.src1.data = ;
         write[i].entry.src2.valid = ;
-        write[i].entry.src2.id = ;
+        write[i].entry.src2.id = dataR[i].src2;
         write[i].entry.src2.data = ;
         write[i].entry.ctl = ;
+        write[i].entry.imm = dataR[i].imm;
     end
 
     logic [3:0] full;
@@ -56,5 +57,37 @@ module issue
                         .wake,
                         .full(full[3]);
 
+    for (genvar i=0; i<ALU_NUM; i++) begin
+        dataI.alu_issue[i].src1 = alu_issue[i].entry.src1.data;
+        dataI.alu_issue[i].src2 = alu_issue[i].entry.src2.data;
+        dataI.alu_issue[i].imm = alu_issue[i].entry.imm;
+        dataI.alu_issue[i].dst = alu_issue[i].entry.dst;
+        dataI.alu_issue[i].rob_addr = alu_issue[i].entry.rob_addr;
+        dataI.alu_issue[i].ctl = alu_issue[i].entry.ctl;
+    end
+    for (genvar i=0; i<MEM_NUM; i++) begin
+        dataI.mem_issue[i].src1 = mem_issue[i].entry.src1.data;
+        dataI.mem_issue[i].src2 = mem_issue[i].entry.src2.data;
+        dataI.mem_issue[i].imm = mem_issue[i].entry.imm;
+        dataI.mem_issue[i].dst = mem_issue[i].entry.dst;
+        dataI.mem_issue[i].rob_addr = mem_issue[i].entry.rob_addr;
+        dataI.mem_issue[i].ctl = mem_issue[i].entry.ctl;
+    end
+    for (genvar i=0; i<BRANCH_NUM; i++) begin
+        dataI.branch_issue[i].src1 = branch_issue[i].entry.src1.data;
+        dataI.branch_issue[i].src2 = branch_issue[i].entry.src2.data;
+        dataI.branch_issue[i].imm = branch_issue[i].entry.imm;
+        dataI.branch_issue[i].dst = branch_issue[i].entry.dst;
+        dataI.branch_issue[i].rob_addr = branch_issue[i].entry.rob_addr;
+        dataI.branch_issue[i].ctl = mult_issue[i].entry.ctl;
+    end
+    for (genvar i=0; i<MULT_NUM; i++) begin
+        dataI.mult_issue[i].src1 = mult_issue[i].entry.src1.data;
+        dataI.mult_issue[i].src2 = mult_issue[i].entry.src2.data;
+        dataI.mult_issue[i].imm = mult_issue[i].entry.imm;
+        dataI.mult_issue[i].dst = mult_issue[i].entry.dst;
+        dataI.mult_issue[i].rob_addr = mult_issue[i].entry.rob_addr;
+        dataI.mult_issue[i].ctl = mult_issue[i].entry.ctl;
+    end
 
 endmodule
