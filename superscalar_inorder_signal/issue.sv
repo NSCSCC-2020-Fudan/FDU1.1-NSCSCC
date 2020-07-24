@@ -71,10 +71,10 @@ module issue(
     //assign enb = 1'b0;
 
     logic [1: 0] issue_en;
-    assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
-    assign issue_en[0] = enb && (valid[headplus1]);
     //assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
-    //assign issue_en[0] = (BJa) && (valid[headplus1]);
+    //assign issue_en[0] = enb && (valid[headplus1]);
+    assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
+    assign issue_en[0] = (BJa) && (valid[headplus1]);
     
     logic [`MUL_DELAY - 1: 0] MULU_TIMER;
     logic [`DIV_DELAY - 1: 0] DIVU_TIMER;
