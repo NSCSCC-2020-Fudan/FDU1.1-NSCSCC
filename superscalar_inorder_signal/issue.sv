@@ -56,9 +56,8 @@ module issue(
     assign BJa = aD.instr.ctl.branch || aD.instr.ctl.jump || aD.instr.ctl.jr;
     assign BJb = bD.instr.ctl.branch || bD.instr.ctl.jump || bD.instr.ctl.jr;
     //assign BJ = (BJa & free[6]) | (BJb);
-    assign BJ = (BJa & valid[headplus1]) | (BJb);
+    assign BJ = BJb;
     //issue together
-    //~ and link needs extra bypass!
     
     logic ERETb, CAUSEa, STATUSa, PRIV;
     assign ERETb = (bD.instr.op == ERET);
@@ -72,10 +71,10 @@ module issue(
     //assign enb = 1'b0;
 
     logic [1: 0] issue_en;
-    //assign issue_en[1] = ~(BJa && free[6]) && ~(free[7]);
-    //assign issue_en[0] = enb && ~(free[6]);
     assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
-    assign issue_en[0] = (BJa) && (valid[headplus1]);
+    assign issue_en[0] = enb && (valid[headplus1]);
+    //assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
+    //assign issue_en[0] = (BJa) && (valid[headplus1]);
     
     logic [`MUL_DELAY - 1: 0] MULU_TIMER;
     logic [`DIV_DELAY - 1: 0] DIVU_TIMER;

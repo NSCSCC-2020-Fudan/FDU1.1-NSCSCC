@@ -13,14 +13,14 @@ module regfile (
         else 
             begin
                 if (rfw[1].wen && (rfw[1].addr != '0)) 
-                    R[rfw[1].addr] <= rfw[1].wd;
+                    R[rfw[1].addr] = rfw[1].wd;
                 else
-                    R[0] <= '0;
+                    R[0] = '0;
                     
                 if (rfw[0].wen && (rfw[0].addr != '0)) 
-                    R[rfw[0].addr] <= rfw[0].wd;
+                    R[rfw[0].addr] = rfw[0].wd;
                 else
-                    R[0] <= '0;
+                    R[0] = '0;
             end
     end
     

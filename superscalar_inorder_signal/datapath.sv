@@ -115,7 +115,8 @@ module datapath(
                commit_data_out,
                retire_data_in);
     retire retire (retire_data_in,
-                   rfw, rt_pc, hlw, cp0w,
+                   rfw, rt_pc, 
+                   hlw, cp0w,
                    retire_bypass);
     
     bypass bypass (reg_addrI, reg_dataI, 
