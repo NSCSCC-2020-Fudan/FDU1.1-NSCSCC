@@ -6,6 +6,7 @@
 parameter int SRAMX_DATA_WIDTH = 32;
 parameter int SRAMX_SIZE_WIDTH = 2;
 parameter int SRAMX_DATA_BYTES = SRAMX_DATA_WIDTH / 8;      // 4
+parameter int SRAMX_MAX_SIZE   = $clog2(SRAMX_DATA_BYTES);  // 2
 parameter int SRAMX_DATA_BITS  = $clog2(SRAMX_DATA_WIDTH);  // 5
 
 typedef logic [SRAMX_DATA_WIDTH - 1:0] sramx_word_t;

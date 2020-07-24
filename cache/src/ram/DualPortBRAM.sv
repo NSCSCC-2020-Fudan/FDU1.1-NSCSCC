@@ -109,7 +109,7 @@ module DualPortBRAM #(
         .MEMORY_OPTIMIZATION("true"),
         .MEMORY_PRIMITIVE("block"),  // specify BRAM
         .MEMORY_SIZE(MEM_NUM_BITS),  // in bits
-        .MESSAGE_CONTROL(1),  // enable message reporting
+        .MESSAGE_CONTROL(0),  // disable message reporting
         .READ_DATA_WIDTH_A(DATA_WIDTH),
         .READ_DATA_WIDTH_B(DATA_WIDTH),
         .READ_LATENCY_A(1),

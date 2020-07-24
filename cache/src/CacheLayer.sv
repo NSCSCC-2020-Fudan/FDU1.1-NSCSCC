@@ -6,7 +6,8 @@
 `include "cache.svh"
 
 module CacheLayer #(
-    parameter logic USE_ICACHE = 1
+    parameter logic USE_ICACHE = 1,
+    parameter logic USE_IBUS   = 1
 ) (
     input  logic aclk, aresetn,
 
@@ -54,20 +55,31 @@ module CacheLayer #(
     input  word_t       inst_wdata,   data_wdata,
     output word_t       inst_rdata,   data_rdata,
     output logic        inst_addr_ok, data_addr_ok,
-    output logic        inst_data_ok, data_data_ok
-);
-    // interface converter
-    sramx_req_t  imem_req,  dmem_req;
-    sramx_resp_t imem_resp, dmem_resp;
+    output logic        inst_data_ok, data_data_ok,
 
-    assign imem_req.req   = inst_req;
-    assign imem_req.wr    = inst_wr;
-    assign imem_req.size  = inst_size;
-    assign imem_req.addr  = inst_addr;
-    assign imem_req.wdata = inst_wdata;
-    assign inst_addr_ok   = imem_resp.addr_ok;
-    assign inst_data_ok   = imem_resp.data_ok;
-    assign inst_rdata     = imem_resp.rdata;
+    input  logic        inst_ibus_req,
+    input  addr_t       inst_ibus_addr,
+    output logic        inst_ibus_addr_ok,
+    output logic        inst_ibus_data_ok,
+    output ibus_data_t  inst_ibus_data,
+    output ibus_index_t inst_ibus_index
+);
+    /**
+     * interface converter
+     */
+    sramx_req_t  imem_sramx_req,  dmem_req;
+    sramx_resp_t imem_sramx_resp, dmem_resp;
+    ibus_req_t   imem_ibus_req;
+    ibus_resp_t  imem_ibus_resp;
+
+    assign imem_sramx_req.req   = inst_req;
+    assign imem_sramx_req.wr    = inst_wr;
+    assign imem_sramx_req.size  = inst_size;
+    assign imem_sramx_req.addr  = inst_addr;
+    assign imem_sramx_req.wdata = inst_wdata;
+    assign inst_addr_ok         = imem_sramx_resp.addr_ok;
+    assign inst_data_ok         = imem_sramx_resp.data_ok;
+    assign inst_rdata           = imem_sramx_resp.rdata;
 
     assign dmem_req.req   = data_req;
     assign dmem_req.wr    = data_wr;
@@ -78,24 +90,50 @@ module CacheLayer #(
     assign data_data_ok   = dmem_resp.data_ok;
     assign data_rdata     = dmem_resp.rdata;
 
-    // address translation & request dispatching
-    sramx_req_t  icache_req,  dcache_req,  uncached_req;
-    sramx_resp_t icache_resp, dcache_resp, uncached_resp;
+    assign imem_ibus_req.req  = inst_ibus_req;
+    assign imem_ibus_req.addr = inst_ibus_addr;
+    assign inst_ibus_addr_ok  = imem_ibus_resp.addr_ok;
+    assign inst_ibus_data_ok  = imem_ibus_resp.data_ok;
+    assign inst_ibus_data     = imem_ibus_resp.data;
+    assign inst_ibus_index    = imem_ibus_resp.index;
 
-    MMU mmu_inst(.*);
+    /**
+     * address translation & request dispatching
+     */
+    sramx_req_t  dcache_req,  uncached_req;
+    sramx_resp_t dcache_resp, uncached_resp;
 
-    // buffers or caches
+    // verilator lint_save
+    // verilator lint_off UNUSED
+    // verilator lint_off UNDRIVEN
+    sramx_req_t  isramx_req;
+    sramx_resp_t isramx_resp;
+    ibus_req_t   ibus_req;
+    ibus_resp_t  ibus_resp;
+    // verilator lint_restore
+
+    MMU #(.USE_IBUS(USE_IBUS)) mmu_inst(.*);
+
+    /**
+     * buffers or caches
+     */
     cbus_req_t  icbus_req,  dcbus_req;
     cbus_resp_t icbus_resp, dcbus_resp;
 
     if (USE_ICACHE == 1) begin: use_icache
-        ibus_req_t  ibus_req;
-        ibus_resp_t ibus_resp;
+        ibus_req_t  mux_ibus_req;
+        ibus_resp_t mux_ibus_resp;
 
-        SRAMxToInstrBus sramx_ibus_inst(
-            .sramx_req(icache_req), .sramx_resp(icache_resp),
-            .ibus_req, .ibus_resp
-        );
+        if (USE_IBUS) begin
+            assign mux_ibus_req  = ibus_req;
+            assign ibus_resp = mux_ibus_resp;
+        end else begin: sramx_to_ibus
+            SRAMxToInstrBus sramx_ibus_inst(
+                .sramx_req(isramx_req), .sramx_resp(isramx_resp),
+                .ibus_req(mux_ibus_req), .ibus_resp(mux_ibus_resp)
+            );
+        end
+
         ICache #(
             .IDX_BITS(ICACHE_IDX_BITS),
             .INDEX_BITS(ICACHE_INDEX_BITS),
@@ -104,14 +142,16 @@ module CacheLayer #(
         ) icache_inst(
             .clk(aclk), .resetn(aresetn),
             .ibus_req_vaddr(inst_addr),
-            .ibus_req, .ibus_resp,
+            .ibus_req(mux_ibus_req),
+            .ibus_resp(mux_ibus_resp),
             .cbus_req(icbus_req),
             .cbus_resp(icbus_resp)
         );
     end else begin: use_ibuf
+        // NOTE: "USE_IBUS" does not affect ibuf
         OneLineBuffer ibuf(
             .clk(aclk), .resetn(aresetn),
-            .sramx_req(icache_req), .sramx_resp(icache_resp),
+            .sramx_req(isramx_req), .sramx_resp(isramx_resp),
             .cbus_req(icbus_req), .cbus_resp(icbus_resp)
         );
     end
@@ -122,7 +162,9 @@ module CacheLayer #(
         .cbus_req(dcbus_req), .cbus_resp(dcbus_resp)
     );
 
-    // $bus to AXI
+    /**
+     * $bus to AXI
+     */
     axi_req_t  axi_icache_req,  axi_dcache_req;
     axi_resp_t axi_icache_resp, axi_dcache_resp;
 
@@ -139,7 +181,9 @@ module CacheLayer #(
         .axi_resp(axi_dcache_resp)
     );
 
-    // uncached converter
+    /**
+     * uncached converter
+     */
     axi_req_t  axi_uncached_req;
     axi_resp_t axi_uncached_resp;
 
@@ -150,7 +194,9 @@ module CacheLayer #(
         .axi_resp(axi_uncached_resp)
     );
 
-    // AXI crossbar
+    /**
+     * AXI crossbar
+     */
     logic [11:0] s_axi_awid;
     logic [95:0] s_axi_awaddr;
     logic [11:0] s_axi_awlen;
@@ -255,6 +301,17 @@ module CacheLayer #(
         .m_axi_rready(rready)
     );
 `else
+    assign {
+        arid, araddr, arlen, arsize, arburst, arlock,
+        arcache, arprot, arvalid, rready, awid, awaddr,
+        awlen, awsize, awburst, awlock, awcache, awprot,
+        awvalid, wid, wdata, wstrb, wlast, wvalid, bready,
+        s_axi_awready, s_axi_awready, s_axi_bid, s_axi_bvalid,
+        s_axi_wready, s_axi_bresp, s_axi_arready, s_axi_rid,
+        s_axi_rdata, s_axi_rresp, s_axi_rlast, s_axi_rvalid,
+        awqos, arqos
+    } = 0;
+
     logic __unused_ok = &{1'b0,
         s_axi_awid, s_axi_awaddr, s_axi_awlen, s_axi_awsize,
         s_axi_awburst, s_axi_awlock, s_axi_awcache, s_axi_awprot,

@@ -3,7 +3,9 @@
 
 // axi
 module mycpu_top #(
-    parameter logic USE_CACHE = 1
+    parameter logic USE_CACHE  = 1,
+    parameter logic USE_ICACHE = 1,
+    parameter logic USE_IBUS   = 0
 ) (
     input logic[5:0] ext_int,  //high active
 
@@ -66,6 +68,17 @@ module mycpu_top #(
     logic inst_addr_ok, data_addr_ok;
     logic inst_data_ok, data_data_ok;
 
+    localparam int _IBUS_DATA_WIDTH = 64;
+    localparam int _IBUS_INDEX_BITS = $clog2(_IBUS_DATA_WIDTH / 32);
+    typedef logic [_IBUS_DATA_WIDTH - 1:0] _ibus_data_t;
+    typedef logic [_IBUS_INDEX_BITS - 1:0] _ibus_index_t;
+    logic         inst_ibus_req;
+    addr_t        inst_ibus_addr;
+    logic         inst_ibus_addr_ok;
+    logic         inst_ibus_data_ok;
+    _ibus_data_t  inst_ibus_data;
+    _ibus_index_t inst_ibus_index;
+
     mycpu #(.DO_ADDR_TRANSLATION(~USE_CACHE)) mycpu(
         .clk(aclk), .resetn(aresetn), .ext_int,
         .inst_req, .inst_wr, .inst_size, .inst_addr, .inst_wdata, .inst_rdata, .inst_addr_ok, .inst_data_ok,
@@ -73,7 +86,7 @@ module mycpu_top #(
         .debug_wb_pc, .debug_wb_rf_wen, .debug_wb_rf_wnum, .debug_wb_rf_wdata
     );
 
-    if (USE_CACHE == 0) begin
+    if (USE_CACHE == 0) begin: without_cache
         cpu_axi_interface cpu_axi_interface(
             .clk(aclk), .resetn(aresetn),
             .inst_req, .inst_wr, .inst_size, .inst_addr, .inst_wdata, .inst_rdata, .inst_addr_ok, .inst_data_ok,
@@ -84,7 +97,10 @@ module mycpu_top #(
             .wid, .wdata, .wstrb, .wlast, .wvalid, .wready,
             .bid, .bresp, .bvalid, .bready
         );
-    end else begin
-        CacheLayer layer_inst(.*);
+    end else begin: with_cache
+        CacheLayer #(
+            .USE_ICACHE(USE_ICACHE),
+            .USE_IBUS(USE_IBUS)
+        ) layer_inst(.*);
     end
 endmodule

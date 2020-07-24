@@ -97,8 +97,8 @@ module decode (
 	assign cp0.ra = dataD.instr.rd;
 	// hazard_intf.decode hazard
 	assign hazard.dataD = dataD;
-	assign forwardAD = hazard.forwardAD;
-	assign forwardBD = hazard.forwardBD;
+//	assign forwardAD = hazard.forwardAD;
+//	assign forwardBD = hazard.forwardBD;
 	assign aluoutM = hazard.aluoutM;
 	assign resultW = hazard.resultW;
 
