@@ -46,6 +46,7 @@ module DualPortBRAM #(
     output word_t  data_out_2
 );
 `ifdef VERILATOR
+
     localparam word_t _RESET_VALUE = word_t'(RESET_VALUE.atohex());
     localparam word_t DEADBEEF     = word_t'('hdeadbeef);
 

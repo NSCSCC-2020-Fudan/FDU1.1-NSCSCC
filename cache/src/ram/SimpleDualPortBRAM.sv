@@ -24,13 +24,56 @@ module SimpleDualPortBRAM #(
     localparam type wrten_t = logic  [BYTES_PER_WORD - 1:0],
     localparam type view_t  = byte_t [BYTES_PER_WORD - 1:0]
 ) (
-    input logic clk, resetn, en,
+    input logic clk, reset, en,
 
     input  addr_t  raddr, waddr,
     input  wrten_t write_en,
     input  word_t  wdata,
     output word_t  rdata
 );
+`ifdef VERILATOR
+
+    localparam word_t _RESET_VALUE = word_t'(RESET_VALUE.atohex());
+    localparam word_t DEADBEEF     = word_t'('hdeadbeef);
+
+    `ASSERT(WRITE_MODE == "write_first", "Only \"write_first\" mode is supported.");
+
+    logic reset_reg = 0;  // RST_MODE = "SYNC"
+    addr_t addr_reg = 0;
+    view_t [MEM_NUM_WORDS - 1:0] mem = 0;
+
+    // detect read/write collision
+    logic addr_eq, hazard;
+    logic hazard_reg = 0;
+    assign addr_eq = raddr == waddr;
+    assign hazard = addr_eq && |write_en;
+
+    always_comb begin
+        if (reset_reg) begin
+            rdata = _RESET_VALUE;
+        end else begin
+            rdata = hazard_reg ?
+                DEADBEEF : mem[addr_reg];
+        end
+    end
+
+    always_ff @(posedge clk) begin
+        reset_reg <= reset;
+
+        if (en) begin
+            addr_reg <= raddr;
+            hazard_reg <= hazard;
+
+            for (int i = 0; i < BYTES_PER_WORD; i++) begin
+                int hi = 8 * i + 7;
+                if (write_en[i])
+                    mem[waddr][i] <= wdata[hi-:8];
+            end
+        end
+    end
+
+`else
+
     // xpm_memory_sdpram: Simple Dual Port RAM
     // Xilinx Parameterized Macro, version 2019.2
     xpm_memory_sdpram #(
@@ -46,7 +89,7 @@ module SimpleDualPortBRAM #(
         .MEMORY_OPTIMIZATION("true"),
         .MEMORY_PRIMITIVE("block"),  // expect BRAM
         .MEMORY_SIZE(MEM_NUM_BITS),  //in bits
-        .MESSAGE_CONTROL(1),  // disable message reporting
+        .MESSAGE_CONTROL(0),  // disable message reporting
         .READ_DATA_WIDTH_B(DATA_WIDTH),
         .READ_LATENCY_B(1),
         .READ_RESET_VALUE_B(RESET_VALUE),
@@ -60,7 +103,7 @@ module SimpleDualPortBRAM #(
         .WRITE_MODE_B(WRITE_MODE)
     ) xpm_memory_sdpram_inst (
         .clka(clk), .clkb(clk),
-        .ena(en), .enb(en), .rstb(~resetn),
+        .ena(en), .enb(en), .rstb(reset),
         .injectdbiterra(0),
         .injectsbiterra(0),
         .regceb(1),
@@ -73,4 +116,6 @@ module SimpleDualPortBRAM #(
         .dina(wdata)
     );
     // End of xpm_memory_sdpram_inst instantiation
+
+`endif
 endmodule
