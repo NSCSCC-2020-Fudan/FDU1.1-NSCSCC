@@ -2,7 +2,7 @@ module decoder
     import common::*;
     import decode_pkg::*;
     import issue_queue_pkg::*;(
-    input word_t instr_,
+    input word_t instr_, pcplus4,
     output logic exception_ri,
     output decoded_instr_t instr
 );
@@ -141,12 +141,14 @@ module decoder
                 op = J;
                 ctl.jump = 1'b1;
                 ctl.entry_type = BRANCH;
+                ctl.branch_type = T_J;
             end     
             OP_JAL: begin
                 op = JAL;
                 ctl.jump = 1'b1;
                 ctl.regwrite = 1'b1;
                 ctl.entry_type = BRANCH;
+                ctl.branch_type = T_J;
             end   
             OP_LB: begin
                 op = LB;
@@ -212,6 +214,8 @@ module decoder
                         op = ERET;
                         ctl.is_eret = 1'b1;
                         ctl.alufunc = ALU_PASSB;
+                        ctl.entry_type = BRANCH;
+                        ctl.branch_type = T_JR;
                     end 
                     C_MFC0:begin
                         op = MFC0;
@@ -385,6 +389,7 @@ module decoder
                         ctl.jr = 1'b1;
                         ctl.alufunc = ALU_PASSA;
                         ctl.entry_type = BRANCH;
+                        ctl.branch_type = T_JR;
                     end		
 					F_JALR:begin
                         op = JALR;
@@ -393,6 +398,7 @@ module decoder
                         ctl.regwrite = 1'b1;
                         ctl.alufunc = ALU_PASSA;
                         ctl.entry_type = BRANCH;
+                        ctl.branch_type = T_JR;
                     end	
 					F_MFHI:begin
                         op = MFHI;
@@ -448,7 +454,7 @@ module decoder
     assign rs = instr_[25:21];
     assign rt = instr_[20:16];
     assign rd = instr_[15:11];
-    assign instr.imm = shamt_valid ? : {27'b0, instr_[10:6]};
+    assign instr.imm = ctl.j ? {pcplus4[31:28], instr[25:0], 2'b0 }: (shamt_valid ? : {27'b0, instr_[10:6]});
     (zeroext ? {16'b0, instr_[15:0]} : {{16{instr_[15]}}, instr_[15:0]});
     always_comb begin
         instr.src1 = {2'b0, rs};

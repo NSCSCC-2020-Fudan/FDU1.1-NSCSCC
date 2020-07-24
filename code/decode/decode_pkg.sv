@@ -82,7 +82,7 @@ typedef logic[4:0] shamt_t;
 
 typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
 typedef enum logic { RT, RD } regdst_t;
-typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ, T_J } branch_t;
+typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ, T_J, T_JR } branch_t;
 
 typedef struct packed {
     alufunc_t alufunc;
