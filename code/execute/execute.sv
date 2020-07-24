@@ -18,7 +18,10 @@ module execute
 
     // AGU
     for (genvar i=0; i<AGU_NUM; i++) begin
-        agu agu();
+        agu agu(.clk, .resetn,
+                .src1, .src2,
+                .rd_, .wd_,
+                .rd, .wd);
     end
 
     // BRU
