@@ -12,8 +12,8 @@
 
 // verilator lint_off VARHIDDEN
 module DualPortBRAM #(
-    parameter int DATA_WIDTH  = 32,
-    parameter int ADDR_WIDTH  = 10,
+    parameter int DATA_WIDTH = 32,
+    parameter int ADDR_WIDTH = 10,
 
     parameter `STRING RESET_VALUE = "00000000",
     parameter `STRING WRITE_MODE  = "write_first",
@@ -107,7 +107,7 @@ module DualPortBRAM #(
         .MEMORY_INIT_FILE("none"),
         .MEMORY_INIT_PARAM("0"),
         .MEMORY_OPTIMIZATION("true"),
-        .MEMORY_PRIMITIVE("block"),  // specify BRAM
+        .MEMORY_PRIMITIVE("block"),  // expect BRAM
         .MEMORY_SIZE(MEM_NUM_BITS),  // in bits
         .MESSAGE_CONTROL(0),  // disable message reporting
         .READ_DATA_WIDTH_A(DATA_WIDTH),
