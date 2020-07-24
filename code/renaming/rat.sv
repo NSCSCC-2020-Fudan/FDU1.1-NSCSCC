@@ -5,6 +5,7 @@ module rat
     input logic clk, resetn,
     input w_req_t [WRITE_PORTS-1:0] write,
     input r_req_t [READ_PORTS-1:0] read,
+    input rel_req_t [RELEASE_PORTS-1:0] rel,
     output r_resp_t [READ_PORTS-1:0] resp,
     input free_list_pkg::r_resp_t [free_list_pkg::READ_PORTS-1:0] free_list_resp
 );
@@ -39,6 +40,15 @@ module rat
         end
     end
     always_comb begin
+        // release
+        for (int i=0; i<TABLE_LEN; i++) begin
+            for (int j=0; j<RELEASE_PORTS; j++) begin
+                if (rel[j].valid && rel[j].id == i) begin
+                    mapping_table_new[i].id = '0;
+                end
+            end
+        end
+        // write
         for (int i=0; i<TABLE_LEN; i++) begin
             for (int j=0; j<WRITE_PORTS; j++) begin
                 if (wen[j] && write[j].id == i) begin
