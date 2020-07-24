@@ -10,7 +10,7 @@ module decode_to_issue_t(
         input word_t cp0_epcI,
         output issue_data_t out,
         input logic BJp,
-        input logic is_link;
+        input logic is_link
     );
     
     assign out.instr = in.instr;
