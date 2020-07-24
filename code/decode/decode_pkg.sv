@@ -75,6 +75,14 @@ typedef enum logic[3:0] {
     ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
 } alufunc_t;
 
+typedef logic[5:0] op_t;
+typedef logic[5:0] func_t;
+typedef logic[4:0] shamt_t;
+
+typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
+typedef enum logic { RT, RD } regdst_t;
+typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
+
 typedef struct packed {
     alufunc_t alufunc;
     logic memtoreg, memwrite;
@@ -82,7 +90,6 @@ typedef struct packed {
     alusrcb_t alusrc;
     regdst_t regdst;
     logic branch;
-    logic branch1, branch2;
     branch_t branch_type;
     logic jump;
     logic jr;
