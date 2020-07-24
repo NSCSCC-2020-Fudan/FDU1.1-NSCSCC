@@ -80,13 +80,11 @@ module decoder
             OP_BEQ: begin
                 op = BEQ;
                 ctl.branch = 1'b1;
-                ctl.branch2 = 1'b1;
                 ctl.branch_type = T_BEQ;
             end   
             OP_BNE: begin
                 op = BNE;
                 ctl.branch = 1'b1;
-                ctl.branch2 = 1'b1;
                 ctl.branch_type = T_BNE;
             end   
             OP_BGEZ: begin
@@ -94,26 +92,22 @@ module decoder
                     B_BGEZ:  begin
                         op = BGEZ;
                         ctl.branch = 1'b1;
-                        ctl.branch1 = 1'b1;
                         ctl.branch_type = T_BGEZ;
                     end  
                     B_BLTZ: begin
                         op = BLTZ;
                         ctl.branch = 1'b1;
-                        ctl.branch1 = 1'b1;
                         ctl.branch_type = T_BLTZ;
                     end   
                     B_BGEZAL: begin
                         op = BGEZAL;
                         ctl.branch = 1'b1;
-                        ctl.branch1 = 1'b1;
                         ctl.regwrite = 1'b1;
                         ctl.branch_type = T_BGEZ;
                     end 
                     B_BLTZAL: begin
                         op = BLTZAL;
                         ctl.branch = 1'b1;
-                        ctl.branch1 = 1'b1;
                         ctl.regwrite = 1'b1;
                         ctl.branch_type = T_BLTZ;
                     end 
@@ -126,13 +120,11 @@ module decoder
             OP_BGTZ: begin
                 op = BGTZ;
                 ctl.branch = 1'b1;
-                ctl.branch1 = 1'b1;
                 ctl.branch_type = T_BGTZ;
             end  
             OP_BLEZ: begin
                 op = BLEZ;
                 ctl.branch = 1'b1;
-                ctl.branch1 = 1'b1;
                 ctl.branch_type = T_BLEZ;
             end  
             OP_J: begin
