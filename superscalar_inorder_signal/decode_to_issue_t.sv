@@ -24,7 +24,7 @@ module decode_to_issue_t(
                       (is_link && in.srcrega == 5'd31) ? (in.pcplus4) : reg_dataa));
 
     assign out.srcb = (in.instr.ctl.lotoreg)           ? (lo)         : (
-                      (is_link && in.srcregb == 5'd31) ? (in.pcplus4) : reg_datab));
+                      (is_link && in.srcregb == 5'd31) ? (in.pcplus4) : (reg_datab));
                       
     assign out.destreg = in.destreg;
     assign out.in_delay_slot = BJp;
