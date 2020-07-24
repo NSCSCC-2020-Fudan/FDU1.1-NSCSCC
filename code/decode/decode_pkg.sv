@@ -1,6 +1,7 @@
 //  Package: decode_pkg
 //
 package decode_pkg;
+    import common::*;
     //  Group: Parameters
 parameter logic[5:0] OP_RT    =       6'b000000;
 parameter logic[5:0] OP_ADDI  =       6'b001000;
@@ -81,7 +82,7 @@ typedef logic[4:0] shamt_t;
 
 typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
 typedef enum logic { RT, RD } regdst_t;
-typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
+typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ, T_J } branch_t;
 
 typedef struct packed {
     alufunc_t alufunc;
@@ -102,6 +103,7 @@ typedef struct packed {
     logic is_bp;
     logic is_sys;
     logic hitoreg, lotoreg, cp0toreg;
+    issue_queue_pkg::entry_type_t entry_type;
 } control_t;
 
 typedef enum logic [5:0] { 
@@ -116,6 +118,7 @@ typedef enum logic [5:0] {
 
 typedef struct packed {
     areg_addr_t rs, rt, rd;
+    creg_addr_t src1, src2, dst;
     decoded_op_t op;
     word_t imm;
     control_t ctl;

@@ -1,6 +1,7 @@
 module decoder 
     import common::*;
-    import decode_pkg::*;(
+    import decode_pkg::*;
+    import issue_queue_pkg::*;(
     input word_t instr_,
     output logic exception_ri,
     output decoded_instr_t instr
@@ -10,11 +11,13 @@ module decoder
     func_t func;
     assign func = instr_[5:0];
 
+    areg_addr_t rs, rt, rd;
     decoded_op_t op;
     control_t ctl;
     always_comb begin
         exception_ri = 1'b0;
         ctl = '0;
+        ctl.entry_type = ALU;
         case (op_)
             OP_ADDI: begin
                 op = ADD;
@@ -81,11 +84,13 @@ module decoder
                 op = BEQ;
                 ctl.branch = 1'b1;
                 ctl.branch_type = T_BEQ;
+                ctl.entry_type = BRANCH;
             end   
             OP_BNE: begin
                 op = BNE;
                 ctl.branch = 1'b1;
                 ctl.branch_type = T_BNE;
+                ctl.entry_type = BRANCH;
             end   
             OP_BGEZ: begin
                 case (instr[20:16])
@@ -93,23 +98,27 @@ module decoder
                         op = BGEZ;
                         ctl.branch = 1'b1;
                         ctl.branch_type = T_BGEZ;
+                        ctl.entry_type = BRANCH;
                     end  
                     B_BLTZ: begin
                         op = BLTZ;
                         ctl.branch = 1'b1;
                         ctl.branch_type = T_BLTZ;
+                        ctl.entry_type = BRANCH;
                     end   
                     B_BGEZAL: begin
                         op = BGEZAL;
                         ctl.branch = 1'b1;
                         ctl.regwrite = 1'b1;
                         ctl.branch_type = T_BGEZ;
+                        ctl.entry_type = BRANCH;
                     end 
                     B_BLTZAL: begin
                         op = BLTZAL;
                         ctl.branch = 1'b1;
                         ctl.regwrite = 1'b1;
                         ctl.branch_type = T_BLTZ;
+                        ctl.entry_type = BRANCH;
                     end 
                     default: begin
                         exception_ri = 1'b1;
@@ -121,6 +130,7 @@ module decoder
                 op = BGTZ;
                 ctl.branch = 1'b1;
                 ctl.branch_type = T_BGTZ;
+                ctl.entry_type = BRANCH;
             end  
             OP_BLEZ: begin
                 op = BLEZ;
@@ -130,11 +140,13 @@ module decoder
             OP_J: begin
                 op = J;
                 ctl.jump = 1'b1;
+                ctl.entry_type = BRANCH;
             end     
             OP_JAL: begin
                 op = JAL;
                 ctl.jump = 1'b1;
                 ctl.regwrite = 1'b1;
+                ctl.entry_type = BRANCH;
             end   
             OP_LB: begin
                 op = LB;
@@ -142,13 +154,15 @@ module decoder
                 ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
-            end    
+                ctl.entry_type = MEM;
+            end
             OP_LBU: begin
                 op = LBU;
                 ctl.regwrite = 1'b1;
                 ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
+                ctl.entry_type = MEM;
             end   
             OP_LH: begin
                 op = LH;
@@ -156,6 +170,7 @@ module decoder
                 ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
+                ctl.entry_type = MEM;
             end    
             OP_LHU: begin
                 op = LHU;
@@ -163,6 +178,7 @@ module decoder
                 ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
+                ctl.entry_type = MEM;
             end   
             OP_LW: begin
                 op = LW;
@@ -170,31 +186,36 @@ module decoder
                 ctl.memtoreg = 1'b1;
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
+                ctl.entry_type = MEM;
             end    
             OP_SB: begin
                 op = SB;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
+                ctl.entry_type = MEM;
             end    
             OP_SH: begin
                 op = SH;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
+                ctl.entry_type = MEM;
             end    
             OP_SW: begin
                 op = SW;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
+                ctl.entry_type = MEM;
             end    
             OP_ERET: begin
                 case (instr_[25:21])
                     C_ERET:begin
                         op = ERET;
                         ctl.is_eret = 1'b1;
+                        ctl.alufunc = ALU_PASSB;
                     end 
                     C_MFC0:begin
                         op = MFC0;
-                        ctl.alufunc = ALU_PASSA;
+                        ctl.alufunc = ALU_PASSB;
                         ctl.regwrite = 1'b1;
                         ctl.regdst = RT;
                         ctl.cp0toreg = 1'b1;
@@ -259,24 +280,28 @@ module decoder
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
+                        ctl.entry_type = MULT;
                     end    
                     F_DIVU: begin
                         op = DIVU;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
+                        ctl.entry_type = MULT;
                     end   
                     F_MULT: begin
                         op = MULT;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
+                        ctl.entry_type = MULT;
                     end   
 					F_MULTU:begin
                         op = MULTU;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
+                        ctl.entry_type = MULT;
                     end	
 					F_AND:begin
                         op = AND;
@@ -359,6 +384,7 @@ module decoder
                         ctl.jump = 1'b1;
                         ctl.jr = 1'b1;
                         ctl.alufunc = ALU_PASSA;
+                        ctl.entry_type = BRANCH;
                     end		
 					F_JALR:begin
                         op = JALR;
@@ -366,6 +392,7 @@ module decoder
                         ctl.jr = 1'b1;
                         ctl.regwrite = 1'b1;
                         ctl.alufunc = ALU_PASSA;
+                        ctl.entry_type = BRANCH;
                     end	
 					F_MFHI:begin
                         op = MFHI;
@@ -418,10 +445,57 @@ module decoder
     
     assign instr.ctl = ctl;
     assign instr.op = op;
-    assign instr.rs = instr_[25:21];
-    assign instr.rt = instr_[20:16];
-    assign instr.rd = instr_[15:11];
+    assign rs = instr_[25:21];
+    assign rt = instr_[20:16];
+    assign rd = instr_[15:11];
     assign instr.imm = shamt_valid ? : {27'b0, instr_[10:6]};
     (zeroext ? {16'b0, instr_[15:0]} : {{16{instr_[15]}}, instr_[15:0]});
-    
+    always_comb begin
+        instr.src1 = {2'b0, rs};
+        if (ctl.alufunc == ALU_PASSB) begin
+            instr.src1 = 7'b0;
+        end
+        if (ctl.hitoreg) begin
+            instr.src1 = 7'b1000001;
+        end
+        if (ctl.lotoreg) begin
+            instr.src1 = 7'b1000010;
+        end
+        if (ctl.is_bp || ctl.is_sys || exception_ri) begin
+            instr.src1 = '0;
+        end
+        
+    end
+
+    always_comb begin
+        instr.src2 = ctl.alusrc == REGB ? {2'b0, rt} : 7'b0;
+        if (ctl.alufunc == ALU_PASSA) begin
+            instr.src2 = 7'b0;
+        end
+        
+        if (ctl.is_eret) begin
+            instr.src2 = 7'b0101110; // epc
+        end
+        if (ctl.is_bp || ctl.is_sys || exception_ri) begin
+            instr.src1 = '0;
+        end
+    end
+
+    always_comb begin
+        instr.dst = ctl.regdst == RT ? {2'b0, rt} : {2'b0, rd};
+        if (~ctl.regwrite) begin
+            instr.dst = '0;
+        end
+        if (ctl.cp0write) begin
+            instr.dst = {2'b01, rd};
+        end
+        if (ctl.hiwrite) begin
+            instr.dst[6] = 1'b1;
+            instr.dst[0] = 1'b1;
+        end
+        if (ctl.lowrite) begin
+            instr.dst[6] = 1'b1;
+            instr.dst[1] = 1'b1;
+        end
+    end
 endmodule
