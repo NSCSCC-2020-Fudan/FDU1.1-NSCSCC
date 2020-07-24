@@ -1,6 +1,14 @@
 `ifndef __INTERFACE_SVH
 `define __INTERFACE_SVH
 
+interface dreg_intf();
+    import fetch_pkg::*;
+    fetch_data_t dataF, dataF_new;
+    modport fetch(output dataF_new);
+    modport dreg(input dataF_new, output dataF);
+    modport decode(input dataF);
+endinterface // dreg_intf
+
 interface forward_intf();
     import common::*;
     import forward_pkg::*;
