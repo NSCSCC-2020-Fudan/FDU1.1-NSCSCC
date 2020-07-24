@@ -1,12 +1,13 @@
 //  Package: exc_pkg
 //
-package exc_pkg;
+package exception_pkg;
     //  Group: Parameters
     
 
     //  Group: Typedefs
     typedef struct packed {
         logic interrupt;
+        logic ri;
         logic instr;
         logic load;
         logic save;
@@ -14,4 +15,4 @@ package exc_pkg;
         logic sys;
     } exception_info_t;
     
-endpackage: exc_pkg
+endpackage: exception_pkg
