@@ -7,7 +7,7 @@
 
 // axi
 module mycpu_top #(
-    parameter int USE_CACHE = 1
+    parameter logic USE_CACHE = 1
 ) (
     input logic[5:0] ext_int,  //high active
 
