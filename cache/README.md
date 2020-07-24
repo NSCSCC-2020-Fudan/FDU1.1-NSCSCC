@@ -39,6 +39,8 @@ make run top=[顶层模块名称]
 
 所有 master → slave 的请求以 `req` 进行标注，而 slave → master 的反馈以 `resp` 进行标注。例如，`axi_req_t` 和 `axi_resp_t`。
 
+对于总线的转接模块 `XBusToYBus`，`XBus` 表示从 master 一端过来的总线类型，`YBus` 表示 slave 一端的总线类型。例如，`SRAMxToInstrBus` 表示把 CPU 出来的 SRAM* 总线转为 IBus 总线。
+
 ## Cache 总线（`cbus`/$bus）
 
 Cache 总线用于 cache 读取/写回一整条 cache line。在时钟上升沿时进行握手。该总线不是双向握手，cache（master）一方必须进行忙等待，slave 一方的 `okay` 和 `last` 信号只持续一拍。
@@ -76,3 +78,35 @@ $bus 并没有规定 AXI burst 传输的类型，也没有规定 `addr` 是否�
 * Slave 需要保证只在必要的时候拉起 `data_ok`，表示之前收到的请求处理完成。当 slave 当前没有处理任何请求时，不能拉起 `data_ok`，即便 master 的 `req` 信号没有拉起。
 * 对于同一个周期的请求，`addr_ok` 和 `data_ok` 可以同时为 1，表示数据可以在当前周期准备好（读取）或者是在下一个时钟上升沿更新（写入）。
 * 如果 slave 支持同时接收多个请求，则按照文档中关于处理连续读写的要求来。
+
+## 取指总线（`ibus`/IBus）
+
+NOTE：不是指输入法框架（Fcitx 大法好
+
+IBus 对 SRAM* 总线接口做了简化。取指只需要发出请求信号 `req` 和地址 `addr`。原则上在 cache 未返回 `addr_ok` 的时候不能撤下 `req`。但部分情况下提前撤下可能不会有问题。
+
+参数：
+
+* `IBUS_DATA_WIDTH`：IBus 一次取指的宽度。如果是双发射，则为 64。以此类推，4 发射就是 128。
+* `IBUS_WORD_WIDTH`：指令的宽度。一般固定为 32。
+
+信号：
+
+* `req`：表示是否有读取请求。
+* `addr`：请求的地址（PC）。要求和指令宽度对齐。
+* `addr_ok`：表示地址是否被 cache 接收（例如通过了 cache 的第一级流水线阶段）。`addr_ok` 握手成功后可以撤下 `req` 信号。
+* `data_ok`：表示数据是否准备好。
+* `data`：抓取到的数据。与 `index` 之间需要配合使用。
+* `index`：`data` 相当于是一个指令的数组，而 `index` 指示这个数组中第一条有效的数据（指令）的下标。例如，如果 `index` 为 0，则表示 `data` 中的所有指令都是有效的。如果是双发射，而且 `index` 为 1，则表示此时只有第二条指令是有效的。
+
+在目录 `cache/util/` 下我们提供了一个 IBus 总线转接 SRAM* 总线的转接模块 `InstrBusToSRAMx`，用于在没有接入真正的 cache 时，测试与 IBus 的交互。
+
+## `mycpu_top`
+
+Cache 部分只会修改 CPU 顶层模块的代码。代码位于 `code/mycpu_top.sv`。
+
+参数：
+
+* `USE_CACHE`：是否使用 cache layer。如果为 0 则 CPU 需要自己做地址翻译。
+* `USE_ICACHE`：是否使用 ICache。如果为 0 则使用 `OneLineBuffer`。
+* `USE_IBUS`：是否使用 IBus 。如果为 0 则会在 ICache 前接一个 `SRAMxToInstrBus` 的转接模块。
