@@ -2,12 +2,22 @@
 `define __INTERFACE_SVH
 
 interface dreg_intf();
+    import common::*;
     import fetch_pkg::*;
-    fetch_data_t dataF, dataF_new;
+    fetch_data_t [MACHINE_WIDTH-1:0]dataF, dataF_new;
     modport fetch(output dataF_new);
     modport dreg(input dataF_new, output dataF);
     modport decode(input dataF);
 endinterface // dreg_intf
+
+interface rreg_intf();
+    import decode_pkg::*;
+
+    decode_data_t [MACHINE_WIDTH-1:0]dataD, dataD_new;
+    modport decode(output dataD_new);
+    modport rreg(input dataD_new, output dataD);
+    modport renaming(input dataD);
+endinterface
 
 interface forward_intf();
     import common::*;
@@ -22,5 +32,25 @@ interface forward_intf();
     modport execute(input forwards, data, output src1, src2);
     modport commit(output dst, data);
 endinterface
+
+interface rob_intf();
+    import common::*;
+    import rob_pkg::*;
+
+    rob_addr_t [MACHINE_WIDTH-1:0] rob_addr; // rob -> renaming
+
+    modport rob(
+        input
+        output rob_addr,
+    );
+    modport renaming(
+        input rob_addr,
+        output
+    );
+    modport commit(
+        input
+        output
+    );
+endinterface // rob_intf
 
 `endif

@@ -26,5 +26,14 @@
 			"\t$2",
 			"endinterface"
 		]
+	},
+	"modport": {
+		"prefix": "modport",
+		"body": [
+			"modport $1(",
+			"\tinput",
+			"\toutput",
+			");"
+		]
 	}
 }

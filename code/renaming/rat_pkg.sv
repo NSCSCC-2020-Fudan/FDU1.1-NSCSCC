@@ -5,7 +5,7 @@ package rat_pkg;
     //  Group: Parameters
     parameter READ_PORTS = MACHINE_WIDTH * 3;
     parameter WRITE_PORTS = MACHINE_WIDTH;
-    parameter TABLE_LEN = AREG_NUM;
+    parameter TABLE_LEN = CREG_NUM;
     //  Group: Typedefs
     typedef struct packed {
         preg_addr_t preg_id;
@@ -13,8 +13,7 @@ package rat_pkg;
     } entry_t;
     typedef entry_t [TABLE_LEN-1:0] table_t; 
     typedef struct packed {
-        areg_addr_t id;
-        // preg_addr_t preg_id;
+        creg_addr_t id;
     } w_req_t;
     typedef struct packed {
         areg_addr_t id;
@@ -22,4 +21,8 @@ package rat_pkg;
     typedef struct packed {
         preg_addr_t id;
     } r_resp_t;
+    typedef struct packed {
+        logic valid;
+        areg_addr_t id;
+    } rel_req_t;
 endpackage: rat_pkg
