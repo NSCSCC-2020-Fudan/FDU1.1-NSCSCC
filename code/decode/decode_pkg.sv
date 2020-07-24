@@ -108,19 +108,17 @@ typedef enum logic [5:0] {
 } decoded_op_t;
 
 typedef struct packed {
-    creg_addr_t rs, rt, rd;
+    areg_addr_t rs, rt, rd;
     decoded_op_t op;
-    word_t extended_imm;
+    word_t imm;
     control_t ctl;
-    shamt_t shamt;
 } decoded_instr_t;
 
 typedef struct packed {
     decoded_instr_t instr;
     word_t pcplus4;
-    logic exception_instr, exception_ri;
-    word_t srca, srcb;
     logic in_delay_slot;
+    exception_pkg::exception_info_t exception;
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
 } decode_data_t;

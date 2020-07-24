@@ -1,16 +1,17 @@
 module decoder 
     import common::*;
     import decode_pkg::*;(
-    input word_t instr,
-    output decoded_op_t op,
+    input word_t instr_,
     output logic exception_ri,
-    output control_t ctl
+    output decoded_instr_t instr
 );
     op_t op_;
-    assign op_ = instr[31:26];
-
+    assign op_ = instr_[31:26];
     func_t func;
-    assign func = instr[5:0];
+    assign func = instr_[5:0];
+
+    decoded_op_t op;
+    control_t ctl;
     always_comb begin
         exception_ri = 1'b0;
         ctl = '0;
@@ -194,7 +195,7 @@ module decoder
                 ctl.alusrc = IMM;
             end    
             OP_ERET: begin
-                case (instr[25:21])
+                case (instr_[25:21])
                     C_ERET:begin
                         op = ERET;
                         ctl.is_eret = 1'b1;
@@ -421,5 +422,14 @@ module decoder
                 ctl.alufunc = ALU_PASSA;
             end
         endcase
-	end
+    end
+    
+    assign instr.ctl = ctl;
+    assign instr.op = op;
+    assign instr.rs = instr_[25:21];
+    assign instr.rt = instr_[20:16];
+    assign instr.rd = instr_[15:11];
+    assign instr.imm = shamt_valid ? : {27'b0, instr_[10:6]};
+    (zeroext ? {16'b0, instr_[15:0]} : {{16{instr_[15]}}, instr_[15:0]});
+    
 endmodule
