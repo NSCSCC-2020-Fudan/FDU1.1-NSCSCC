@@ -16,8 +16,8 @@ module FU(
     assign divtype = (op == DIV) || (op == DIVU);
     
     word_t alusrcaE, alusrcbE;
-    assign alusrcaE = (in.instr.ctl.shamt_valid) ? ({27'b0, in.instr.shamt}) : (in.srca);
-    assign alusrcbE = (in.instr.ctl.alusrc == REGB) ? (in.srcb) : (in.instr.extended_imm);
+    assign alusrcaE = (in.instr.ctl.shamt_valid)    ? ({27'b0, in.instr.shamt}) : (in.srca);
+    assign alusrcbE = (in.instr.ctl.alusrc == REGB) ? (in.srcb)                 : (in.instr.extended_imm);
 
     word_t hi_div, lo_div, hi_mul, lo_mul, result;
     logic exception_of, taken;

@@ -9,7 +9,8 @@ module decode_to_issue_t(
         input cp0_cause_t cp0_causeI,
         input word_t cp0_epcI,
         output issue_data_t out,
-        input logic BJp
+        input logic BJp,
+        input logic is_link
     );
     
     assign out.instr = in.instr;
@@ -18,9 +19,13 @@ module decode_to_issue_t(
     assign out.exception_ri = in.exception_ri;
     assign out.cp0_addr = in.cp0_addr;
     // assign out.exception_of = 'b0;
-    assign out.srca = (in.instr.ctl.hitoreg) ? (hi) : (
-                      (in.instr.ctl.cp0toreg) ? (cp0_data) :(reg_dataa));
-    assign out.srcb = (in.instr.ctl.lotoreg) ? (lo) : (reg_datab);
+    assign out.srca = (in.instr.ctl.hitoreg)           ? (hi)         : (
+                      (in.instr.ctl.cp0toreg)          ? (cp0_data)   : (
+                      (is_link && in.srcrega == 5'd31) ? (in.pcplus4) : reg_dataa));
+
+    assign out.srcb = (in.instr.ctl.lotoreg)           ? (lo)         : (
+                      (is_link && in.srcregb == 5'd31) ? (in.pcplus4) : (reg_datab));
+                      
     assign out.destreg = in.destreg;
     assign out.in_delay_slot = BJp;
     assign out.cp0_status = cp0_statusI;
