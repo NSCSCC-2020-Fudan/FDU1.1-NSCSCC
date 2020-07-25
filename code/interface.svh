@@ -37,15 +37,15 @@ interface rob_intf();
     import common::*;
     import rob_pkg::*;
 
-    rob_addr_t [MACHINE_WIDTH-1:0] rob_addr; // rob -> renaming
-
+    w_resp_t [MACHINE_WIDTH-1:0] w_resp; // rob -> renaming
+    w_req_t [MACHINE_WIDTH-1:0] w_req;
     modport rob(
-        input
+        input w_req,
         output rob_addr,
     );
     modport renaming(
         input rob_addr,
-        output
+        output w_req
     );
     modport commit(
         input
@@ -55,6 +55,15 @@ endinterface // rob_intf
 
 interface payloadRAM_intf();
     word_t []
+endinterface
+
+interface arf_intf();
+    import common::*;
+    import regfile_pkg::*;
+
+    r_req_t [AREG_READ_PORTS-1:0] r_req;
+    r_resp_t [AREG_READ_PORTS-1:0] r_resp;
+    w_req_t [AREG_WRITE_PORTS-1:0] w_req;
 endinterface
 
 `endif
