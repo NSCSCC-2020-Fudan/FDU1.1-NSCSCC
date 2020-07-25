@@ -2,7 +2,6 @@
 `define __INTERFACE_SVH
 
 interface dreg_intf();
-    import common::*;
     import fetch_pkg::*;
     fetch_data_t [MACHINE_WIDTH-1:0]dataF, dataF_new;
     modport fetch(output dataF_new);
@@ -17,6 +16,54 @@ interface rreg_intf();
     modport decode(output dataD_new);
     modport rreg(input dataD_new, output dataD);
     modport renaming(input dataD);
+endinterface
+
+interface ireg_intf();
+    import renaming_pkg::*;
+
+    renaming_data_t [MACHINE_WIDTH-1:0]dataR, dataR_new;
+    modport renaming(
+        output dataR_new
+    );
+    modport ireg(
+        input dataR_new, 
+        output dataR
+    );
+    modport issue(
+        input dataR
+    );
+endinterface
+
+interface ereg_intf();
+    import issue_pkg::*;
+
+    issue_data_t dataI, dataI_new;
+    modport issue(
+        output dataI_new
+    );
+    modport ereg(
+        input dataI_new,
+        output dataI
+    );
+    modport execute(
+        input dataI
+    );
+endinterface
+
+interface creg_intf();
+    import execute_pkg::*;
+
+    execute_data_t dataE, dataE_new;
+    modport execute(
+        output dataE_new
+    );
+    modport creg(
+        input dataE_new,
+        output dataE
+    );
+    modport commit(
+        input dataE
+    );
 endinterface
 
 interface forward_intf();
@@ -64,6 +111,12 @@ interface arf_intf();
     r_req_t [AREG_READ_PORTS-1:0] r_req;
     r_resp_t [AREG_READ_PORTS-1:0] r_resp;
     w_req_t [AREG_WRITE_PORTS-1:0] w_req;
+endinterface
+
+interface exception_intf();
+    import common::*;
+    import exception_pkg::*;
+
 endinterface
 
 `endif
