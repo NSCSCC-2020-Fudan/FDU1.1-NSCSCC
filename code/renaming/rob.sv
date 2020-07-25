@@ -44,6 +44,7 @@ module rob
                 if (alu_commit[i].valid && alu_commit[i].rob_addr == j) begin
                     rob_table_retire[j].data.alu.data = alu_commit[i].data;
                     rob_table_retire[j].complete = 1'b1;
+                    rob_table_retire[j].exception = alu_commit[i].exception;
                 end
             end
         end
@@ -52,6 +53,7 @@ module rob
                 if (mem_commit[i].valid && mem_commit[i].rob_addr == j) begin
                     rob_table_retire[j].data.mem.data = mem_commit[i].data;
                     rob_table_retire[j].complete = 1'b1;
+                    rob_table_retire[j].exception = mem_commit[i].exception;
                 end
             end
         end
@@ -59,6 +61,7 @@ module rob
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (branch_commit[i].valid && branch_commit[i].rob_addr == j) begin
                     rob_table_retire[j].complete = 1'b1;
+                    rob_table_retire[j].exception = branch_commit[i].exception;
                 end
             end
         end
@@ -66,13 +69,31 @@ module rob
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (mult_commit[i].valid && mult_commit[i].rob_addr == j) begin
                     rob_table_retire[j].complete = 1'b1;
+                    rob_table_retire[j].exception = mult_commit[i].exception;
                 end
             end
         end
         // retire
+        for (int i=0; i<ISSUE_WIDTH; i++) begin
+            // check exception
+            if (exception_valid) begin
+                break;
+            end
+            // check branch
+                // write delay slot
+            // write register
+
+            // update head_ptr
+        end
 
         // write
         rob_table_new = rob_table_retire;
+        for (int i=0; i<WRITE_PORTS; i++) begin
+            for (int j=0; j<ROB_TABLE_LEN; j++) begin
+                
+            end
+        end
+
     end
 
     always_ff @(posedge clk) begin
