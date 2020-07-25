@@ -18,17 +18,15 @@ module CacheBusToAXI #(
     output axi_req_t   axi_req,
     input  axi_resp_t  axi_resp
 );
-    localparam axi_burst_size AXI_BURST_SIZE =
-        axi_burst_size'($clog2(CBUS_DATA_BYTES));
-    localparam axi_burst_type AXI_BURST_TYPE =
-        AXI_MODE == "wrap" ? BURST_WRAP : BURST_INCR;
+    localparam axi_burst_size AXI_BURST_SIZE = BURST_SIZE4;
+    localparam axi_burst_type AXI_BURST_TYPE = BURST_WRAP;
 
     localparam int EXCEED_BITS = CBUS_LEN_BITS - AXI_LEN_BITS;
     `ASSERT(EXCEED_BITS > 0,
         "CBUS_LEN_BITS muse be larger than AXI_LEN_BITS.");
 
 
-    typedef logic [EXCEED_BITS - 1:0] round_t;
+    typedef logic [12 - 1:0] round_t;
 
     // calculate the minimal number of AXI transactions and
     // determine the length of each transaction.
@@ -37,7 +35,7 @@ module CacheBusToAXI #(
     // of counters. They differ from their actual value by one.
     axi_len_t axi_len;
     round_t   num_round;
-    assign {num_round, axi_len} = (1 << cbus_req.order) - 1;
+    assign {num_round, axi_len} = (32'h1 << cbus_req.order) - 32'h1;
 
     // NOTE: assume 32 bit data channel.
     addr_t addr_step;
@@ -96,12 +94,12 @@ module CacheBusToAXI #(
                 if (cbus_req.is_write) begin
                     axi_req.aw.valid = 1;
                     axi_req.aw.addr  = cbus_req.addr;
-                    axi_req.aw.len   = axi_len;
+                    axi_req.aw.len   = 4'b1111;
                     `APPLY_AXI_DEFAULTS(aw);
                 end else begin
                     axi_req.ar.valid = 1;
                     axi_req.ar.addr  = cbus_req.addr;
-                    axi_req.ar.len   = axi_len;
+                    axi_req.ar.len   = 4'b1111;
                     `APPLY_AXI_DEFAULTS(ar);
                 end
             end
@@ -110,7 +108,7 @@ module CacheBusToAXI #(
                 if (cbus_req.is_write) begin
                     axi_req.w.valid = 1;
                     axi_req.w.data  = cbus_req.wdata;
-                    axi_req.w.strb  = AXI_FULL_STROBE;
+                    axi_req.w.strb  = 4'b1111;
                     axi_req.w.last  = is_last;
                 end else begin
                     axi_req.r.ready = 1;
@@ -121,12 +119,12 @@ module CacheBusToAXI #(
                 if (cbus_req.is_write) begin
                     axi_req.aw.valid = 1;
                     axi_req.aw.addr  = current_addr;
-                    axi_req.aw.len   = axi_len;
+                    axi_req.aw.len   = 4'b1111;
                     `APPLY_AXI_DEFAULTS(aw);
                 end else begin
                     axi_req.ar.valid = 1;
                     axi_req.ar.addr  = current_addr;
-                    axi_req.ar.len   = axi_len;
+                    axi_req.ar.len   = 4'b1111;
                     `APPLY_AXI_DEFAULTS(ar);
                 end
             end
@@ -148,7 +146,7 @@ module CacheBusToAXI #(
                 state        <= TRANSFER;
                 current_addr <= cbus_req.addr;
                 round_cnt    <= num_round;
-                len_cnt      <= axi_len;
+                len_cnt      <= 4'b1111;
             end
 
             TRANSFER: if (rw_handshake) begin
@@ -165,7 +163,7 @@ module CacheBusToAXI #(
             REQUEST: if (addr_ok) begin
                 state     <= TRANSFER;
                 round_cnt <= round_cnt - 1;
-                len_cnt   <= axi_len;
+                len_cnt   <= 4'b1111;
             end
 
             WAITING: if (transaction_ok) begin

@@ -41,8 +41,13 @@ module bypass(
     cp0bypass bypass_cp00 (cp0_addrI[0], execute, commit, retire, cp0_dataR[0], _cp0_dataI[0]);
     
     assign data_hazardI = hazard[3] | hazard[2] | hazard[1] | hazard[0];
-    //assign cp0_dataI[1] = (_cp0_dataI[1] & cp0_mask_and[cp0_addrI[1]]) | cp0_mask_or[cp0_addrI[1]];
-    //assign cp0_dataI[0] = (_cp0_dataI[0] & cp0_mask_and[cp0_addrI[0]]) | cp0_mask_or[cp0_addrI[0]];
+    
+    word_t [1: 0] _cp0_mask_and, _cp0_mask_or;
+    assign _cp0_mask_and = {cp0_mask_and[cp0_addrI[1]], cp0_mask_and[cp0_addrI[0]]};
+    assign _cp0_mask_or = {cp0_mask_or[cp0_addrI[1]], cp0_mask_or[cp0_addrI[0]]};
+    
+    //assign cp0_dataI[1] = (_cp0_dataI[1] & _cp0_mask_and[1]) | _cp0_mask_or[1];
+    //assign cp0_dataI[0] = (_cp0_dataI[0] & _cp0_mask_and[0]) | _cp0_mask_or[0];
     assign cp0_dataI = _cp0_dataI;
 
 endmodule

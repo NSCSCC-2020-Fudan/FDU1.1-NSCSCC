@@ -17,6 +17,15 @@ module maindecode (
         exception_ri = 1'b0;
         ctl = '0;
         case (op_)
+            `OP_MUL: begin
+                op = MULT;
+                ctl.regwrite = 1'b1;
+                ctl.alusrc = REGB;
+                ctl.mul_div_r = 1'b1;
+                srcrega = rs;
+                srcregb = rt;
+                destreg = rd;
+            end
             `OP_ADDI: begin
                 op = ADD;
                 ctl.alufunc = ALU_ADD;

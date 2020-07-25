@@ -45,6 +45,7 @@ typedef enum logic[3:0] {
 `define OP_ERET         6'b010000
 // `define OP_MFC0         6'b010000
 // `define OP_MTC0         6'b010000
+`define OP_MUL          6'b011100
 
 
 // funct
@@ -131,6 +132,7 @@ typedef struct packed {
     logic is_sys;
     logic hitoreg, lotoreg, cp0toreg;
     logic is_link;
+    logic mul_div_r;
 } control_t;
 
 

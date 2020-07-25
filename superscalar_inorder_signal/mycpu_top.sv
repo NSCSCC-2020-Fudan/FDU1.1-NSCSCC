@@ -7,7 +7,7 @@
 
 // axi
 module mycpu_top #(
-    parameter logic USE_CACHE = 1
+    parameter logic USE_CACHE = 0
 ) (
     input logic[5:0] ext_int,  //high active
 
@@ -95,8 +95,8 @@ module mycpu_top #(
         */
 
         // interface converter
-        (*mark_debug = "true"*)sramx_req_t  imem_req,  dmem_req;
-        (*mark_debug = "true"*)sramx_resp_t imem_resp, dmem_resp;
+        sramx_req_t  imem_req,  dmem_req;
+        sramx_resp_t imem_resp, dmem_resp;
 
         assign imem_req.req   = inst_req;
         assign imem_req.wr    = inst_wr;
@@ -117,14 +117,14 @@ module mycpu_top #(
         assign data_rdata     = dmem_resp.rdata;
 
         // address translation & request dispatching
-        (*mark_debug = "true"*)sramx_req_t  icache_req,  dcache_req,  uncached_req;
-        (*mark_debug = "true"*)sramx_resp_t icache_resp, dcache_resp, uncached_resp;
+        sramx_req_t  icache_req,  dcache_req,  uncached_req;
+        sramx_resp_t icache_resp, dcache_resp, uncached_resp;
 
         MMU mmu_inst(.*);
 
         // naïve buffers
-        (*mark_debug = "true"*)cbus_req_t  icbus_req,  dcbus_req;
-        (*mark_debug = "true"*)cbus_resp_t icbus_resp, dcbus_resp;
+        cbus_req_t  icbus_req,  dcbus_req;
+        cbus_resp_t icbus_resp, dcbus_resp;
 
         OneLineBuffer ibuf(
             .clk(aclk), .resetn(aresetn),
@@ -138,8 +138,8 @@ module mycpu_top #(
         );
 
         // $bus to AXI
-        axi_req_t  axi_icache_req,  axi_dcache_req;
-        axi_resp_t axi_icache_resp, axi_dcache_resp;
+        (*mark_debug = "true"*) axi_req_t  axi_icache_req,  axi_dcache_req;
+        (*mark_debug = "true"*) axi_resp_t axi_icache_resp, axi_dcache_resp;
 
         CacheBusToAXI axi_icache_inst(
             .clk(aclk), .resetn(aresetn),
@@ -155,8 +155,8 @@ module mycpu_top #(
         );
 
         // uncached converter
-        axi_req_t  axi_uncached_req;
-        axi_resp_t axi_uncached_resp;
+        (*mark_debug = "true"*) axi_req_t  axi_uncached_req;
+        (*mark_debug = "true"*) axi_resp_t axi_uncached_resp;
 
         SRAMxToAXI axi_uncached_inst(
             .clk(aclk), .resetn(aresetn),
