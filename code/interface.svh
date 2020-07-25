@@ -53,4 +53,8 @@ interface rob_intf();
     );
 endinterface // rob_intf
 
+interface payloadRAM_intf();
+    word_t []
+endinterface
+
 `endif
