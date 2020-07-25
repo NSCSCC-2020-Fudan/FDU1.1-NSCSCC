@@ -39,9 +39,9 @@ module OneLineBuffer #(
     } state_t;
 
     // state variables & storage
-    logic       valid, dirty;
-    tag_t       tag;
-    mem_t       mem;
+    (*mark_debug = "true"*) logic       valid, dirty;
+    (*mark_debug = "true"*) tag_t       tag;
+    (*mark_debug = "true"*) mem_t       mem;
     sramx_req_t saved_req;
     state_t     state;
     offset_t    offset;

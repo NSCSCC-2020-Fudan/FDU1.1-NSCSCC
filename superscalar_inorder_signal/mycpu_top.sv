@@ -95,8 +95,8 @@ module mycpu_top #(
         */
 
         // interface converter
-        sramx_req_t  imem_req,  dmem_req;
-        sramx_resp_t imem_resp, dmem_resp;
+        (*mark_debug = "true"*)sramx_req_t  imem_req,  dmem_req;
+        (*mark_debug = "true"*)sramx_resp_t imem_resp, dmem_resp;
 
         assign imem_req.req   = inst_req;
         assign imem_req.wr    = inst_wr;
@@ -117,14 +117,14 @@ module mycpu_top #(
         assign data_rdata     = dmem_resp.rdata;
 
         // address translation & request dispatching
-        sramx_req_t  icache_req,  dcache_req,  uncached_req;
-        sramx_resp_t icache_resp, dcache_resp, uncached_resp;
+        (*mark_debug = "true"*)sramx_req_t  icache_req,  dcache_req,  uncached_req;
+        (*mark_debug = "true"*)sramx_resp_t icache_resp, dcache_resp, uncached_resp;
 
         MMU mmu_inst(.*);
 
         // naïve buffers
-        cbus_req_t  icbus_req,  dcbus_req;
-        cbus_resp_t icbus_resp, dcbus_resp;
+        (*mark_debug = "true"*)cbus_req_t  icbus_req,  dcbus_req;
+        (*mark_debug = "true"*)cbus_resp_t icbus_resp, dcbus_resp;
 
         OneLineBuffer ibuf(
             .clk(aclk), .resetn(aresetn),

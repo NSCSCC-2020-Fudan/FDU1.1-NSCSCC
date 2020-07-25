@@ -3,7 +3,7 @@
 module commit(
         input logic clk, reset,
         (*mark_debug = "true"*) input exec_data_t [1: 0] in,
-        (*mark_debug = "true"*) output exec_data_t [1: 0] out,
+        output exec_data_t [1: 0] out,
         //pipeline
         input logic first_cycleC, 
         output logic finishC, pc_mC,
