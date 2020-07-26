@@ -51,7 +51,7 @@ module datapath(
     
     logic hitF;
     pc_data_t pc_new;
-    word_t pc;
+    (*mark_debug = "true"*) word_t pc;
     
     logic timer_interrupt, exception_valid, is_eret; 
     word_t pcexception, cp0_epcI, cp0_epcW;

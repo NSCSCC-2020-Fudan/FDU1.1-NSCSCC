@@ -2,7 +2,7 @@
 
 module commit(
         input logic clk, reset,
-        input exec_data_t [1: 0] in,
+        (*mark_debug = "true"*) input exec_data_t [1: 0] in,
         output exec_data_t [1: 0] out,
         //pipeline
         input logic first_cycleC, 
@@ -21,8 +21,8 @@ module commit(
         //data forward
         input logic [5: 0] ext_int,
         input logic timer_interrupt,
-        output logic exception_valid,
-        output exception_t exception_data,
+        (*mark_debug = "true"*) output logic exception_valid,
+        (*mark_debug = "true"*) output exception_t exception_data,
         output logic is_eret
         //cp0
     );

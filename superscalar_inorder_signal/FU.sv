@@ -51,7 +51,8 @@ module FU(
     
     assign out.hiresult = (multype | divtype) ? (hi) : (result);//mul/div or HTHI 
     assign out.loresult = (multype | divtype) ? (lo) : (result);//mul/div or HTLO
-    assign out.result = (in.instr.ctl.is_link) ? (pcplus8) : (result);
+    assign out.result = (in.instr.ctl.is_link)   ? (pcplus8) : (
+                        (in.instr.ctl.mul_div_r) ? (lo)      : (result));
     assign out.exception_of = (multype | divtype) ? ('0) : (exception_of);
 
 endmodule
