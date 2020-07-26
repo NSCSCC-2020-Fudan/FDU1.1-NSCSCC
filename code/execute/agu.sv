@@ -3,17 +3,19 @@ module agu
     import common::*;
     import mem_pkg::*;
     (
-    input logic clk, resetn,
+    input logic clk, resetn, memtoreg, memwrite,
     input word_t src1, src2,
     input word_t rd_, wd_,
-    output word_t rd, wd
+    output word_t data,
+    output vaddr_t addr,
+    output logic exception_load, exception_save
 );
     read_req_t read;
     write_req_t write;
-
+    word_t wd, rd;
     readdata readdata(._rd(), .rd, .addr(addr[1:0]), .op());
     writedata writedata(.addr(addr[1:0]), ._wd, .op(), .wd);
-    vaddr_t addr, addr_new;
+    vaddr_t addr_new;
     assign addr_new = src1 + src2;
     
     always_ff @(posedge clk) begin
@@ -23,6 +25,7 @@ module agu
             addr <= addr_new;
         end
     end
+    assign data = memtoreg ? wd : rd;
 endmodule
 
 module readdata (

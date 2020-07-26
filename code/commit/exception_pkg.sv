@@ -20,6 +20,7 @@ package exception_pkg;
     //  Group: Typedefs
     typedef struct packed {
         logic interrupt;
+        logic of;
         logic ri;
         logic instr;
         logic load;
