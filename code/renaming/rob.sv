@@ -1,9 +1,12 @@
+`include "interface.svh"
 module rob 
     import common::*;
     import rob_pkg::*;
     import commit_pkt::*;(
     input logic clk, resetn, flush,
-    rob_intf.rob rob
+    renaming_intf.rob renaming,
+    commit_intf.rob commit,
+    retire_intf.rob retire
 );
 
     // table

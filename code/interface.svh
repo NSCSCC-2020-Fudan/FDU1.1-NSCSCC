@@ -92,8 +92,8 @@ interface renaming_intf();
     creg_addr_t [MACHINE_WIDTH-1:0]dst;
 
     modport renaming(
-        input
-        output exception, pcplus8, dst,
+        input rob_addr_new,
+        output exception, pcplus8, dst
     );
     modport rat(
         input rob_addr_new,
