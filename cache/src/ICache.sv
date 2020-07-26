@@ -67,12 +67,14 @@ module ICache #(
         logic valid;
         tag_t tag;
     },
+    localparam type bundle_t = line_t [NUM_WAYS - 1:0],
 
     // for tree-based PLRU
     localparam type select_t = logic [NUM_WAYS - 2:0],
+
     localparam type set_t    = struct packed {
-        select_t                select;
-        line_t [NUM_WAYS - 1:0] lines;
+        select_t select;
+        bundle_t lines;
     }
 ) (
     input logic clk, resetn,
@@ -93,9 +95,14 @@ module ICache #(
     assign req_paddr = ibus_req.addr;
 
     // set info storage
-    set_t [NUM_SETS - 1:0] sets;
+    // set_t [NUM_SETS - 1:0] sets;
+    // set_t req_set;
+    // assign req_set = sets[req_vaddr.index];  // virtually indexed
+    bundle_t [NUM_SETS - 1:0] set_lines;
+    select_t [NUM_SETS - 1:0] set_select;
     set_t req_set;
-    assign req_set = sets[req_vaddr.index];  // virtually indexed
+    assign req_set.select = set_select[req_vaddr.index];
+    assign req_set.lines  = set_lines[req_vaddr.index];
 
     // full associative search
     // part 1: hit tests
@@ -277,14 +284,14 @@ module ICache #(
         // update hit stage
         if (req_to_hit) begin
             for (int i = 0; i < NUM_SETS; i++) begin
-                sets[i].lines  <= sets[i].lines;
-                sets[i].select <= req_iaddr.index == index_t'(i) ?
-                    req_new_select : sets[i].select;
+                set_lines[i]  <= set_lines[i];
+                set_select[i] <= req_iaddr.index == index_t'(i) ?
+                    req_new_select : set_select[i];
             end
         end
 
         // update miss stage
-        // NOTE: "req_to_miss" needs to reste "miss_mark" & "miss_count"
+        // NOTE: "req_to_miss" needs to reset "miss_mark" & "miss_count"
         if (cbus_resp.okay) begin
             for (int i = 0; i <= MAX_COUNT; i++) begin
                 miss_mark[i] <=
@@ -305,23 +312,23 @@ module ICache #(
             miss_mark         <= 0;
 
             for (int i = 0; i < NUM_SETS; i++) begin
-                sets[i].select <= sets[i].select;
+                set_select[i] <= set_select[i];
 
                 for (int j = 0; j < NUM_WAYS; j++) begin
                     if (req_iaddr.index == index_t'(i) &&
                         req_victim_idx == idx_t'(j)) begin
-                        sets[i].lines[j].valid <= 1;
-                        sets[i].lines[j].tag   <= req_paddr.tag;
+                        set_lines[i][j].valid <= 1;
+                        set_lines[i][j].tag   <= req_paddr.tag;
                     end else
-                        sets[i].lines[j] <= sets[i].lines[j];
+                        set_lines[i][j] <= set_lines[i][j];
                 end
             end
         end
     end else begin
         for (int i = 0; i < NUM_SETS; i++) begin
-            sets[i].select <= 0;
+            set_select[i] <= 0;
             for (int j = 0; j < NUM_WAYS; j++) begin
-                sets[i].lines[j].valid <= 0;
+                set_lines[i][j].valid <= 0;
             end
         end
 
