@@ -7,8 +7,8 @@ module datapath
     output word_t pc,
     input word_t instr_,
 
-    output m_r_t mread,
-    output m_w_t mwrite,
+    output mem_pkg::read_req_t mread,
+    output mem_pkg::write_req_t mwrite,
     output rf_w_t rfwrite,
     input word_t rd,
     output word_t wb_pc,
@@ -54,8 +54,13 @@ module datapath
     execute execute(.clk, .resetn,
                     .ereg(ereg_intf.execute),
                     .creg(creg_intf.execute),
-                    .forward(forward_intf.execute));
-    commit commit();
+                    .forward(forward_intf.execute),
+                    .mread, .rd);
+    commit commit(.ereg(ereg_intf.commit),
+                  .self(commit_intf.commit),
+                  .forward(forward_intf.commit),
+                  .wake(wake_intf.commit)
+                  );
 
     rat rat(.clk, .resetn);
     rob rob(.clk, .resetn);
@@ -66,4 +71,9 @@ module datapath
     ireg ireg(.clk, .resetn, .ports(ireg_intf.ireg), .hazard(hazard_intf.ireg));
     ereg ereg(.clk, .resetn, .ports(ereg_intf.ereg), .hazard(hazard_intf.ereg));
     creg creg(.clk, .resetn, .ports(creg_intf.creg), .hazard(hazard_intf.creg));
+
+    hazard hazard();
+    exception exception();
+    cp0 cp0();
+    arf arf();
 endmodule

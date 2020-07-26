@@ -38,7 +38,7 @@
 	},
 	"include": {
 		"prefix": "include",
-		"body": "`include \"interface.svh\";\n"
+		"body": "`include \"interface.svh\"\n"
 	},
 	"for_generate": {
 		"prefix": "for_generate",

@@ -15,7 +15,7 @@ package rob_pkg;
         } alu;
         struct packed {
             word_t data;
-            logic memread, memwrite;
+            vaddr_t addr;
         } mem;
         struct packed {
             word_t pcbranch;
@@ -35,6 +35,7 @@ package rob_pkg;
         preg_addr_t opreg;
         entry_data_t data;
         word_t pcplus8;
+        control_t ctl;
         exception::exception_t exception;
     } entry_t;
     typedef entry_t[2**ROB_ADDR_LEN-1:0] rob_table_t;
