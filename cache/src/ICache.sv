@@ -234,10 +234,10 @@ module ICache #(
 
     // TODO: "miss_ready" has a one cycle delay
     assign req_miss_ready = miss_ready[req_count];
-    assign req_ready = req_hit && (!req_in_miss || req_miss_ready);
+    assign req_ready      = req_hit && (!req_in_miss || req_miss_ready);
 
     logic req_to_hit, req_to_miss;
-    assign req_to_hit = ibus_req.req && req_ready;
+    assign req_to_hit  = ibus_req.req && req_ready;
     assign req_to_miss = ibus_req.req && miss_avail && !req_hit;
 
     /**
@@ -245,13 +245,14 @@ module ICache #(
      * port 1 is used for read only
      * port 2 is used for miss replacement
      *
-     * "bram_out_port": a register, to avoid read/write collision.
+     * [deprecated] "bram_out_port": a register, to avoid read/write collision.
      *
      * TODO: maybe simple dual port bram is more appropriate.
      */
-    logic bram_out_port;
-    logic bram_addr_eq, bram_on_write;
-    ibus_data_t [1:0] bram_data;
+    // logic bram_out_port;
+    // logic bram_addr_eq, bram_on_write;
+    // ibus_data_t [1:0] bram_data;
+    ibus_data_t unused_data;
 
     DualPortBRAM #(
         .DATA_WIDTH(DATA_WIDTH),
@@ -262,24 +263,26 @@ module ICache #(
         .write_en_1(0),
         .addr_1(hit_pos),
         .data_in_1(0),
-        .data_out_1(bram_data[0]),
+        // .data_out_1(bram_data[0]),
+        .data_out_1(hit_data),
 
         .write_en_2(miss_write_en),
         .addr_2(miss_pos),
         .data_in_2(miss_wdata),
-        .data_out_2(bram_data[1])
+        // .data_out_2(bram_data[1])
+        .data_out_2(unused_data)
     );
 
-    assign bram_addr_eq = hit_pos == miss_pos;
-    assign bram_on_write = |miss_write_en;
-    assign hit_data = bram_data[bram_out_port];
+    // assign bram_addr_eq = hit_pos == miss_pos;
+    // assign bram_on_write = |miss_write_en;
+    // assign hit_data = bram_data[0];
 
     /**
      * pipelining & state transitions
      */
     always_ff @(posedge clk)
     if (resetn) begin
-        bram_out_port <= (bram_addr_eq && bram_on_write) ? 1 : 0;
+        // bram_out_port <= (bram_addr_eq && bram_on_write) ? 1 : 0;
 
         // to hit stage
         hit_data_ok    <= req_to_hit;
@@ -362,6 +365,6 @@ module ICache #(
      * unused (for Verilator)
      */
     logic __unused_ok = &{1'b0,
-        req_vaddr,
+        req_vaddr, unused_data,
     1'b0};
 endmodule
