@@ -9,20 +9,21 @@ package rat_pkg;
     //  Group: Typedefs
     typedef struct packed {
         preg_addr_t preg_id;
-        rob_pkg::rob_addr_t rob_addr;
+        // rob_pkg::rob_addr_t rob_addr;
     } entry_t;
     typedef entry_t [TABLE_LEN-1:0] table_t; 
     typedef struct packed {
         creg_addr_t id;
     } w_req_t;
     typedef struct packed {
-        areg_addr_t id;
+        creg_addr_t id;
     } r_req_t;
     typedef struct packed {
         preg_addr_t id;
     } r_resp_t;
     typedef struct packed {
         logic valid;
-        areg_addr_t id;
-    } rel_req_t;
+        creg_addr_t id;
+        rob_pkg::rob_addr_t rob_addr;
+    } rel_req_t; 
 endpackage: rat_pkg
