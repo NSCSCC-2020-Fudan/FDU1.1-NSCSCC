@@ -10,7 +10,8 @@ package renaming_pkg;
         creg_addr_t dst_, src1_, src2_;
         control_t ctl;
         word_t imm;
-        rob_addr_t rob_addr;
+        word_t pcplus8;
+        exception_pkg::exception_info_t exception;
     } renamed_instr_t;
 
     

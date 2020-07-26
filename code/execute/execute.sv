@@ -3,8 +3,13 @@
 module execute 
     import common::*;
     import execute_pkg::*;(
+    input clk, resetn,
+    ereg_intf.execute ereg,
+    creg_intf.execute creg,
     forward_intf.execute forward
 );
+    issue_pkg::issue_data_t dataI;
+    execute_data_t dataE;
     // forward
     
     

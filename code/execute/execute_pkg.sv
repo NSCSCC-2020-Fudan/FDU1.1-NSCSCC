@@ -8,7 +8,9 @@ package execute_pkg;
     parameter MULT_NUM = 1;
     parameter FU_NUM = ALU_NUM + AGU_NUM + BRU_NUM + MULT_NUM;
     //  Group: Typedefs
-    
+    typedef struct packed {
+        
+    } execute_data_t;
 
 
 endpackage: execute_pkg

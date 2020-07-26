@@ -10,8 +10,9 @@ package issue_pkg;
     typedef struct packed {
         word_t src1, src2, imm;
         preg_addr_t dst;
-        rob_addr_t rob_addr;
         control_t ctl;
+        word_t pcplus8;
+        exception_pkg::exception_info_t exception;
     } issued_instr_t;
     typedef struct packed {
         issued_instr_t[ALU_NUM-1:0] alu_issue;

@@ -1,8 +1,9 @@
 module renaming 
     import common::*;
     import renaming_pkg::*;(
-    input logic clk, resetn,
-    renaming_intf.renaming ports
+    renaming_intf.renaming ports,
+    rreg_intf.renaming rreg,
+    ireg_intf.renaming ireg
 );
     decode_data_t [MACHINE_WIDTH-1:0] dataD;
     renaming_data_t [MACHINE_WIDTH-1:0] dataR;
@@ -47,4 +48,19 @@ module renaming
                         .dst,
                         .psrc1,
                         .psrc2);
+
+    for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
+        dataR[i].dst = ;
+        dataR[i].src1 = ;
+        dataR[i].src2 = ;
+        dataR[i].dst_ = dataD[i].instr.dst;
+        dataR[i].src1_ = dataD[i].instr.src1;
+        dataR[i].src2_ = dataD[i].instr.src2;
+        dataR[i].ctl = dataD[i].ctl;
+        dataR[i].imm = dataD[i].imm;
+        dataR[i].pcplus8 = dataD[i].pcplus8;
+        dataR[o].exception = dataD[i].exception;
+    end
+    assign dataD = rreg.dataD;
+    assign ireg.dataR_new = dataR;
 endmodule
