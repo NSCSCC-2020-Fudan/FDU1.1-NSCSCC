@@ -106,8 +106,9 @@ module ICache #(
 
     // full associative search
     // part 1: hit tests
-    logic req_hit;
     logic [NUM_WAYS - 1:0] req_hit_bits;
+    logic req_hit;
+    idx_t req_idx;
 
     assign req_hit = |req_hit_bits;
     for (genvar i = 0; i < NUM_WAYS; i++) begin
@@ -115,14 +116,9 @@ module ICache #(
             req_paddr.tag == req_set.lines[i].tag;
     end
 
-    // part 2: one-hot to binary decoder
-    idx_t req_idx;
-    always_comb begin
-        req_idx = 0;
-        for (int i = 0; i < NUM_WAYS; i++) begin
-            req_idx |= req_hit_bits[i] ? idx_t'(i) : 0;
-        end
-    end
+    OneHotToBinary #(.SIZE(NUM_WAYS)) _decoder_inst(
+        .vec(req_hit_bits), .idx(req_idx)
+    );
 
     // perform replacement algorithm
     idx_t    req_victim_idx;
