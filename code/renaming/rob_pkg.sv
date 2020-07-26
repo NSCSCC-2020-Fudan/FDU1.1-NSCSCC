@@ -3,7 +3,7 @@
 package rob_pkg;
     import common::*;
     //  Group: Parameters
-    parameter ROB_ADDR_LEN = 4;
+    parameter ROB_ADDR_LEN = $clog2(PREG_NUM);
     parameter ROB_TABLE_LEN = 2 ** ROB_ADDR_LEN;
 
     //  Group: Typedefs
@@ -34,7 +34,7 @@ package rob_pkg;
         creg_addr_t areg;
         preg_addr_t opreg;
         entry_data_t data;
-        word_t pc;
+        word_t pcplus8;
         exception::exception_t exception;
     } entry_t;
     typedef entry_t[2**ROB_ADDR_LEN-1:0] rob_table_t;
@@ -42,7 +42,7 @@ package rob_pkg;
         preg_addr_t preg;
         creg_addr_t areg;
         preg_addr_t opreg;
-        word_t pc;
+        word_t pcplus8;
         exception::exception_t exception;
     } w_req_t;
     typedef struct packed {

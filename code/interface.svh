@@ -80,28 +80,71 @@ interface forward_intf();
     modport commit(output dst, data);
 endinterface
 
-interface rob_intf();
-    import common::*;
-    import rob_pkg::*;
+interface payloadRAM_intf();
+    word_t []
+endinterface
 
-    w_resp_t [MACHINE_WIDTH-1:0] w_resp; // rob -> renaming
-    w_req_t [MACHINE_WIDTH-1:0] w_req;
-    modport rob(
-        input w_req,
-        output rob_addr,
-    );
+interface renaming_intf();
+    import common::*;
+    rob_pkg::rob_addr_t [MACHINE_WIDTH-1:0]rob_addr_new;
+    exception::exception_t[MACHINE_WIDTH-1:0] exception;
+    word_t [MACHINE_WIDTH-1:0]pcplus8;
+    creg_addr_t [MACHINE_WIDTH-1:0]dst;
+
     modport renaming(
-        input rob_addr,
-        output w_req
+        input
+        output exception, pcplus8, dst,
+    );
+    modport rat(
+        input rob_addr_new,
+        output rob_addr_old
+    );
+    modport rob(
+        input exception, pcplus8, dst,
+        input rob_addr_old,
+        output rob_addr_new
+    );
+endinterface
+
+interface retire_intf();
+    modport rat(
+        input
+        output
+    );
+    modport rob(
+        input
+        output
+    );
+    modport arf(
+        input
+        output
+    );
+endinterface
+
+interface commit_intf();
+    modport commit(
+        input
+        output
+    );
+    modport rob(
+        input
+        output
+    );
+endinterface
+
+interface wake_intf();
+    modport issue(
+        input
+        output
+    );
+    modport execute(
+        input
+        output
     );
     modport commit(
         input
         output
     );
-endinterface // rob_intf
-
-interface payloadRAM_intf();
-    word_t []
 endinterface
 
 interface arf_intf();
