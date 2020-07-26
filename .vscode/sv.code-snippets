@@ -35,5 +35,9 @@
 			"\toutput",
 			");"
 		]
+	},
+	"include": {
+		"prefix": "include",
+		"body": "`include \"interface.svh\";\n"
 	}
 }
