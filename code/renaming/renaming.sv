@@ -2,8 +2,7 @@ module renaming
     import common::*;
     import renaming_pkg::*;(
     input logic clk, resetn,
-    rob_intf.renaming rob,
-    
+    renaming_intf.renaming ports
 );
     decode_data_t [MACHINE_WIDTH-1:0] dataD;
     renaming_data_t [MACHINE_WIDTH-1:0] dataR;
@@ -13,8 +12,8 @@ module renaming
     rat_pkg::r_resp_t [rat_pkg::READ_PORTS-1:0] rat_resp;
     rat_pkg::rel_req_t [rat_pkg::RELEASE_PORTS-1:0] rat_rel;
 
-    rat rat(.clk, .resetn, .write(rat_write), .read(rat_read), 
-            .resp(rat_resp), .rel(rat_rel), .free_list_resp);
+    // rat rat(.clk, .resetn, .write(rat_write), .read(rat_read), 
+    //         .resp(rat_resp), .rel(rat_rel), .free_list_resp);
 
     for (genvar i=0; i<rat_pkg::WRITE_PORTS; i++) begin
         rat_write[i].id = dataD[i].instr.dst;
