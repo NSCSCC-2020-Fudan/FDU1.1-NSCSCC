@@ -1,4 +1,23 @@
 `include "../interface.svh"
+module freg 
+    import common::*;(
+    input logic clk, resetn,
+    freg_intf.freg ports
+);
+    logic stall;
+    word_t pc, pc_new;
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
+            pc <= '0;
+        end else if (~stall) begin
+            pc <= pc_new;
+        end
+    end
+
+    assign pc_new = ports.pc_new;
+    assign ports.pc = pc;
+endmodule
+
 module dreg 
     import common::*;
     import fetch_pkg::*;(

@@ -6,7 +6,10 @@ package fetch_pkg;
     
 
     //  Group: Typedefs
-    
+    typedef struct packed {
+        word_t instr_;
+        word_t pcplus8;
+    } fetch_data_t;
 
     
 endpackage: fetch_pkg

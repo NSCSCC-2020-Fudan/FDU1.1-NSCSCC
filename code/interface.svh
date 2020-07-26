@@ -1,6 +1,13 @@
 `ifndef __INTERFACE_SVH
 `define __INTERFACE_SVH
 
+interface freg_intf();
+    word_t pc, pc_new;
+    modport pcselect(output pc_new);
+    modport freg(output pc, input pc_new);
+    modport fetch(input pc);
+endinterface
+
 interface dreg_intf();
     import fetch_pkg::*;
     fetch_data_t [MACHINE_WIDTH-1:0]dataF, dataF_new;
@@ -160,6 +167,16 @@ interface exception_intf();
     import common::*;
     import exception_pkg::*;
 
+endinterface
+
+interface pcselect_intf();
+    import common::*;
+    logic branch_taken, exception_valid;
+    word_t pcplus4, pcbranch, pcexception;
+    modport pcselect(input pcplus4, pcbranch, pcexception, exception_valid, branch_taken);
+    modport fetch(output pcplus4);
+    modport rob(output branch_taken, pcbranch);
+    modport exception(output exception_valid, pcexception);
 endinterface
 
 `endif

@@ -8,7 +8,7 @@ package common;
     parameter CREG_NUM = AREG_NUM + CP0_REG_NUM + 2;
     // parameter ISSUE_NUM = 4;
     parameter ISSUE_WIDTH = 6; // maximum issue
-    parameter MACHINE_WIDTH = 4; // maximum decode&renaming
+    parameter MACHINE_WIDTH = 1; // maximum decode&renaming
     //  Group: Typedefs
     typedef logic[31:0] word_t;
     typedef logic[31:0] vaddr_t;

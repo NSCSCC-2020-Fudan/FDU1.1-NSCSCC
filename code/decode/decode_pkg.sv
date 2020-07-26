@@ -126,11 +126,8 @@ typedef struct packed {
 
 typedef struct packed {
     decoded_instr_t instr;
-    word_t pcplus4;
-    logic in_delay_slot;
+    word_t pcplus8;
     exception_pkg::exception_info_t exception;
-    cp0_cause_t cp0_cause;
-    cp0_status_t cp0_status;
 } decode_data_t;
 
     
