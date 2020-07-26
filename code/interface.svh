@@ -89,6 +89,18 @@ endinterface
 
 interface payloadRAM_intf();
     word_t []
+    modport issue(
+        input
+        output
+    );
+    modport rob(
+        input
+        output
+    );
+    modport arf(
+        input
+        output
+    );
 endinterface
 
 interface renaming_intf();
@@ -177,6 +189,39 @@ interface pcselect_intf();
     modport fetch(output pcplus4);
     modport rob(output branch_taken, pcbranch);
     modport exception(output exception_valid, pcexception);
+endinterface
+
+interface hazard_intf();
+    logic stallF, stallD, stallR, stallI, stallE, stallC;
+    logic flushF, flushD, flushR, flushI, flushE, flushC;
+    modport hazard(
+        input
+        output
+    );
+    modport freg(
+        input
+        output
+    );
+    modport dreg(
+        input
+        output
+    );
+    modport rreg(
+        input
+        output
+    );
+    modport ireg(
+        input
+        output
+    );
+    modport ereg(
+        input
+        output
+    );
+    modport creg(
+        input
+        output
+    );
 endinterface
 
 `endif

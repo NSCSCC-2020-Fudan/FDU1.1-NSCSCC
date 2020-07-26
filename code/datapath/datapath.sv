@@ -24,9 +24,14 @@ module datapath
     creg_intf creg_intf();
 
     pcselect_intf pcselect_intf();
-
+    renaming_intf renaming_intf();
     forward_intf forward_intf();
-
+    exception_intf exception_intf();
+    wake_intf wake_intf();
+    commit_intf commit_intf();
+    retire_intf retire_intf();
+    payloadRAM_intf payloadRAM_intf();
+    hazard_intf hazard_intf();
     pcselect pcselect(.freg(freg_intf.pcselect),
                       .ports(pcselect_intf.pcselect));
     fetch fetch(.instr_, .pc,
@@ -36,18 +41,29 @@ module datapath
                 );
     decode decode(.dreg(dreg_intf.dreg),
                   .rreg(rreg_intf.rreg));
-    renaming renaming();
-    issue issue();
-    execute execute();
+    renaming renaming(.ports(renaming_intf.renaming),
+                      .rreg(rreg_intf.renaming),
+                      .ireg(ireg_intf.renaming)
+                      );
+    issue issue(.clk, .resetn,
+                .ireg(ireg_intf.issue),
+                .ereg(ereg_intf.issue),
+                .wake(wake_intf.issue),
+                .payloadRAM(payloadRAM_intf.issue)
+                );
+    execute execute(.clk, .resetn,
+                    .ereg(ereg_intf.execute),
+                    .creg(creg_intf.execute),
+                    .forward(forward_intf.execute));
     commit commit();
 
     rat rat(.clk, .resetn);
     rob rob(.clk, .resetn);
 
-    freg freg(.clk, .resetn, .ports(freg_intf.freg));
-    dreg dreg(.clk, .resetn, .ports(dreg_intf.dreg));
-    rreg rreg(.clk, .resetn, .ports(rreg_intf.rreg));
-    ireg ireg(.clk, .resetn, .ports(ireg_intf.ireg));
-    ereg ereg(.clk, .resetn, .ports(ereg_intf.ereg));
-    creg creg(.clk, .resetn, .ports(creg_intf.creg));
+    freg freg(.clk, .resetn, .ports(freg_intf.freg), .hazard(hazard_intf.freg));
+    dreg dreg(.clk, .resetn, .ports(dreg_intf.dreg), .hazard(hazard_intf.dreg));
+    rreg rreg(.clk, .resetn, .ports(rreg_intf.rreg), .hazard(hazard_intf.rreg));
+    ireg ireg(.clk, .resetn, .ports(ireg_intf.ireg), .hazard(hazard_intf.ireg));
+    ereg ereg(.clk, .resetn, .ports(ereg_intf.ereg), .hazard(hazard_intf.ereg));
+    creg creg(.clk, .resetn, .ports(creg_intf.creg), .hazard(hazard_intf.creg));
 endmodule
