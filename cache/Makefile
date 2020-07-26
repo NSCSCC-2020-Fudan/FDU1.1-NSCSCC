@@ -28,7 +28,7 @@ SVFLAGS        := \
 	-Wall -Wpedantic -Wno-LITENDIAN -cc \
 	-Mdir $(BUILD) \
 	--prefix $(SV_PREFIX) \
-	-DCACHE_WITHOUT_MIPS -DIN_SIMULATION \
+	-DCACHE_WITHOUT_MIPS -DIN_SIMULATION -DNO_VIVADO \
 	$(SV_INCLUDE) -O2 --trace-fst --trace-structs
 
 DEFAULT_PORTS_FILE := $(BUILD)/default.top

@@ -98,8 +98,16 @@ module ICache #(
     // set_t [NUM_SETS - 1:0] sets;
     // set_t req_set;
     // assign req_set = sets[req_vaddr.index];  // virtually indexed
+
+`ifdef NO_VIVADO
     bundle_t [NUM_SETS - 1:0] set_lines;
     select_t [NUM_SETS - 1:0] set_select;
+`else
+    // what m*****-******g Vivado.
+    bundle_t set_lines[NUM_SETS - 1:0];
+    select_t set_select[NUM_SETS - 1:0];
+`endif
+
     set_t req_set;
     assign req_set.select = set_select[req_vaddr.index];
     assign req_set.lines  = set_lines[req_vaddr.index];
