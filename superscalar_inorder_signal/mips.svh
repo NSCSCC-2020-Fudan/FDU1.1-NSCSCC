@@ -1,9 +1,12 @@
 `ifndef __MIPS_SVH
 `define __MIPS_SVH
 
-`define MUL_DELAY       4
-`define DIV_DELAY       10
-`define ALU_DELAY       1
+`define MUL_DELAY           4
+`define DIV_DELAY           10
+`define ALU_DELAY           1
+
+`define ISSUE_QUEUE_SIZE    16
+`define ISSUE_QUEUE_WIDTH   4
 
 typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;

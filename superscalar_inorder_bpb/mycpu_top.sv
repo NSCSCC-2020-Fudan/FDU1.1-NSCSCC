@@ -138,8 +138,8 @@ module mycpu_top #(
         );
 
         // $bus to AXI
-        axi_req_t  axi_icache_req,  axi_dcache_req;
-        axi_resp_t axi_icache_resp, axi_dcache_resp;
+        (*mark_debug = "true"*) axi_req_t  axi_icache_req,  axi_dcache_req;
+        (*mark_debug = "true"*) axi_resp_t axi_icache_resp, axi_dcache_resp;
 
         CacheBusToAXI axi_icache_inst(
             .clk(aclk), .resetn(aresetn),
@@ -155,8 +155,8 @@ module mycpu_top #(
         );
 
         // uncached converter
-        axi_req_t  axi_uncached_req;
-        axi_resp_t axi_uncached_resp;
+        (*mark_debug = "true"*) axi_req_t  axi_uncached_req;
+        (*mark_debug = "true"*) axi_resp_t axi_uncached_resp;
 
         SRAMxToAXI axi_uncached_inst(
             .clk(aclk), .resetn(aresetn),

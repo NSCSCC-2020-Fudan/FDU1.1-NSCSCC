@@ -1,6 +1,7 @@
 `include "mips.svh"
 
 module FU(
+        input logic clk, reset, first_cycpeE,
         input issue_data_t in,
         output exec_data_t out,
         output logic finish,
@@ -16,20 +17,21 @@ module FU(
     assign divtype = (op == DIV) || (op == DIVU);
     
     word_t alusrcaE, alusrcbE;
-    assign alusrcaE = (in.instr.ctl.shamt_valid) ? ({27'b0, in.instr.shamt}) : (in.srca);
-    assign alusrcbE = (in.instr.ctl.alusrc == REGB) ? (in.srcb) : (in.instr.extended_imm);
+    assign alusrcaE = (in.instr.ctl.shamt_valid)    ? ({27'b0, in.instr.shamt}) : (in.srca);
+    assign alusrcbE = (in.instr.ctl.alusrc == REGB) ? (in.srcb)                 : (in.instr.extended_imm);
 
-    word_t hi_div, lo_div, hi_mul, lo_mul, result;
-    logic exception_of, taken;
+    word_t hi, lo, result;
+    logic exception_of, taken, multok, multfinish;
+    /*
     DIVU DIVU (alusrcaE, alusrcbE, op, divtype, hi_div, lo_div, div_finish);
     MULU MULU (alusrcaE, alusrcbE, op, multype, hi_mul, lo_mul, mul_finish);
+    */
+    mult mult(clk, reset, alusrcaE, alusrcbE, op, hi, lo, multok);
     ALU ALU (alusrcaE, alusrcbE, func, result, exception_of);
     JUDGE JUDGE(alusrcaE, alusrcbE, in.instr.ctl.branch_type, taken);
-    assign finish = (~divtype || div_timeok) && (~multype || mul_timeok);
-        
-    word_t hi, lo;
-    assign hi = (multype) ? (hi_mul) : (hi_div);
-    assign lo = (multype) ? (lo_mul) : (lo_div);
+    assign multfinish = (multok & ~first_cycpeE);
+    assign finish = ((~divtype) && (~multype)) || multfinish; 
+    //assign finish = 1'b1;
 
     assign out.taken = taken;
     assign out.instr = in.instr;
@@ -51,7 +53,8 @@ module FU(
     
     assign out.hiresult = (multype | divtype) ? (hi) : (result);//mul/div or HTHI 
     assign out.loresult = (multype | divtype) ? (lo) : (result);//mul/div or HTLO
-    assign out.result = (in.instr.ctl.is_link) ? (pcplus8) : (result);
+    assign out.result = (in.instr.ctl.is_link)   ? (pcplus8) : (
+                        (in.instr.ctl.mul_div_r) ? (lo)      : (result));
     assign out.exception_of = (multype | divtype) ? ('0) : (exception_of);
 
 endmodule

@@ -18,6 +18,7 @@ module bpb_line0(
         input bpb_result_t destpc_commit                       
     );
     
+    logic valid;
     word_t destpc;
     logic [1: 0] state;
     logic [`BPB_TAG_WIDTH0 - 1: 0] tag, tag_commit;
@@ -28,15 +29,14 @@ module bpb_line0(
         begin
             if (reset)
                 begin
-                    state <= 2'b00;
-                    destpc <= 32'Hbfc00000;
-                    tag <= {(`BPB_TAG_WIDTH0 - 1){1'b0}};
+                    valid <= 1'b0;
                 end
             else
                 if (wen && ~stall)
                     begin
-                        if (tag != tag_commit)
+                        if (tag != tag_commit || ~valid)
                             begin
+                                valid <= 1'b1;
                                 state <= 2'b00;
                                 tag <= tag_commit;
                                 destpc <= destpc_commit.destpc;
@@ -56,11 +56,11 @@ module bpb_line0(
     word_t pc_predict1, pc_predict0;
     assign pc_predict1 = pc_predict[1];
     assign pc_predict0 = pc_predict[0];
-    assign destpc_predict[1].taken = (tag == pc_predict1[31: 2 + `BPB_ENTRY_WIDTH0]) ? (state[1]) : (1'b0);
+    assign destpc_predict[1].taken = ((tag == pc_predict1[31: 2 + `BPB_ENTRY_WIDTH0]) ? (state[1]) : (1'b0)) & valid;
     assign destpc_predict[1].destpc = destpc;  
-    assign destpc_predict[0].taken = (tag == pc_predict0[31: 2 + `BPB_ENTRY_WIDTH0]) ? (state[1]) : (1'b0);
+    assign destpc_predict[0].taken = ((tag == pc_predict0[31: 2 + `BPB_ENTRY_WIDTH0]) ? (state[1]) : (1'b0)) & valid;
     assign destpc_predict[0].destpc = destpc;
-    assign hit_predict[1] = (tag == pc_predict1[31: 2 + `BPB_ENTRY_WIDTH0]);
-    assign hit_predict[0] = (tag == pc_predict0[31: 2 + `BPB_ENTRY_WIDTH0]);
+    assign hit_predict[1] = (tag == pc_predict1[31: 2 + `BPB_ENTRY_WIDTH0]) & valid;
+    assign hit_predict[0] = (tag == pc_predict0[31: 2 + `BPB_ENTRY_WIDTH0]) & valid;
     
 endmodule

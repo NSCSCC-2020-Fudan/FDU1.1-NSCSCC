@@ -25,8 +25,8 @@ module FU(
     MULU MULU (alusrcaE, alusrcbE, op, multype, hi_mul, lo_mul, mul_finish);
     ALU ALU (alusrcaE, alusrcbE, func, result, exception_of);
     JUDGE JUDGE(alusrcaE, alusrcbE, in.instr.ctl.branch_type, taken);
-    //assign finish = (~divtype || div_timeok) && (~multype || mul_timeok);
-    assign finish = 1'b1;
+    assign finish = (~divtype || div_timeok) && (~multype || mul_timeok);
+    //assign finish = 1'b1;
     
     word_t hi, lo;
     assign hi = (multype) ? (hi_mul) : (hi_div);
