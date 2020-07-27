@@ -16,3 +16,22 @@ WITH LOG {
     p.expect(_i(4), 0x12340078);
     p.wait(32);
 } AS("test pipeline");
+
+WITH {
+    Pipeline p(top);
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        p.expect(_i(i), i);
+    }
+    p.wait();
+} AS("sequential read");
+
+WITH {
+    Pipeline p(top);
+    for (int i = 0; i < 256; i++) {
+        p.write(_i(i), 0xcccccccc, 0b1111);
+    }
+    for (int i = 0; i < 256; i++) {
+        p.expect(_i(i), 0xcccccccc);
+    }
+    p.wait();
+} AS("memset");

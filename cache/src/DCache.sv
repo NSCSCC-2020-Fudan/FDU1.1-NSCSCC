@@ -152,12 +152,12 @@ module DCache #(
     enum /*logic [1:0]*/ {  // hope Vivado uses one-hot encoding
         IDLE, READ, WRITE
     } miss_state;
-    logic        miss_is_dirty;
     addr_t       miss_addr;
     iaddr_t      miss_pos;
     ready_bits_t miss_ready;
 
     // NOTE: victim buffer has one cycle delay
+    line_t   miss_vline;
     logic    miss_vwrten;
     offset_t miss_voffset;
     buffer_t miss_victim;
@@ -165,11 +165,13 @@ module DCache #(
     // wires
     logic   miss_busy;
     logic   miss_avail;
+    logic   miss_is_dirty;
     view_t  miss_rdata;
     wrten_t miss_write_en;
     view_t  miss_wdata;
 
     assign miss_busy     = miss_state != IDLE;
+    assign miss_is_dirty = miss_vline.valid && miss_vline.dirty;
     assign miss_avail    = miss_state == IDLE || (miss_state == WRITE && cbus_resp.last);
     assign miss_write_en = miss_state == READ && cbus_resp.okay ? BRAM_FULL_MASK : 0;
     assign miss_wdata    = cbus_resp.rdata;
@@ -241,8 +243,10 @@ module DCache #(
                 miss_vwrten  <= cbus_resp.okay;
                 miss_voffset <= miss_pos.offset;
 
-                if (cbus_resp.last)
-                    miss_state <= miss_is_dirty ? WRITE : IDLE;
+                if (cbus_resp.last) begin
+                    miss_state    <= miss_is_dirty ? WRITE : IDLE;
+                    miss_addr.tag <= miss_vline.tag;
+                end
 
                 if (cbus_resp.okay) begin
                     miss_pos.offset <= offset_t'(miss_pos.offset + 1);  // ensure overflow
@@ -280,13 +284,13 @@ module DCache #(
         // to miss stage
         if (req_to_miss) begin
             miss_state      <= READ;
-            miss_is_dirty   <= set_lines[req_iaddr.index][req_victim_idx].dirty;
             miss_addr       <= req_paddr;
             miss_pos.idx    <= req_victim_idx;
             miss_pos.index  <= req_iaddr.index;
             miss_pos.offset <= req_iaddr.offset;
             miss_ready      <= 0;
             // miss_vwrten     <= 0;
+            miss_vline      <= set_lines[req_iaddr.index][req_victim_idx];
 
             for (int i = 0; i < NUM_SETS; i++)
             for (int j = 0; j < NUM_WAYS; j++) begin
@@ -310,6 +314,7 @@ module DCache #(
 
             for (int j = 0; j < NUM_WAYS; j++) begin
                 set_lines[i][j].valid <= 0;
+                set_lines[i][j].dirty <= 0;
             end
         end
     end
