@@ -1,3 +1,4 @@
+`include "interface.svh"
 module fetch 
     import common::*;
     import fetch_pkg::*;(

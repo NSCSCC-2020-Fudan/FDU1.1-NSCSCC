@@ -1,5 +1,4 @@
-include "mips.svh"
-
+`include "interface.svh"
 module exception
     import common::*;
     import exception_pkg::*;(
