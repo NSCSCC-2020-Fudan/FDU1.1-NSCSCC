@@ -5,7 +5,7 @@
 module mycpu_top #(
     parameter logic USE_CACHE  = 1,
     parameter logic USE_ICACHE = 1,
-    parameter logic USE_IBUS   = 0
+    parameter logic USE_IBUS   = 1
 ) (
     input logic[5:0] ext_int,  //high active
 

@@ -32,8 +32,8 @@ module retire(
     
     assign hlw.wen_h = in[1].instr.ctl.hiwrite | in[0].instr.ctl.hiwrite; 
     assign hlw.wen_l = in[1].instr.ctl.lowrite | in[0].instr.ctl.lowrite;
-    assign hlw.wd_h = (in[1].instr.ctl.hiwrite) ? (in[1].hiresult) : (in[0].hiresult); 
-    assign hlw.wd_l = (in[1].instr.ctl.lowrite) ? (in[1].loresult) : (in[0].loresult);
+    assign hlw.wd_h = (in[0].instr.ctl.hiwrite) ? (in[0].hiresult) : (in[1].hiresult); 
+    assign hlw.wd_l = (in[0].instr.ctl.lowrite) ? (in[0].loresult) : (in[1].loresult);
     
     assign cp0w[1].addr = in[1].cp0_addr;
     assign cp0w[1].wd = in[1].result;

@@ -3,7 +3,7 @@
 module commit(
         input logic clk, reset,
         (*mark_debug = "true"*) input exec_data_t [1: 0] in,
-        output exec_data_t [1: 0] out,
+        (*mark_debug = "true"*) output exec_data_t [1: 0] out,
         //pipeline
         input logic first_cycleC, 
         output logic finishC, pc_mC,
@@ -21,8 +21,8 @@ module commit(
         //data forward
         input logic [5: 0] ext_int,
         input logic timer_interrupt,
-        (*mark_debug = "true"*) output logic exception_valid,
-        (*mark_debug = "true"*) output exception_t exception_data,
+        output logic exception_valid,
+        output exception_t exception_data,
         output logic is_eret,
         //cp0
         output word_t pc_commitC,
@@ -103,10 +103,10 @@ module commit(
     assign fetch.is_eret = (out[1].instr.op == ERET) | (out[0].instr.op == ERET); 
     assign fetch.pcexception = pcexception; 
     assign fetch.epc = (out[1].instr.op == ERET) ? (out[1].cp0_epc) : (out[0].cp0_epc);
-    assign fetch.branch = (out[1].instr.ctl.branch) & (out[1].taken != out[1].pred);
-    assign fetch.jump = (out[1].instr.ctl.jump) & (~out[1].pred);  
+    assign fetch.branch = (out[1].instr.ctl.branch) & (out[1].taken != out[1].pred.taken);
+    assign fetch.jump = (out[1].instr.ctl.jump) & (~out[1].pred.taken);  
     assign fetch.jr = out[1].instr.ctl.jr;
-    assign fetch.pcbranch = (out[1].pred) ? (out[0].pcplus4) : (out[1].instr.pcbranch);
+    assign fetch.pcbranch = (out[1].pred.taken) ? (out[0].pcplus4) : (out[1].instr.pcbranch);
     assign fetch.pcjr = out[1].srca;
     assign fetch.pcjump = out[1].instr.pcjump;
     // to fetch select pc

@@ -47,7 +47,7 @@ module mycpu #(
     logic dwt;
     datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
                       .iaddr(iaddr), .idata({32'b0, inst_rdata}), .ihit(1'b0), 
-                      .idataOK(inst_data_ok), .ddataOK(data_data_ok),
+                      .idataOK(i_data_ok), .ddataOK(d_data_ok),
                       // .iaddrOK(inst_addr_ok),
                       .dwd(dwd), .den(den), .dwt(dwt), .daddr(daddr), .dsize(dsize),
                       .rfw_out(rfw_out), .drd(data_rdata), .rt_pc_out(rt_pc_out),

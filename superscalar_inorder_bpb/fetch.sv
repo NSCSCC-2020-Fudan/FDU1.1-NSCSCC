@@ -3,35 +3,35 @@
 module fetch (
     input logic clk, reset, flushF, stallF,
     //updata
-    input pc_data_t fetch,
-    output word_t pc,
+    (*mark_debug = "true"*) input pc_data_t fetch,
+    (*mark_debug = "true"*) output word_t pc,
     input logic pc_new_commit, 
     //to branch_control
-    output word_t addr,
+    (*mark_debug = "true"*) output word_t addr,
     input logic hit, 
-    input word_t [1: 0] data,
-    input logic dataOK,
+    (*mark_debug = "true"*) input word_t [1: 0] data,
+    (*mark_debug = "true"*) input logic dataOK,
     //to imem
     output fetch_data_t [1: 0] fetch_data,
     output logic [1: 0] hitF,
     output logic finishF,
     //to decode
     output word_t [1: 0] pc_predictF,
-    input bpb_result_t [1: 0] destpc_predictF
+    (*mark_debug = "true"*) input bpb_result_t [1: 0] destpc_predictF
     //to bpb
 );
     
     logic [1: 0] state; 
     logic [1: 0] ien;
     word_t [1: 0] instr;
-    word_t pcplus4, pcplus8, pcplus, pc_new;
+    (*mark_debug = "true"*) word_t pcplus4, pcplus8, pcplus, pc_new;
     
-    logic pc_upd;
+    (*mark_debug = "true"*) logic pc_upd;
     pcselect pcselect(fetch.exception_valid, fetch.is_eret, fetch.branch, fetch.jump, fetch.jr,
                       fetch.pcexception, fetch.epc, fetch.pcbranch, fetch.pcjump, fetch.pcjr, pcplus, 
                       pc_new, pc_upd);
     
-    bpb_result_t last_predict, next_predict;                      
+    (*mark_debug = "true"*) bpb_result_t last_predict, next_predict;                      
     logic fetch_commit_conflict;                             
     always_ff @(posedge clk, posedge reset)
         begin
@@ -81,8 +81,10 @@ module fetch (
     assign fetch_data[0].en = ien[0] & (~last_predict.taken);
     assign fetch_data[1].exception_instr = exception_instr;
     assign fetch_data[0].exception_instr = exception_instr;
-    assign fetch_data[1].pred = destpc_predictF[1].taken;
-    assign fetch_data[0].pred = destpc_predictF[0].taken & ien[0];
+    //assign fetch_data[1].pred = destpc_predictF[1].taken;
+    //assign fetch_data[0].pred = destpc_predictF[0].taken & ien[0];
+    assign fetch_data[1].pred = destpc_predictF[1];
+    assign fetch_data[0].pred = (ien[0]) ? destpc_predictF[0] : ('0);
     assign finishF = dataOK && ~fetch_commit_conflict;    
     //to decode
     

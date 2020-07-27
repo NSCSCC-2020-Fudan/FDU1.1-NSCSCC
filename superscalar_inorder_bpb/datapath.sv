@@ -38,7 +38,8 @@ module datapath(
     creg_addr_t [3: 0] reg_addrI, reg_addrW;
     word_t [3: 0] reg_dataI, reg_dataW;
     logic [1: 0] hiloreadI, hiloreadW;
-    word_t [1: 0] hilodataI, hiW, loW;
+    word_t [1: 0] hilodataI;
+    word_t hiW, loW;
     creg_addr_t [1: 0] cp0_addrI, cp0_addrW;
     word_t [1: 0] cp0_dataI, cp0_dataW;
     rf_w_t [1: 0] rfw, cp0w;
@@ -147,7 +148,7 @@ module datapath(
                      stallE, flushE, stallC, flushC, stallR, flushR, pc_new_commit, flush_ex);
     
     hilo hilo (clk, reset,
-               hiloreadW, hiW, loW, hlw);               
+               hiW, loW, hlw);               
     
     regfile regfile (clk, reset,
                      rfw,
