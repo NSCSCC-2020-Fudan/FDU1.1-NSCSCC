@@ -1,3 +1,4 @@
+`include "interface.svh"
 module renaming 
     import common::*;
     import renaming_pkg::*;(

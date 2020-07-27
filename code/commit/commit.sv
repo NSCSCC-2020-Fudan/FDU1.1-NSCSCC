@@ -1,3 +1,4 @@
+`include "interface.svh"
 module commit 
     import common::*;
     import commit_pkg::*;(

@@ -1,4 +1,4 @@
-`include "mips.svh"
+`include "interface.svh"
 
 module cp0(
     input logic clk, reset,
