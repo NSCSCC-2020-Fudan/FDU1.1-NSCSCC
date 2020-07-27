@@ -12,7 +12,8 @@ module DualPortBRAMTest();
     assign resetn = ~reset;
 
     DualPortBRAM #(
-        .RESET_VALUE("23333333")
+        .RESET_VALUE("23333333"),
+        .WRITE_MODE("read_first")
     ) inst(.*);
 
     initial begin
@@ -26,7 +27,7 @@ module DualPortBRAMTest();
         write_en_1 = 4'b1111;
         addr_1 = 0;
         data_in_1 = 32'h12345678;
-    #10
+    #20
         addr_1 = 1;
         data_in_1 = 32'h87654321;
     #10

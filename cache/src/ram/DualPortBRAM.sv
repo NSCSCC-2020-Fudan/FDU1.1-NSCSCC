@@ -6,6 +6,8 @@
  *
  * NOTE: the "reset" signal does not reset the entire memory,
  *       it just reset the output to `RESET_VALUE`.
+ *       the behavioral model may be more strict on read/write
+ *       collisions when "WRITE_MODE" is "read_first".
  *
  * Default configuration: 4KB / 32bit width / write-first
  */
@@ -50,10 +52,12 @@ module DualPortBRAM #(
     localparam word_t _RESET_VALUE = word_t'(RESET_VALUE.atohex());
     localparam word_t DEADBEEF     = word_t'('hdeadbeef);
 
-    `ASSERT(WRITE_MODE == "write_first", "Only \"write_first\" mode is supported.");
+    // TODO: add support for "no_change" BRAM.
+    // `ASSERT(WRITE_MODE == "write_first", "Only \"write_first\" mode is supported.");
 
     logic reset_reg = 0;  // RST_MODE = "SYNC"
-    addr_t addr_reg_1 = 0, addr_reg_2 = 0;
+    // addr_t addr_reg_1 = 0, addr_reg_2 = 0;
+    view_t data_out_reg_1 = 0, data_out_reg_2 = 0;
     view_t [MEM_NUM_WORDS - 1:0] mem = 0;
 
     // detect read/write collision
@@ -69,26 +73,40 @@ module DualPortBRAM #(
             data_out_2 = _RESET_VALUE;
         end else begin
             data_out_1 = hazard_reg_1 ?
-                DEADBEEF : mem[addr_reg_1].word;
+                DEADBEEF : /*mem[addr_reg_1].word*/ data_out_reg_1;
             data_out_2 = hazard_reg_2 ?
-                DEADBEEF : mem[addr_reg_2].word;
+                DEADBEEF : /*mem[addr_reg_2].word*/ data_out_reg_2;
         end
+    end
+
+    view_t new_data_1, new_data_2;
+    for (genvar i = 0; i < BYTES_PER_WORD; i++) begin
+        localparam int hi = 8 * i + 7;
+        assign new_data_1.bytes[i] =
+            write_en_1[i] ? data_in_1[hi-:8] : mem[addr_1].bytes[i];
+        assign new_data_2.bytes[i] =
+            write_en_2[i] ? data_in_2[hi-:8] : mem[addr_2].bytes[i];
     end
 
     always_ff @(posedge clk) begin
         reset_reg <= reset;
 
         if (en) begin
-            {addr_reg_1, addr_reg_2} <= {addr_1, addr_2};
-            {hazard_reg_1, hazard_reg_2} <= {hazard_1, hazard_2};
+            // {addr_reg_1, addr_reg_2} <= {addr_1, addr_2};
 
-            for (int i = 0; i < BYTES_PER_WORD; i++) begin
-                int hi = 8 * i + 7;
-                if (write_en_1[i])
-                    mem[addr_1].bytes[i] <= data_in_1[hi-:8];
-                if (write_en_2[i])
-                    mem[addr_2].bytes[i] <= data_in_2[hi-:8];
+            if (WRITE_MODE == "read_first") begin
+                data_out_reg_1 <= mem[addr_1].word;
+                data_out_reg_2 <= mem[addr_2].word;
+            end else if (WRITE_MODE == "write_first") begin
+                data_out_reg_1 <= new_data_1;
+                data_out_reg_2 <= new_data_2;
+            end else begin
+                data_out_reg_1 <= DEADBEEF;
+                data_out_reg_2 <= DEADBEEF;
             end
+
+            {hazard_reg_1, hazard_reg_2} <= {hazard_1, hazard_2};
+            {mem[addr_1], mem[addr_2]}   <= {new_data_1, new_data_2};
         end
     end
 
