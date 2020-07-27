@@ -17,5 +17,10 @@ package common;
     typedef logic[$clog2(AREG_NUM)-1:0]  areg_addr_t; // architectural
     typedef logic[$clog2(CREG_NUM)-1:0]  creg_addr_t; // need to be renamed
 
+    typedef struct packed {
+        logic wen;
+        areg_addr_t addr;
+        word_t wd;
+    } rf_w_t;
     
 endpackage: common

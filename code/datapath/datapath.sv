@@ -9,11 +9,10 @@ module datapath
 
     output mem_pkg::read_req_t mread,
     output mem_pkg::write_req_t mwrite,
-    output rf_w_t rfwrite,
+    output rf_w_t[ISSUE_NUM-1:0] rfwrite,
     input word_t rd,
     output word_t wb_pc,
     // output logic inst_en,
-    output stallF, flush_ex,
     input i_data_ok, d_data_ok
 );
     freg_intf freg_intf();
@@ -55,11 +54,12 @@ module datapath
                     .ereg(ereg_intf.execute),
                     .creg(creg_intf.execute),
                     .forward(forward_intf.execute),
-                    .mread, .rd);
+                    .mread, .rd, .d_data_ok);
     commit commit(.ereg(ereg_intf.commit),
                   .self(commit_intf.commit),
                   .forward(forward_intf.commit),
-                  .wake(wake_intf.commit)
+                  .wake(wake_intf.commit),
+                  .d_data_ok, .mwrite
                   );
 
     rat rat(.clk, .resetn);
@@ -76,5 +76,5 @@ module datapath
                   .self(hazard_intf.hazard));
     exception exception();
     cp0 cp0(.clk, .resetn);
-    arf arf(.clk, .resetn);
+    arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite);
 endmodule
