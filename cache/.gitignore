@@ -2,6 +2,7 @@ build/*
 !build/.gitkeeper
 *.out
 
+.top
 *.vcd
 *.fst
 *.hier

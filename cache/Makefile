@@ -104,7 +104,13 @@ a.out: $(CXXLIBS) $(CXX_TEST_TARGET) $(CXX_TOP_TARGET)
 
 .PHONY: all run impl clean
 
-all: a.out
+ALL_TEST_NAMES := $(sort $(basename $(notdir $(wildcard test/*.cpp))))
+all:
+	for test in $(ALL_TEST_NAMES); do \
+		make clean; \
+		echo -e "\033[44m⇒ Running \033[0m\033[7m\033[5m"$$test"\033[0m\033[44m...\033[0m"; \
+		make run -s top=$$test -j8 RUN_ALL=1 FAST_SIMULATION=1; \
+	done
 
 run: a.out
 	./a.out
