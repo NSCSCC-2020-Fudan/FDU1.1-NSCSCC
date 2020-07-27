@@ -169,10 +169,10 @@ module DCache #(
     wrten_t miss_write_en;
     view_t  miss_wdata;
 
-    assign miss_busy       = miss_state != IDLE;
-    assign miss_avail      = miss_state == IDLE || (miss_state == WRITE && cbus_resp.last);
-    assign miss_write_en   = miss_state == READ ? BRAM_FULL_MASK : 0;
-    assign miss_wdata      = cbus_resp.rdata;
+    assign miss_busy     = miss_state != IDLE;
+    assign miss_avail    = miss_state == IDLE || (miss_state == WRITE && cbus_resp.last);
+    assign miss_write_en = miss_state == READ ? BRAM_FULL_MASK : 0;
+    assign miss_wdata    = cbus_resp.rdata;
 
     /**
      * determine whether the data is ready
@@ -187,13 +187,11 @@ module DCache #(
 
     /**
      * the BRAM
-     *
-     * "bram_write_fw": a register, to avoid read/write collision.
      */
     DualPortBRAM #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(IADDR_BITS),
-        .WRITE_MODE("read_first")
+        .WRITE_MODE("read_first")  // for victim buffer
     ) bram_inst(
         .clk(clk), .reset(~resetn), .en(1),
 
@@ -215,8 +213,6 @@ module DCache #(
     if (resetn) begin
         // to hit stage
         hit_data_ok <= req_to_hit;
-
-        // update hit stage
         if (req_to_hit) begin
             for (int i = 0; i < NUM_SETS; i++) begin
                 set_select[i] <= req_iaddr.index == index_t'(i) ?
@@ -224,27 +220,24 @@ module DCache #(
             end
 
             if (dbus_req.is_write) begin
-                for (int i = 0; i < NUM_SETS; i++) begin
-                    if (req_iaddr.index == index_t'(i)) begin
-                        for (int j = 0; j < NUM_WAYS; j++) begin
-                            set_lines[i][j].dirty <= req_iaddr.idx == idx_t'(j) ?
-                                1 : set_lines[i][j].dirty;
-                            set_lines[i][j].valid <= set_lines[i][j].valid;
-                            set_lines[i][j].tag   <= set_lines[i][j].tag;
-                        end
-                    end
+                for (int i = 0; i < NUM_SETS; i++)
+                if (req_iaddr.index == index_t'(i))
+                for (int j = 0; j < NUM_WAYS; j++) begin
+                    set_lines[i][j].dirty <= req_iaddr.idx == idx_t'(j) ?
+                        1 : set_lines[i][j].dirty;
+                    set_lines[i][j].valid <= set_lines[i][j].valid;
+                    set_lines[i][j].tag   <= set_lines[i][j].tag;
                 end
             end
         end
 
         // update miss stage
-        // some updates may be overwritten by "req_to_miss"
+        // some changes may be overwritten by "req_to_miss"
         unique case (miss_state)
             READ: begin
                 // it is expected that "miss_vwrten" is not enabled
-                // in the first cycle of READ, but it seems that doesn't
-                // matter. WRITE state will turn it off at correct
-                // time point.
+                // in the first cycle of "READ", but it seems that doesn't
+                // matter. "WRITE" will turn it off at correct time.
                 miss_vwrten  <= 1;
                 miss_voffset <= miss_pos.offset;
 
@@ -291,26 +284,24 @@ module DCache #(
             miss_pos.index  <= req_iaddr.index;
             miss_pos.offset <= req_iaddr.offset;
             miss_ready      <= 0;
-            miss_vwrten     <= 1;
+            // miss_vwrten     <= 0;
 
-            for (int i = 0; i < NUM_SETS; i++) begin
-                set_select[i] <= set_select[i];
-
-                for (int j = 0; j < NUM_WAYS; j++) begin
-                    if (req_iaddr.index == index_t'(i) &&
-                        req_victim_idx == idx_t'(j)) begin
-                        set_lines[i][j].valid <= 1;
-                        set_lines[i][j].dirty <= 0;
-                        set_lines[i][j].tag   <= req_paddr.tag;
-                    end else begin
-                        set_lines[i][j] <= set_lines[i][j];
-                    end
+            for (int i = 0; i < NUM_SETS; i++)
+            for (int j = 0; j < NUM_WAYS; j++) begin
+                if (req_iaddr.index == index_t'(i) &&
+                    req_victim_idx == idx_t'(j)) begin
+                    set_lines[i][j].valid <= 1;
+                    set_lines[i][j].dirty <= 0;
+                    set_lines[i][j].tag   <= req_paddr.tag;
+                end else begin
+                    set_lines[i][j] <= set_lines[i][j];
                 end
             end
         end
     end else begin
         hit_data_ok <= 0;
-        miss_state <= IDLE;
+        miss_state  <= IDLE;
+        miss_vwrten <= 0;
 
         for (int i = 0; i < NUM_SETS; i++) begin
             set_select[i] <= 0;
