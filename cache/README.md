@@ -11,6 +11,7 @@
     * `ram/`：RAM 相关的基础模块。
     * `util/`：辅助模块、总线转接模块。
     * `xsim/`：Vivado 下的测试源码。
+    * `ip/`：Vivado 中用到 IP 核的配置文件（`.xci`）。
 * `test/`：测试代码。
 * `trace/`：保存波形图的文件夹。默认不上传波形图文件（`.fst` 和 `.vcd`），只上传 GTKWave 的配置文件（`.gtkw`）。
 * `.gitignore`
