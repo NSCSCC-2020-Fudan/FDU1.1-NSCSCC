@@ -38,12 +38,12 @@ module issue_queue
         full = 1'b0;
         read = '0;
         // wake up
-        for (int i=0; i<WAKEUP_LEN; i++) begin
+        for (int i=0; i<WAKE_NUM; i++) begin
             for (int j=0; j<QUEUE_LEN; j++) begin
-                if (queue_new.src1.id == wake_up[i]) begin
+                if (queue_new.src1.id == wake[i]) begin
                     queue_new.src1.valid = 1'b1;
                 end
-                if (queue_new.src2.id == wake_up[i]) begin
+                if (queue_new.src2.id == wake[i]) begin
                     queue_new.src2.valid = 1'b1;
                 end
                 if (j == tail_new) begin

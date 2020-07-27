@@ -118,7 +118,10 @@ module execute
     end
 
     // wake
-
+    for (genvar i = 0; i < ALU_NUM ; i++) begin
+        assign wake.dst_execute[i].id = dataI.alu_issue[i].dst;
+        assign wake.dst_execute[i].valid = dataI.alu_issue[i].valid;
+    end
     // ports
     assign dataI = ereg.dataI;
     assign creg.dataE_new = dataE;

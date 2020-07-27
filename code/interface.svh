@@ -183,17 +183,16 @@ interface commit_intf();
 endinterface
 
 interface wake_intf();
+    wake_req_t [ISSUE_WIDTH-1:0] dst_commit;
+    wake_req_t [ALU_NUM-1:0] dst_execute;
     modport issue(
-        input
-        output
+        input dst_commit, dst_execute
     );
     modport execute(
-        input
-        output
+        output dst_execute
     );
     modport commit(
-        input
-        output
+        output dst_commit
     );
 endinterface
 
