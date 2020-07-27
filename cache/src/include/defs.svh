@@ -24,7 +24,7 @@ parameter int BITS_PER_WORD  = BYTES_PER_WORD * 8;
  * primitive datatypes
  */
 
-// nibble：half byte
+// nibble: half byte
 typedef logic [3 :0] nibble_t;
 
 /**

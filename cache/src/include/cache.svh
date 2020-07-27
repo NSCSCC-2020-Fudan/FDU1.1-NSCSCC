@@ -3,7 +3,8 @@
 
 `include "defs.svh"
 
-parameter int ICACHE_IDX_BITS    = 3;  // id bits
+// 4-way 16KB 64bytes-line dual-fetch
+parameter int ICACHE_IDX_BITS    = 2;  // id bits
 parameter int ICACHE_INDEX_BITS  = 6;  // index bits (set)
 parameter int ICACHE_OFFSET_BITS = 3;  // offset bits
 parameter int ICACHE_ALIGN_BITS  = 3;  // aligned bits
