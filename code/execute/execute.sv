@@ -64,7 +64,7 @@ module execute
     logic [ALU_NUM-1:0]exception_of;
     for (genvar i=0; i<ALU_NUM; i++) begin
         alu alu(.a(alusrca[i]), 
-                .b(alusrcb[i]),
+                .b(dataI.alu_issue[i].ctl.alusrc == IMM ? dataI.alu_issue[i].imm :alusrcb[i]),
                 .alufunc(dataI.alu_issue[i].ctl.alufunc),
                 .c(aluout[i]),
                 .exception_of(exception_of[i]));
