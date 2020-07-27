@@ -80,10 +80,7 @@ module mycpu_top #(
     _ibus_index_t inst_ibus_index;
 
     mycpu #(.DO_ADDR_TRANSLATION(~USE_CACHE)) mycpu(
-        .clk(aclk), .resetn(aresetn), .ext_int,
-        .inst_req, .inst_wr, .inst_size, .inst_addr, .inst_wdata, .inst_rdata, .inst_addr_ok, .inst_data_ok,
-        .data_req, .data_wr, .data_size, .data_addr, .data_wdata, .data_rdata, .data_addr_ok, .data_data_ok,
-        .debug_wb_pc, .debug_wb_rf_wen, .debug_wb_rf_wnum, .debug_wb_rf_wdata
+        .clk(aclk), .resetn(aresetn), .*
     );
 
     if (USE_CACHE == 0) begin: without_cache

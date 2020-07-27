@@ -11,11 +11,17 @@ module mycpu #(
     output logic inst_req, data_req,
     output logic inst_wr, data_wr,
     output logic [1:0] inst_size, data_size,
-    (*mark_debug = "true"*) output word_t inst_addr, data_addr,
+    output word_t inst_addr, data_addr,
     output word_t inst_wdata, data_wdata,
-    (*mark_debug = "true"*) input word_t inst_rdata, data_rdata,
+    input word_t inst_rdata, data_rdata,
     input logic inst_addr_ok, data_addr_ok,
     input logic inst_data_ok, data_data_ok,
+    
+    output logic inst_ibus_req,
+    output word_t inst_ibus_addr,
+    input logic inst_ibus_addr_ok, inst_ibus_data_ok,
+    input logic [63: 0]  inst_ibus_data,
+    input logic inst_ibus_index,
 
     //debug
     output word_t debug_wb_pc,
