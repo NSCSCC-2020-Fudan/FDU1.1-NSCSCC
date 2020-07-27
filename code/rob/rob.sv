@@ -3,7 +3,7 @@ module rob
     import common::*;
     import rob_pkg::*;
     import commit_pkt::*;(
-    input logic clk, resetn, flush,
+    input logic clk, resetn,
     renaming_intf.rob renaming,
     commit_intf.rob commit,
     retire_intf.rob retire
@@ -83,6 +83,9 @@ module rob
         // retire
         retire.retire = '0;
         for (int i=0; i<ISSUE_WIDTH; i++) begin
+            if (empty) begin
+                break;
+            end
             // check exception
             if (exception_valid) begin
                 break;
