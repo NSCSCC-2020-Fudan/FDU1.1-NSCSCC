@@ -91,12 +91,17 @@ interface payloadRAM_intf();
     word_t []
     modport issue(
         input
+    );
+    // wake
+    modport commit(
         output
     );
+    // prf
     modport rob(
         input
         output
     );
+    // arf
     modport arf(
         input
         output
@@ -141,13 +146,15 @@ interface retire_intf();
 endinterface
 
 interface commit_intf();
+    alu_commit_t [ALU_NUM-1:0] alu_commit;
+    mem_commit_t [MEM_NUM-1:0] mem_commit;
+    branch_commit_t [ALU_NUM-1:0] branch_commit;
+    mult_commit_t [ALU_NUM-1:0] mult_commit;
     modport commit(
-        input
-        output
+        output alu_commit, mem_commit, branch_commit, mult_commit
     );
     modport rob(
-        input
-        output
+        input alu_commit, mem_commit, branch_commit, mult_commit
     );
 endinterface
 
@@ -164,15 +171,6 @@ interface wake_intf();
         input
         output
     );
-endinterface
-
-interface arf_intf();
-    import common::*;
-    import regfile_pkg::*;
-
-    r_req_t [AREG_READ_PORTS-1:0] r_req;
-    r_resp_t [AREG_READ_PORTS-1:0] r_resp;
-    w_req_t [AREG_WRITE_PORTS-1:0] w_req;
 endinterface
 
 interface exception_intf();

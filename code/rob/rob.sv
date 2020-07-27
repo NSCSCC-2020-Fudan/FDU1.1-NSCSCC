@@ -28,7 +28,7 @@ module rob
     r_req_t [PORT_NUM-1:0] r_req;
     // rob commit
     alu_commit_t[ALU_NUM-1:0] alu_commit;
-    mem_commit_t[AGU_NUM-1:0] mem_commit;
+    mem_commit_t[MEM_NUM-1:0] mem_commit;
     branch_commit_t[BRANCH_NUM-1:0] branch_commit;
     mult_commit_t[MULT_NUM-1:0] mult_commit;
 
@@ -51,7 +51,7 @@ module rob
                 end
             end
         end
-        for (int i=0; i<AGU_NUM; i++) begin
+        for (int i=0; i<MEM_NUM; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (mem_commit[i].valid && mem_commit[i].rob_addr == j) begin
                     rob_table_retire[j].data.mem.data = mem_commit[i].data;
