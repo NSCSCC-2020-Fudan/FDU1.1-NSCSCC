@@ -20,19 +20,19 @@ module issue
 
     // generate write from dataR
     for (genvar i=0; i<WRITE_NUM; i++) begin
-        write[i].valid = 1'b1;
-        write[i].entry_type = dataR[i].ctl.entry_type;
-        write[i].entry.dst = dataR[i].dst;
-        write[i].entry.src1.valid = ;
-        write[i].entry.src1.id = dataR[i].src1;
-        write[i].entry.src1.data = ;
-        write[i].entry.src2.valid = ;
-        write[i].entry.src2.id = dataR[i].src2;
-        write[i].entry.src2.data = ;
-        write[i].entry.ctl = dataR[i].ctl;
-        write[i].entry.imm = dataR[i].imm;
-        write[i].entry.pcplus8 = dataR[i].pcplus8;
-        write[i].entry.exception = dataR[i].exception;
+        assign write[i].valid = 1'b1;
+        assign write[i].entry_type = dataR[i].ctl.entry_type;
+        assign write[i].entry.dst = dataR[i].dst;
+        assign write[i].entry.src1.valid = ;
+        assign write[i].entry.src1.id = dataR[i].src1;
+        assign write[i].entry.src1.data = ;
+        assign write[i].entry.src2.valid = ;
+        assign write[i].entry.src2.id = dataR[i].src2;
+        assign write[i].entry.src2.data = ;
+        assign write[i].entry.ctl = dataR[i].ctl;
+        assign write[i].entry.imm = dataR[i].imm;
+        assign write[i].entry.pcplus8 = dataR[i].pcplus8;
+        assign write[i].entry.exception = dataR[i].exception;
     end
 
     logic [3:0] full;
