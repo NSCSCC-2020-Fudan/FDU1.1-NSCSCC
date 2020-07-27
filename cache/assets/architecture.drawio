@@ -1,6 +1,6 @@
-<mxfile host="b1a0f854-dbc5-478a-bfdf-6e16b9ce739c" modified="2020-07-26T08:12:31.716Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.47.2 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36" etag="v1ipdSuXdKVUZV4uPGGl" version="13.1.3">
+<mxfile host="b978bb00-94d3-445b-89fa-9653513db34e" modified="2020-07-27T05:06:03.684Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.47.2 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36" etag="bhsQJEKMq45QdMdsl9Bs" version="13.1.3">
     <diagram id="KAqjz7zcjYPBLz1x9ajG" name="Page-1">
-        <mxGraphModel dx="601" dy="639" grid="1" gridSize="4" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="841" dy="639" grid="1" gridSize="4" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -210,8 +210,8 @@
                 <mxCell id="10" value="Prefetch" style="rounded=0;whiteSpace=wrap;html=1;shadow=1;fontSize=12;fontColor=#000000;rotation=0;" parent="1" vertex="1">
                     <mxGeometry x="732" y="376" width="64" height="32" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="LS-Pipeline" style="rounded=0;whiteSpace=wrap;html=1;shadow=1;fontSize=14;fontColor=#000000;rotation=0;" vertex="1" parent="1">
-                    <mxGeometry x="704" y="528" width="112" height="32" as="geometry"/>
+                <mxCell id="14" value="Load/Store FIFO" style="rounded=0;whiteSpace=wrap;html=1;shadow=1;fontSize=14;fontColor=#000000;rotation=0;" parent="1" vertex="1">
+                    <mxGeometry x="692" y="528" width="144" height="32" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
