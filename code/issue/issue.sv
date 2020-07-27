@@ -100,7 +100,7 @@ module issue
         assign dataI.mult_issue[i].pcplus8 = mult_issue[i].entry.pcplus8;
         assign dataI.mult_issue[i].exception = mult_issue[i].entry.exception;
     end
-
+    assign wake = {wake.dst_commit, wake.dst_execute};
     assign dataR = ireg.dataR;
     assign ereg.dataI_new = dataI;
 endmodule
