@@ -69,7 +69,7 @@ CXX_OPTFLAGS := -g -fsanitize=undefined
 endif
 
 CXXFLAGS        := \
-	-Wall -Wextra -Wno-comment \
+	-Wall -Wextra -Wno-comment -Wno-sign-compare \
 	-std=c++17 \
 	$(CXX_OPTFLAGS) \
 	-lz \
@@ -82,7 +82,7 @@ endif
 $(CXX_TOP_HEADER): $(SV_TARGET)
 
 $(CXX_TOP_TARGET): $(SV_TARGET)
-	cd $(BUILD); make -f $(notdir $(SV_TARGET))
+	cd $(BUILD); $(MAKE) -f $(notdir $(SV_TARGET))
 
 $(BUILD)/main.o: $(UTIL)/main.cpp $(CXX_HEADERS)
 	$(CXX) $(CXXFLAGS) $< -c -o $@
@@ -106,10 +106,10 @@ a.out: $(CXXLIBS) $(CXX_TEST_TARGET) $(CXX_TOP_TARGET)
 
 ALL_TEST_NAMES := $(sort $(basename $(notdir $(wildcard test/*.cpp))))
 all:
-	for test in $(ALL_TEST_NAMES); do \
-		make clean; \
+	+for test in $(ALL_TEST_NAMES); do \
+		$(MAKE) clean; \
 		echo -e "\033[44m⇒ Running \033[0m\033[7m\033[5m"$$test"\033[0m\033[44m...\033[0m"; \
-		make run -s top=$$test -j8 RUN_ALL=1 FAST_SIMULATION=1; \
+		$(MAKE) run -s top=$$test -j8 RUN_ALL=1 FAST_SIMULATION=1; \
 	done
 
 run: a.out

@@ -35,6 +35,8 @@ make run top=[顶层模块名称]
 
 在跑正式测试时建议使用 `RUN_ALL=1 FAST_SIMULATION=1`。
 
+可以使用 `make all` 来运行所有在 `test/` 目录下的测试。
+
 ## 命名逻辑
 
 所有 master → slave 的请求以 `req` 进行标注，而 slave → master 的反馈以 `resp` 进行标注。例如，`axi_req_t` 和 `axi_resp_t`。
