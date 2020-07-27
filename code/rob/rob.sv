@@ -37,8 +37,12 @@ module rob
     assign empty = ~(head_ptr[ROB_ADDR_LEN] ^ tail_ptr[ROB_ADDR_LEN]) && 
                     (head_ptr[ROB_ADDR_LEN-1:0] == tail_ptr[ROB_ADDR_LEN-1:0]);
     
+    logic exception_valid;
     assign exception_valid = rob_table[head_addr].exception.valid;
 
+    logic branch_taken;
+    assign branch_taken = rob_table[head_addr].data.branch.branch_taken &&
+                          rob_table[head_addr].ctl.branch;
     always_comb begin
         rob_table_retire = rob_table;
         // commit first
@@ -77,6 +81,7 @@ module rob
             end
         end
         // retire
+        retire.retire = '0;
         for (int i=0; i<ISSUE_WIDTH; i++) begin
             // check exception
             if (exception_valid) begin
@@ -85,15 +90,25 @@ module rob
             // check branch
                 // write delay slot
             // write register
-
+            retire.retire[i].ctl = rob_table_retire[head_addr].ctl;
+            retire.retire[i].data = rob_table_retire[head_addr].data[63:0];
             // update head_ptr
+            head_ptr = head_ptr + 1;
         end
 
         // write
         rob_table_new = rob_table_retire;
-        for (int i=0; i<WRITE_PORTS; i++) begin
+        for (int i=0; i<MACHINE_WIDTH; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
-                
+                if (renaming.instr[i].valid && j == tail_addr) begin
+                    rob_table_new[j].complete = 1'b0;
+                    rob_table_new[j].preg = rob_addr_t'(j);
+                    rob_table_new[j].creg = renaming.instr[i].dst;
+                    rob_table_new[j].pcplus8 = renaming.instr[i].pcplus8;
+                    rob_table_new[j].ctl = renaming.instr[i].ctl;
+                    tail_ptr = tail_ptr + 1;
+                    renaming.rob_addr_new[i] = rob_addr_t'(j);
+                end
             end
         end
 

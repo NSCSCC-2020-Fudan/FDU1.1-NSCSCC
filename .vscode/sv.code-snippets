@@ -47,5 +47,13 @@
 			"\t$0",
 			"end"
 		]
+	},
+	"struct packed": {
+		"prefix": "struct",
+		"body": [
+			"struct packed {",
+			"\t$0",
+			"} $1;"
+		]
 	}
 }

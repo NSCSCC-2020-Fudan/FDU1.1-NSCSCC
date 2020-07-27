@@ -111,37 +111,55 @@ endinterface
 interface renaming_intf();
     import common::*;
     rob_pkg::rob_addr_t [MACHINE_WIDTH-1:0]rob_addr_new;
-    exception::exception_t[MACHINE_WIDTH-1:0] exception;
-    word_t [MACHINE_WIDTH-1:0]pcplus8;
-    creg_addr_t [MACHINE_WIDTH-1:0]dst;
-
+    struct packed {
+        logic valid;
+        creg_addr_t src1, src2, dst;
+        word_t pcplus8;
+        control_t ctl;
+    } [MACHINE_WIDTH-1:0]instr;
+    struct packed {
+        struct packed {
+            logic valid;
+            preg_addr_t id;
+        } src1, src2;
+        preg_addr_t dst;
+    } [MACHINE_WIDTH-1:0]renaming_info;
     modport renaming(
-        input rob_addr_new,
-        output exception, pcplus8, dst
+        input renaming_info,
+        output instr
     );
     modport rat(
-        input rob_addr_new,
-        output rob_addr_old
+        input rob_addr_new, instr, 
+        output renaming_info
     );
     modport rob(
-        input exception, pcplus8, dst,
-        input rob_addr_old,
+        input instr,
         output rob_addr_new
     );
 endinterface
 
 interface retire_intf();
+    struct packed {
+        union packed {
+            word_t data;
+            struct packed {
+                word_t hi;
+                word_t lo;
+            } hilo;
+        } data;
+        control_t ctl;
+    } [ISSUE_WIDTH-1:0]retire;
     modport rat(
-        input
-        output
+        input retire
     );
     modport rob(
-        input
-        output
+        output retire
     );
     modport arf(
-        input
-        output
+        input retire
+    );
+    modport cp0(
+        input retire
     );
 endinterface
 
