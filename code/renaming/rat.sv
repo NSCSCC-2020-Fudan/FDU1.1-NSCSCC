@@ -43,8 +43,11 @@ module rat
         // retire
         for (int i=0; i<TABLE_LEN; i++) begin
             for (int j=0; j<RELEASE_PORTS; j++) begin
-                if (rel[j].valid && rel[j].id == i && rel[j].rob_addr == mapping_table_new[i].id) begin
+                if (retire.retire[j].valid && 
+                    retire.retire[j].id == i && 
+                    retire.retire[j].preg == mapping_table_new[i].id) begin
                     mapping_table_new[i].id = '0;
+                    mapping_table_new[i].valid = 1'b0;
                 end
             end
         end

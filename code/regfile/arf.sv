@@ -2,7 +2,8 @@ module arf
 	import common::*;
 	import regfile_pkg::*;
 	(
-    
+	input logic clk, resetn,
+	retire_intf.arf retire
 );
     word_t[AREG_NUM-1:0] regfile, regfile_new;
 	read_req_t [AREG_READ_PORTS-1:0]reads;
@@ -31,5 +32,15 @@ module arf
 		end else begin
 			regfile <= regfile_new;
 		end
+	end
+
+	// ports
+	for (genvar i = 0; i < AREG_READ_PORTS ; i++) begin
+		
+	end
+	for (genvar i = 0; i < AREG_WRITE_PORTS ; i++) begin
+		assign writes[i].valid = retire.retire[i].ctl.regwrite;
+		assign writes[i].id = retire.retire[i].dst;
+		assign writes[i].data = retire.retire[i].data.data;
 	end
 endmodule

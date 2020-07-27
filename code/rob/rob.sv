@@ -92,6 +92,7 @@ module rob
             // write register
             retire.retire[i].ctl = rob_table_retire[head_addr].ctl;
             retire.retire[i].data = rob_table_retire[head_addr].data[63:0];
+            retire.retire[i].dst = rob_table_retire[head_addr].creg;
             // update head_ptr
             head_ptr = head_ptr + 1;
         end
