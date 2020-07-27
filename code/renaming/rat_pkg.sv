@@ -6,6 +6,7 @@ package rat_pkg;
     // parameter READ_PORTS = MACHINE_WIDTH * 3;
     // parameter WRITE_PORTS = MACHINE_WIDTH;
     parameter TABLE_LEN = CREG_NUM;
+    parameter RELEASE_PORTS = ISSUE_WIDTH;
     //  Group: Typedefs
     typedef struct packed {
         logic valid;

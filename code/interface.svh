@@ -140,6 +140,7 @@ endinterface
 
 interface retire_intf();
     struct packed {
+        logic valid;
         union packed {
             word_t data;
             struct packed {
@@ -148,6 +149,8 @@ interface retire_intf();
             } hilo;
         } data;
         control_t ctl;
+        creg_addr_t dst;
+        preg_addr_t preg;
     } [ISSUE_WIDTH-1:0]retire;
     modport rat(
         input retire
@@ -159,6 +162,9 @@ interface retire_intf();
         input retire
     );
     modport cp0(
+        input retire
+    );
+    modport hilo(
         input retire
     );
 endinterface

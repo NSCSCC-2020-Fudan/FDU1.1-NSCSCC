@@ -3,8 +3,8 @@
 package regfile_pkg;
     import common::*;
     //  Group: Parameters
-    parameter AREG_READ_PORTS = 1;
-    parameter AREG_WRITE_PORTS = 1;
+    parameter AREG_READ_PORTS = MACHINE_WIDTH * 2;
+    parameter AREG_WRITE_PORTS = ISSUE_WIDTH;
     parameter PREG_READ_PORTS = 1;
     parameter PREG_WRITE_PORTS = 1;
     //  Group: Typedefs
