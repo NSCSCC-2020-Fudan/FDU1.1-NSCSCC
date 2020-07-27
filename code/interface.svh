@@ -88,9 +88,15 @@ interface forward_intf();
 endinterface
 
 interface payloadRAM_intf();
-    word_t []
+    word_t [MACHINE_WIDTH-1:0] arf1, arf2;
+    word_t [MACHINE_WIDTH-1:0] prf1, prf2;
+    word_t [MACHINE_WIDTH-1:0] cp01, cp02, hilo1, hilo2;
+    creg_addr_t [MACHINE_WIDTH-1:0] creg1, creg2;
+    preg_addr_t [MACHINE_WIDTH-1:0] preg1, preg2; 
+    
     modport issue(
-        input
+        input arf1, arf2, prf1, prf2,
+        output 
     );
     // wake
     modport commit(
@@ -98,14 +104,25 @@ interface payloadRAM_intf();
     );
     // prf
     modport rob(
-        input
-        output
+        input preg1, preg2,
+        output prf1, prf2
     );
     // arf
     modport arf(
-        input
-        output
+        input creg1, creg2,
+        output arf1, arf2
     );
+    // cp0
+    modport cp0(
+        input creg1, creg2,
+        output cp01, cp02
+    );
+    // hilo
+    modport hilo(
+        input creg1, creg2,
+        output hilo1, hilo2
+    );
+    // selection
 endinterface
 
 interface renaming_intf();
