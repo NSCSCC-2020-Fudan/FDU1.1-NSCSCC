@@ -62,15 +62,31 @@ module CacheLayer #(
     output logic        inst_ibus_addr_ok,
     output logic        inst_ibus_data_ok,
     output ibus_data_t  inst_ibus_data,
-    output ibus_index_t inst_ibus_index
-);
+    output ibus_index_t inst_ibus_index,
+
     /**
      * interface converter
      */
-    sramx_req_t  imem_sramx_req,  dmem_req;
-    sramx_resp_t imem_sramx_resp, dmem_resp;
-    ibus_req_t   imem_ibus_req;
-    ibus_resp_t  imem_ibus_resp;
+    output sramx_req_t  imem_sramx_req, dmem_req,
+    input sramx_resp_t  imem_sramx_resp, dmem_resp,
+    output ibus_req_t   imem_ibus_req,
+    input ibus_resp_t   imem_ibus_resp,
+
+    /**
+     * address translation & request dispatching
+     */
+    input sramx_req_t   dcache_req,  uncached_req,
+    output sramx_resp_t dcache_resp, uncached_resp,
+
+    // verilator lint_save
+    // verilator lint_off UNUSED
+    // verilator lint_off UNDRIVEN
+    input sramx_req_t   isramx_req,
+    output sramx_resp_t isramx_resp,
+    input ibus_req_t    ibus_req,
+    output ibus_resp_t  ibus_resp
+    // verilator lint_restore
+);
 
     assign imem_sramx_req.req   = inst_req;
     assign imem_sramx_req.wr    = inst_wr;
@@ -97,22 +113,7 @@ module CacheLayer #(
     assign inst_ibus_data     = imem_ibus_resp.data;
     assign inst_ibus_index    = imem_ibus_resp.index;
 
-    /**
-     * address translation & request dispatching
-     */
-    sramx_req_t  dcache_req,  uncached_req;
-    sramx_resp_t dcache_resp, uncached_resp;
-
-    // verilator lint_save
-    // verilator lint_off UNUSED
-    // verilator lint_off UNDRIVEN
-    sramx_req_t  isramx_req;
-    sramx_resp_t isramx_resp;
-    ibus_req_t   ibus_req;
-    ibus_resp_t  ibus_resp;
-    // verilator lint_restore
-
-    MMU #(.USE_IBUS(USE_IBUS)) mmu_inst(.*);
+    // MMU #(.USE_IBUS(USE_IBUS)) mmu_inst(.*);
 
     /**
      * buffers or caches

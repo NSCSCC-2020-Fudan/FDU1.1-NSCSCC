@@ -1,11 +1,15 @@
 // `include "mips.svh"
-
+`include "tlb_bus.svh"
+`include "mmu_bus.svh"
+`include "instr_bus.svh"
+`include "sramx.svh"
 
 // axi
 module mycpu_top #(
-    parameter logic USE_CACHE  = 1,
-    parameter logic USE_ICACHE = 1,
-    parameter logic USE_IBUS   = 0
+    parameter logic USE_CACHE       = 1,
+    parameter logic USE_ICACHE      = 1,
+    parameter logic USE_IBUS        = 0,
+    parameter logic CPU_TLB_ENABLED = 1
 ) (
     input logic[5:0] ext_int,  //high active
 
@@ -79,6 +83,37 @@ module mycpu_top #(
     _ibus_data_t  inst_ibus_data;
     _ibus_index_t inst_ibus_index;
 
+    /**
+     * interface converter
+     */
+    sramx_req_t  imem_sramx_req,  dmem_req;
+    sramx_resp_t imem_sramx_resp, dmem_resp;
+    ibus_req_t   imem_ibus_req;
+    ibus_resp_t  imem_ibus_resp;
+
+    /**
+     * address translation & request dispatching
+     */
+    sramx_req_t  dcache_req,  uncached_req;
+    sramx_resp_t dcache_resp, uncached_resp;
+
+    // verilator lint_save
+    // verilator lint_off UNUSED
+    // verilator lint_off UNDRIVEN
+    sramx_req_t  isramx_req;
+    sramx_resp_t isramx_resp;
+    ibus_req_t   ibus_req;
+    ibus_resp_t  ibus_resp;
+    // verilator lint_restore
+
+    // for TLB
+    tlb_asid_t    asid;
+    mmu_result_t  inst_mmu_result, data_mmu_result;
+    tlb_index_t   tlb_index, tlbp_index;
+    logic         tlb_we;
+    tlb_entry_t   tlb_wdata, tlb_rdata;
+    tlb_entryhi_t tlbp_entryhi;
+
     mycpu #(.DO_ADDR_TRANSLATION(~USE_CACHE)) mycpu(
         .clk(aclk), .resetn(aresetn), .ext_int,
         .inst_req, .inst_wr, .inst_size, .inst_addr, .inst_wdata, .inst_rdata, .inst_addr_ok, .inst_data_ok,
@@ -103,4 +138,6 @@ module mycpu_top #(
             .USE_IBUS(USE_IBUS)
         ) layer_inst(.*);
     end
+
+    MMU #(.USE_IBUS(USE_IBUS), .CPU_TLB_ENABLED(CPU_TLB_ENABLED)) mmu_inst(.*);
 endmodule
