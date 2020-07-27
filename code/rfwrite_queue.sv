@@ -1,8 +1,8 @@
 module rfwrite_queue
     import common::*;(
         input logic clk, reset,
-        input rf_w_t [1: 0] rfw,
-        input word_t [1: 0] rt_pc,
+        input rf_w_t [ISSUE_NUM-1: 0] rfw,
+        input word_t [ISSUE_NUM-1: 0] rt_pc,
         output rf_w_t rfw_out,
         output word_t rt_pc_out 
     );

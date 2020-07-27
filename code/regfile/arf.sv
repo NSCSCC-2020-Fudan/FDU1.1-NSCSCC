@@ -3,7 +3,8 @@ module arf
 	import regfile_pkg::*;
 	(
 	input logic clk, resetn,
-	retire_intf.arf retire
+	retire_intf.arf retire,
+	output rf_w_t [AREG_WRITE_PORTS-1:0]rfwrite
 );
     word_t[AREG_NUM-1:0] regfile, regfile_new;
 	read_req_t [AREG_READ_PORTS-1:0]reads;
@@ -42,5 +43,8 @@ module arf
 		assign writes[i].valid = retire.retire[i].ctl.regwrite;
 		assign writes[i].id = retire.retire[i].dst;
 		assign writes[i].data = retire.retire[i].data.data;
+		assign rfwrite[i].wen = writes[i].valid;
+		assign rfwrite[i].id = writes[i].id;
+		assign rfwrite[i].wd = writes[i].data;
 	end
 endmodule
