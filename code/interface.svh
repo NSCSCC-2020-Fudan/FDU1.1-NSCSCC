@@ -215,7 +215,7 @@ endinterface
 
 interface hazard_intf();
     logic stallF, stallD, stallR, stallI, stallE, stallC;
-    logic flushF, flushD, flushR, flushI, flushE, flushC;
+    logic         flushD, flushR, flushI, flushE, flushC;
     modport hazard(
         input
         output

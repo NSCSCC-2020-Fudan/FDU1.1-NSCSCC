@@ -72,7 +72,8 @@ module datapath
     ereg ereg(.clk, .resetn, .ports(ereg_intf.ereg), .hazard(hazard_intf.ereg));
     creg creg(.clk, .resetn, .ports(creg_intf.creg), .hazard(hazard_intf.creg));
 
-    hazard hazard();
+    hazard hazard(.i_data_ok, .d_data_ok, 
+                  .self(hazard_intf.hazard));
     exception exception();
     cp0 cp0(.clk, .resetn);
     arf arf(.clk, .resetn);
