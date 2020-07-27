@@ -74,6 +74,6 @@ module datapath
 
     hazard hazard();
     exception exception();
-    cp0 cp0();
-    arf arf();
+    cp0 cp0(.clk, .resetn);
+    arf arf(.clk, .resetn);
 endmodule

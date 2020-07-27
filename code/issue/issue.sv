@@ -43,7 +43,7 @@ module issue
                         .wake,
                         .full(full[0]));
     
-    issue_queue #(.QUEUE_LEN(MEM_QUEUE_LEN), .ENTRY_TYPE(MEM), .READ_NUM(execute_pkg::AGU_NUM))
+    issue_queue #(.QUEUE_LEN(MEM_QUEUE_LEN), .ENTRY_TYPE(MEM), .READ_NUM(execute_pkg::MEM_NUM))
         mem_issue_queue(.clk, .resetn, .flush,
                         .write,
                         .read(mem_issue),
