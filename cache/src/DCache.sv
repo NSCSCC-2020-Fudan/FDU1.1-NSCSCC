@@ -171,7 +171,7 @@ module DCache #(
 
     assign miss_busy     = miss_state != IDLE;
     assign miss_avail    = miss_state == IDLE || (miss_state == WRITE && cbus_resp.last);
-    assign miss_write_en = miss_state == READ ? BRAM_FULL_MASK : 0;
+    assign miss_write_en = miss_state == READ && cbus_resp.okay ? BRAM_FULL_MASK : 0;
     assign miss_wdata    = cbus_resp.rdata;
 
     /**
@@ -235,10 +235,10 @@ module DCache #(
         // some changes may be overwritten by "req_to_miss"
         unique case (miss_state)
             READ: begin
-                // it is expected that "miss_vwrten" is not enabled
-                // in the first cycle of "READ", but it seems that doesn't
-                // matter. "WRITE" will turn it off at correct time.
-                miss_vwrten  <= 1;
+                // when new data arrives, write the old value to victim buffer
+                // in the next cycle.
+                // this behavior is guaranteed by the "read_first" mode.
+                miss_vwrten  <= cbus_resp.okay;
                 miss_voffset <= miss_pos.offset;
 
                 if (cbus_resp.last)
@@ -255,6 +255,8 @@ module DCache #(
             end
 
             WRITE: begin
+                // there may be one write to victim buffer from READ state.
+                // after that, the victim buffer will be available for writeback.
                 miss_vwrten <= 0;
 
                 if (cbus_resp.last)

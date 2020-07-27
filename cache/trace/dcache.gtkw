@@ -1,0 +1,115 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Mon Jul 27 12:11:02 2020
+[*]
+[dumpfile] "./trace/test-pipeline.fst"
+[dumpfile_mtime] "Mon Jul 27 12:07:33 2020"
+[dumpfile_size] 10916
+[savefile] "./trace/dcache.gtkw"
+[timestart] 37
+[size] 1920 1032
+[pos] -1 -1
+*-3.876228 63 180 60 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[signals_width] 260
+@28
+[color] 2
+TOP.clk
+TOP.resetn
+@200
+-
+-DBUS
+@28
+TOP.DCacheTop.dbus_req.valid
+TOP.DCacheTop.dbus_req.is_write
+TOP.DCacheTop.dbus_req.write_en[3:0]
+@22
+TOP.DCacheTop.dbus_req.addr[31:0]
+TOP.DCacheTop.dbus_req.data.word[31:0]
+@28
+TOP.dbus_resp.addr_ok
+TOP.dbus_resp.data_ok
+@22
+TOP.DCacheTop.dbus_resp.data.word[31:0]
+@200
+-
+-CBUS
+@28
+TOP.DCacheTop.cbus_req.valid
+TOP.DCacheTop.cbus_req.is_write
+@22
+TOP.DCacheTop.cbus_req.order[3:0]
+TOP.DCacheTop.cbus_req.addr[31:0]
+TOP.DCacheTop.cbus_req.wdata.word[31:0]
+@28
+TOP.DCacheTop.cbus_resp.okay
+TOP.DCacheTop.cbus_resp.last
+@22
+TOP.DCacheTop.cbus_resp.rdata.word[31:0]
+@200
+-
+-STATES
+@28
+[color] 2
+TOP.clk
+@200
+-
+@28
+TOP.req_hit
+TOP.req_in_miss
+TOP.req_miss_ready
+TOP.req_to_hit
+TOP.req_to_miss
+TOP.req_ready
+TOP.req_idx[2:0]
+@200
+-
+@28
+TOP.req_victim_idx[2:0]
+TOP.hit_data_ok
+TOP.hit_pos.idx[2:0]
+TOP.hit_pos.index[1:0]
+TOP.hit_pos.offset[1:0]
+@22
+TOP.hit_rdata.word[31:0]
+TOP.hit_write_en[3:0]
+TOP.hit_wdata.word[31:0]
+@200
+-
+@28
+[color] 2
+TOP.clk
+@200
+-
+@24
+TOP.miss_state[31:0]
+@28
+TOP.miss_avail
+TOP.miss_busy
+TOP.miss_is_dirty
+TOP.miss_ready[3:0]
+TOP.miss_pos.idx[2:0]
+TOP.miss_pos.index[1:0]
+TOP.miss_pos.offset[1:0]
+@22
+TOP.miss_addr.tag[25:0]
+@28
+TOP.miss_addr.index[1:0]
+TOP.miss_addr.offset[1:0]
+TOP.miss_addr.zeros[1:0]
+@22
+TOP.miss_rdata.word[31:0]
+TOP.miss_write_en[3:0]
+TOP.miss_wdata.word[31:0]
+@200
+-
+@28
+TOP.miss_vwrten
+@25
+TOP.miss_voffset[1:0]
+@22
+TOP.miss_victim(0).word[31:0]
+TOP.miss_victim(1).word[31:0]
+TOP.miss_victim(2).word[31:0]
+TOP.miss_victim(3).word[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
