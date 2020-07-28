@@ -2,16 +2,19 @@
 module rob 
     import common::*;
     import rob_pkg::*;
-    import commit_pkt::*;(
+    import commit_pkg::*;
+    import execute_pkg::*;(
     input logic clk, resetn,
     renaming_intf.rob renaming,
     commit_intf.rob commit,
     retire_intf.rob retire,
-    payloadRAM_intf.rob payloadRAM
+    payloadRAM_intf.rob payloadRAM,
+    output mem_pkg::write_req_t mwrite,
+    input logic d_data_ok
 );
-
+    
     // table
-    entry_t[ROB_TABLE_LEN-1:0] rob_table, rob_table_new, rob_table_retire;
+    rob_table_t rob_table, rob_table_new, rob_table_retire;
 
     // fifo ptrs
     rob_ptr_t head_ptr, tail_ptr;
@@ -22,15 +25,15 @@ module rob
     logic full, empty;
 
     // rob write
-    w_req_t [PORT_NUM-1:0] w_req;
-    w_resp_t [PORT_NUM-1:0] w_resp;
-    retire_resp_t [ISSUE_WIDTH-1:0] retire_resp;
+    // w_req_t [PORT_NUM-1:0] w_req;
+    // w_resp_t [PORT_NUM-1:0] w_resp;
+//    retire_resp_t [ISSUE_WIDTH-1:0] retire_resp;
     // rob read
-    r_req_t [PORT_NUM-1:0] r_req;
+    // r_req_t [PORT_NUM-1:0] r_req;
     // rob commit
     alu_commit_t[ALU_NUM-1:0] alu_commit;
     mem_commit_t[MEM_NUM-1:0] mem_commit;
-    branch_commit_t[BRANCH_NUM-1:0] branch_commit;
+    branch_commit_t[BRU_NUM-1:0] branch_commit;
     mult_commit_t[MULT_NUM-1:0] mult_commit;
 
     assign full = (head_ptr[ROB_ADDR_LEN] ^ tail_ptr[ROB_ADDR_LEN]) && 
@@ -65,7 +68,7 @@ module rob
                 end
             end
         end
-        for (int i=0; i<BRANCH_NUM; i++) begin
+        for (int i=0; i<BRU_NUM; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (branch_commit[i].valid && branch_commit[i].rob_addr == j) begin
                     rob_table_retire[j].complete = 1'b1;
@@ -120,7 +123,7 @@ module rob
     end
 
     always_ff @(posedge clk) begin
-        if (~resetn | flush) begin
+        if (~resetn) begin
             rob_table <= '0;
         end else begin
             rob_table <= rob_table_new;

@@ -44,7 +44,7 @@ module arf
 		assign writes[i].id = retire.retire[i].dst;
 		assign writes[i].data = retire.retire[i].data.data;
 		assign rfwrite[i].wen = writes[i].valid;
-		assign rfwrite[i].id = writes[i].id;
+		assign rfwrite[i].addr = writes[i].id;
 		assign rfwrite[i].wd = writes[i].data;
 	end
 endmodule

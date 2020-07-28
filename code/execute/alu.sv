@@ -1,5 +1,6 @@
 module alu 
-    import common::*;(
+    import common::*;
+    import decode_pkg::*;(
     input word_t a, b,
     input alufunc_t alufunc,
     output word_t c,

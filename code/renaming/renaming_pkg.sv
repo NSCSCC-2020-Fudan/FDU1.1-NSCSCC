@@ -1,6 +1,8 @@
 //  Package: renaming_pkg
 //
 package renaming_pkg;
+    import common::*;
+    import decode_pkg::*;
     //  Group: Parameters
     
 
@@ -16,7 +18,7 @@ package renaming_pkg;
         word_t imm;
         word_t pcplus8;
         exception_pkg::exception_info_t exception;
-    } renamed_instr_t;
+    } renaming_data_t;
 
     
 endpackage: renaming_pkg

@@ -1,5 +1,5 @@
-`include "mips.svh"
-module multiplier (
+module multiplier 
+    import common::*;(
     input logic clk, 
     input word_t a, b,
     output dword_t hilo,

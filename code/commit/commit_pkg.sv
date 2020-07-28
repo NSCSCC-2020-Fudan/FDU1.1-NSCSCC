@@ -2,6 +2,7 @@
 //
 package commit_pkg;
     import common::*;
+    import rob_pkg::*;
     //  Group: Parameters
     
 

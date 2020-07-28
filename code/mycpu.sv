@@ -19,7 +19,7 @@ module mycpu
 
     //debug
     output word_t debug_wb_pc,
-    output rwen_t debug_wb_rf_wen,
+    output logic[3:0] debug_wb_rf_wen,
     output creg_addr_t debug_wb_rf_wnum,
     output word_t debug_wb_rf_wdata
 );
@@ -41,7 +41,7 @@ module mycpu
                       .i_data_ok(inst_data_ok), .d_data_ok(data_data_ok),
                       // .iaddrOK(inst_addr_ok),
                       .mread, .mwrite,
-                      .rfw_out(rfw_out), .drd(data_rdata), .rt_pc_out(rt_pc_out));
+                      .rfwrite(rfw_out), .rd(data_rdata), .wb_pc(rt_pc_out));
 
     // assign inst_req = 1'b1;
     assign inst_wr = 1'b0;
@@ -50,8 +50,8 @@ module mycpu
     logic inst_req_;
 //    assign inst_req = inst_req_ & d_data_ok;
     handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req));
-    assign data_wr = mwrite.valid;
-    assign vaddr = mwrite.valid ? mwrite.addr : mread.addr;
+    assign data_wr = mwrite.wen;
+    assign vaddr = mwrite.wen ? mwrite.addr : mread.addr;
 
     if (DO_ADDR_TRANSLATION == 1) begin
         always_comb begin
@@ -74,9 +74,9 @@ module mycpu
         assign data_addr = vaddr;
     end
 
-    assign data_wdata = mwrite.data;
-    assign data_size = dsize;
-    handshake d_handshake(.clk, .reset(~resetn), .cpu_req(mread.valid | mwrite.valid), .addr_ok(data_addr_ok), .data_ok(data_data_ok), .cpu_data_ok(d_data_ok), .req(data_req));
+    assign data_wdata = mwrite.wd;
+    assign data_size = mwrite.wen ? mwrite.size : mread.size;
+    handshake d_handshake(.clk, .reset(~resetn), .cpu_req(mread.ren | mwrite.wen), .addr_ok(data_addr_ok), .data_ok(data_data_ok), .cpu_data_ok(d_data_ok), .req(data_req));
         
     rfwrite_queue rfwrite_queue(.clk, .reset(~resetn),
                                 .rfw(rfw_out), .rt_pc(rt_pc_out),

@@ -9,9 +9,9 @@ module datapath
 
     output mem_pkg::read_req_t mread,
     output mem_pkg::write_req_t mwrite,
-    output rf_w_t[ISSUE_NUM-1:0] rfwrite,
+    output rf_w_t[ISSUE_WIDTH-1:0] rfwrite,
     input word_t rd,
-    output word_t wb_pc,
+    output word_t[ISSUE_WIDTH-1:0] wb_pc,
     // output logic inst_en,
     input i_data_ok, d_data_ok
 );
@@ -38,8 +38,8 @@ module datapath
                 .dreg(dreg_intf.fetch),
                 .pcselect(pcselect_intf.fetch)
                 );
-    decode decode(.dreg(dreg_intf.dreg),
-                  .rreg(rreg_intf.rreg));
+    decode decode(.dreg(dreg_intf.decode),
+                  .rreg(rreg_intf.decode));
     renaming renaming(.self(renaming_intf.renaming),
                       .rreg(rreg_intf.renaming),
                       .ireg(ireg_intf.renaming)
@@ -47,23 +47,31 @@ module datapath
     issue issue(.clk, .resetn,
                 .ireg(ireg_intf.issue),
                 .ereg(ereg_intf.issue),
-                .wake(wake_intf.issue),
+                .wakes(wake_intf.issue),
                 .payloadRAM(payloadRAM_intf.issue)
                 );
     execute execute(.clk, .resetn,
                     .ereg(ereg_intf.execute),
                     .creg(creg_intf.execute),
                     .forward(forward_intf.execute),
+                    .wake(wake_intf.execute),
                     .mread, .rd, .d_data_ok);
-    commit commit(.ereg(ereg_intf.commit),
+    commit commit(.creg(creg_intf.commit),
                   .self(commit_intf.commit),
                   .forward(forward_intf.commit),
-                  .wake(wake_intf.commit),
-                  .d_data_ok, .mwrite
+                  .wake(wake_intf.commit)
                   );
 
-    rat rat(.clk, .resetn);
-    rob rob(.clk, .resetn);
+    rat rat(.clk, .resetn,
+            .renaming(renaming_intf.rat),
+            .retire(retire_intf.rat)
+            );
+    rob rob(.clk, .resetn, 
+            .renaming(renaming_intf.rob),
+            .commit(commit_intf.rob),
+            .retire(retire_intf.rob),
+            .payloadRAM(payloadRAM_intf.rob),
+            .d_data_ok, .mwrite);
 
     freg freg(.clk, .resetn, .self(freg_intf.freg), .hazard(hazard_intf.freg));
     dreg dreg(.clk, .resetn, .self(dreg_intf.dreg), .hazard(hazard_intf.dreg));
@@ -74,8 +82,10 @@ module datapath
 
     hazard hazard(.i_data_ok, .d_data_ok, 
                   .self(hazard_intf.hazard));
-    exception exception();
-    cp0 cp0(.clk, .resetn);
+    exception exception(.reset(resetn),.self(exception_intf.excep),
+                        .pcselect(pcselect_intf.exception),
+                        .hazard(hazard_intf.exception));
+    // cp0 cp0(.clk);
     arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite);
     creg_select creg_select(.self(payloadRAM_intf.creg_select));
     hilo hilo(.retire(retire_intf.hilo),

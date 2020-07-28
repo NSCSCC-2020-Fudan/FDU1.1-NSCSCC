@@ -13,8 +13,8 @@ module agu
     read_req_t read;
     write_req_t write;
     word_t wd, rd;
-    readdata readdata(._rd(), .rd, .addr(addr[1:0]), .op());
-    writedata writedata(.addr(addr[1:0]), ._wd, .op(), .wd);
+    readdata readdata(._rd(rd_), .rd, .addr(addr[1:0]), .op());
+    writedata writedata(.addr(addr[1:0]), ._wd(wd_), .op(), .wd);
     vaddr_t addr_new;
     assign addr_new = src1 + src2;
     
@@ -28,7 +28,9 @@ module agu
     assign data = memtoreg ? wd : rd;
 endmodule
 
-module readdata (
+module readdata 
+    import common::*;
+    import decode_pkg::*;(
     input word_t _rd,
     output word_t rd,
     input logic[1:0] addr,
@@ -79,7 +81,9 @@ module readdata (
     end
 endmodule
 
-module writedata (
+module writedata 
+    import common::*;
+    import decode_pkg::*;(
     input logic[1:0] addr,
     input word_t _wd,
     input decoded_op_t op,
@@ -93,15 +97,12 @@ module writedata (
             SH: begin
                 case (addr[1])
                     1'b0: begin
-                        en = 1'b1;
                         wd = _wd;
                     end 
                     1'b1: begin
-                        en = 1'b1;
                         wd = {_wd[15:0], 16'b0};
                     end
                     default: begin
-                        en = 'b0;
                         wd = 'b0;
                     end
                 endcase

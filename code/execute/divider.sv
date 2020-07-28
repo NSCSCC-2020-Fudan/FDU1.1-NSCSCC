@@ -20,7 +20,9 @@ module divider
     assign hilo[63:32] = (is_signed & (a[31] ^ out[63])) ? -out[63:32] : out[63:32];
 endmodule
 
-module divider_u(
+module divider_u
+    import common::*;
+    import divider_pkg::*;(
     input logic clk, resetn,
     input logic valid,
     input word_t a, b, // a / b
@@ -54,7 +56,9 @@ module divider_u(
 endmodule
 
 
-module divide_process (
+module divide_process 
+    import common::*;
+    import divider_pkg::*;(
     input divide_data_t in,
     output divide_data_t out
 );
@@ -102,7 +106,9 @@ module divide_process (
     assign out.PA[31:0] = {in.PA[29:0], 2'b00};
 endmodule
 
-module divide_table (
+module divide_table 
+    import common::*;
+    import divider_pkg::*;(
     input logic [2:0] b, // b[30:28]
     input logic [5:0] pa,
     output quotient_bit_t q
@@ -444,7 +450,8 @@ module divide_table (
     end
 endmodule
 
-module divide_initial (
+module divide_initial 
+    import common::*;(
     input word_t ina,
     input word_t inb,
     output logic [64:0] outpa,

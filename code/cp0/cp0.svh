@@ -1,7 +1,6 @@
 `ifndef __CP0_SVH
 `define __CP0_SVH
-
-`include "mips.svh"
+import common::*;
 typedef logic [4:0] cp0_addr_t;
 
 typedef struct packed {

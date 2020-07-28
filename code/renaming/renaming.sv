@@ -6,7 +6,7 @@ module renaming
     rreg_intf.renaming rreg,
     ireg_intf.renaming ireg
 );
-    decode_data_t [MACHINE_WIDTH-1:0] dataD;
+    decode_pkg::decode_data_t [MACHINE_WIDTH-1:0] dataD;
     renaming_data_t [MACHINE_WIDTH-1:0] dataR;
 
     areg_addr_t [MACHINE_WIDTH-1:0] src1, src2, dst;

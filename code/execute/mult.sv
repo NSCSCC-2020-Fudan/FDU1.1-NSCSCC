@@ -1,6 +1,6 @@
-`include "mips.svh"
-
-module mult (
+module mult 
+    import common::*;
+    import decode_pkg::*;(
     input logic clk, resetn,
     input word_t a, b,
     input decoded_op_t op,

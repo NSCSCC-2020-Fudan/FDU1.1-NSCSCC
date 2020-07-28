@@ -1,7 +1,8 @@
-//  Package: queue_pkg
+//  Package: issue_queue_pkg
 //
 package issue_queue_pkg;
     import common::*;
+    import decode_pkg::*;
     //  Group: Parameters
     parameter ALU_QUEUE_LEN = 32;
     parameter MEM_QUEUE_LEN = 32;
@@ -9,7 +10,7 @@ package issue_queue_pkg;
     parameter MULT_QUEUE_LEN = 8;
 
     parameter WRITE_NUM = MACHINE_WIDTH;
-    parameter WAKE_NUM = ISSUE_WIDTH + ALU_NUM;
+    parameter WAKE_NUM = ISSUE_WIDTH + execute_pkg::ALU_NUM;
     //  Group: Typedefs
     typedef struct packed {
         logic valid;
@@ -21,7 +22,9 @@ package issue_queue_pkg;
         src_data_t src1, src2;
         control_t ctl;
         word_t imm;
-        rob_addr_t rob_addr;
+        word_t pcplus8;
+        exception_pkg::exception_info_t exception;
+        rob_pkg::rob_addr_t rob_addr;
     } entry_t;
     // typedef entry_t[ALU_QUEUE_LEN-1:0] alu_queue_t;
     // typedef entry_t[MEM_QUEUE_LEN-1:0] mem_queue_t;
@@ -33,7 +36,7 @@ package issue_queue_pkg;
     // typedef logic[$clog2(MULT_QUEUE_LEN)-1:0] mult_queue_ptr_t;
 
     // write
-    typedef enum logic[1:0] { ALU, MEM, BRANCH, MULT } entry_type_t;
+    
     typedef struct packed {
         logic valid;
         entry_type_t entry_type;
@@ -47,4 +50,4 @@ package issue_queue_pkg;
     typedef struct packed {
         entry_t entry;
     } read_resp_t;
-endpackage: queue_pkg
+endpackage: issue_queue_pkg

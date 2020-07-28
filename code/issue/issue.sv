@@ -2,20 +2,23 @@
 module issue 
     import common::*;
     import issue_queue_pkg::*;
-    import issue_pkg::*;(
+    import issue_pkg::*;
+    import execute_pkg::*;(
     input clk, resetn,
     ireg_intf.issue ireg,
     ereg_intf.issue ereg,
-    wake_intf.issue wake,
+    wake_intf.issue wakes,
     payloadRAM_intf.issue payloadRAM
 );
+	logic flush;
+	assign flush = '0;
     renaming_pkg::renaming_data_t[MACHINE_WIDTH-1:0] dataR;
     issue_data_t dataI;
     write_req_t[WRITE_NUM-1:0] write;
     wake_req_t[WAKE_NUM-1:0] wake;
     read_resp_t[execute_pkg::ALU_NUM-1:0] alu_issue;
     read_resp_t[execute_pkg::MEM_NUM-1:0] mem_issue;
-    read_resp_t[execute_pkg::BRANCH_NUM-1:0] branch_issue;
+    read_resp_t[execute_pkg::BRU_NUM-1:0] branch_issue;
     read_resp_t[execute_pkg::MULT_NUM-1:0] mult_issue;
 
     // generate write from dataR
@@ -36,7 +39,7 @@ module issue
     end
 
     logic [3:0] full;
-    word_t [ISSUE_NUM-1:0] broadcast;
+    word_t [ISSUE_WIDTH-1:0] broadcast;
     issue_queue #(.QUEUE_LEN(ALU_QUEUE_LEN), .ENTRY_TYPE(ALU), .READ_NUM(execute_pkg::ALU_NUM))
         alu_issue_queue(.clk, .resetn, .flush,
                         .write,
@@ -64,7 +67,7 @@ module issue
                         .broadcast
                         );
 
-    issue_queue #(.QUEUE_LEN(MULT_QUEUE_LEN), .ENTRY_TYPE(MULT), .READ_NUM(execute_pkg::MULT_NUM))
+    issue_queue #(.QUEUE_LEN(MULT_QUEUE_LEN), .ENTRY_TYPE(MULTI), .READ_NUM(execute_pkg::MULT_NUM))
         mult_issue_queue(.clk, .resetn, .flush,
                         .write,
                         .read(mult_issue),
@@ -91,7 +94,7 @@ module issue
         assign dataI.mem_issue[i].pcplus8 = mem_issue[i].entry.pcplus8;
         assign dataI.mem_issue[i].exception = mem_issue[i].entry.exception;
     end
-    for (genvar i=0; i<BRANCH_NUM; i++) begin
+    for (genvar i=0; i<BRU_NUM; i++) begin
         assign dataI.branch_issue[i].src1 = branch_issue[i].entry.src1.data;
         assign dataI.branch_issue[i].src2 = branch_issue[i].entry.src2.data;
         assign dataI.branch_issue[i].imm = branch_issue[i].entry.imm;
@@ -109,8 +112,8 @@ module issue
         assign dataI.mult_issue[i].pcplus8 = mult_issue[i].entry.pcplus8;
         assign dataI.mult_issue[i].exception = mult_issue[i].entry.exception;
     end
-    assign wake = {wake.dst_commit, wake.dst_execute};
-    assign broadcast = wake.broadcast;
+    assign wake = {wakes.dst_commit, wakes.dst_execute};
+    assign broadcast = wakes.broadcast;
     assign dataR = ireg.dataR;
     assign ereg.dataI_new = dataI;
 endmodule

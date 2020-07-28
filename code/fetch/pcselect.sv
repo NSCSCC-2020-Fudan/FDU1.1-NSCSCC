@@ -9,7 +9,7 @@ module pcselect
     assign pc = exception_valid ? pcexception : 
                 (branch_taken ? pcbranch : pcplus4);
 
-    assign self.pc_new = pc;
+    assign freg.pc_new = pc;
     assign pcexception = self.pcexception;
     assign pcbranch = self.pcbranch;
     assign pcplus4 = self.pcplus4;

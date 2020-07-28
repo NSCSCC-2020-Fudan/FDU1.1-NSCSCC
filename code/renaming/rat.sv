@@ -11,9 +11,9 @@ module rat
     table_t mapping_table, mapping_table_new;
 
     // write
-    logic [WRITE_PORTS-1:0] wen;
+    // logic [WRITE_PORTS-1:0] wen;
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~resetn) begin
             mapping_table <= '0;
         end else begin
             mapping_table <= mapping_table_new;
@@ -44,7 +44,7 @@ module rat
         for (int i=0; i<TABLE_LEN; i++) begin
             for (int j=0; j<RELEASE_PORTS; j++) begin
                 if (retire.retire[j].valid && 
-                    retire.retire[j].id == i && 
+                    retire.retire[j].dst == i && 
                     retire.retire[j].preg == mapping_table_new[i].id) begin
                     mapping_table_new[i].id = '0;
                     mapping_table_new[i].valid = 1'b0;
@@ -63,11 +63,11 @@ module rat
     end
     // read; mode = write first
     for (genvar i=0; i<MACHINE_WIDTH; i++) begin
-        assign renaming.renaming_info[i].src1.valid = mapping_table_new[renaming.instr.src1].valid;
-        assign renaming.renaming_info[i].src1.id = mapping_table_new[renaming.instr.src1].id;
-        assign renaming.renaming_info[i].src2.valid = mapping_table_new[renaming.instr.src2].valid;
-        assign renaming.renaming_info[i].src2.id = mapping_table_new[renaming.instr.src2].id;
-        assign renaming.renaming_info[i].dst = mapping_table_new[renaming.instr.dst];
+        assign renaming.renaming_info[i].src1.valid = mapping_table_new[renaming.instr[i].src1].valid;
+        assign renaming.renaming_info[i].src1.id = mapping_table_new[renaming.instr[i].src1].id;
+        assign renaming.renaming_info[i].src2.valid = mapping_table_new[renaming.instr[i].src2].valid;
+        assign renaming.renaming_info[i].src2.id = mapping_table_new[renaming.instr[i].src2].id;
+        assign renaming.renaming_info[i].dst = mapping_table_new[renaming.instr[i].dst];
     end
 
 

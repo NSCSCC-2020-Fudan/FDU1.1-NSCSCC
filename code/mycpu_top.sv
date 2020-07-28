@@ -1,4 +1,5 @@
-module mycpu_top #(
+module mycpu_top 
+    import common::*;#(
     parameter logic USE_CACHE = 0
 ) (
     input logic[5:0] ext_int,  //high active
@@ -46,7 +47,7 @@ module mycpu_top #(
     //debug interface
     output logic[31:0] debug_wb_pc,
     output logic[3:0] debug_wb_rf_wen,
-    output creg_addr_t debug_wb_rf_wnum,
+    output areg_addr_t debug_wb_rf_wnum,
     output word_t debug_wb_rf_wdata
 );
     /**

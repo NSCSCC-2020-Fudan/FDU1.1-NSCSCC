@@ -103,7 +103,7 @@ typedef struct packed {
     logic is_bp;
     logic is_sys;
     logic hitoreg, lotoreg, cp0toreg;
-    issue_queue_pkg::entry_type_t entry_type;
+    entry_type_t entry_type;
 } control_t;
 
 typedef enum logic [5:0] { 

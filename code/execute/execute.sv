@@ -2,11 +2,13 @@
 
 module execute 
     import common::*;
-    import execute_pkg::*;(
+    import execute_pkg::*;
+    import decode_pkg::*;(
     input clk, resetn,
     ereg_intf.execute ereg,
     creg_intf.execute creg,
     forward_intf.execute forward,
+    wake_intf.execute wake,
     input logic d_data_ok,
     output mem_pkg::read_req_t mread,
     input word_t rd
@@ -16,7 +18,7 @@ module execute
     // forward
     word_t [ALU_NUM-1:0]alusrca, alusrcb;
     word_t [MEM_NUM-1:0]agusrca, agusrcb;
-    word_t [BRANCH_NUM-1:0]brusrca, brusrcb;
+    word_t [BRU_NUM-1:0]brusrca, brusrcb;
     word_t [MULT_NUM-1:0]multsrca, multsrcb;
     for (genvar i = 0; i < ALU_NUM ; i++) begin
         assign alusrca[i] = forward.forwards[i].valid1 ? 
@@ -25,28 +27,28 @@ module execute
         assign alusrcb[i] = forward.forwards[i].valid2 ? 
                             forward.data[forward.forwards[i].fw2] :
                             dataI.alu_issue[i].src2;
-        assign forward.src1[i] = dataI.alu_issue.r1;
-        assign forward.src2[i] = dataI.alu_issue.r2;
+        assign forward.src1[i] = dataI.alu_issue[i].r1;
+        assign forward.src2[i] = dataI.alu_issue[i].r2;
     end
     for (genvar i = 0; i < MEM_NUM ; i++) begin
         assign agusrca[i] = forward.forwards[i].valid1 ? 
                             forward.data[forward.forwards[i].fw1] :
-                            dataI.agu_issue[i].src1;
+                            dataI.mem_issue[i].src1;
         assign agusrcb[i] = forward.forwards[i].valid2 ? 
                             forward.data[forward.forwards[i].fw2] :
-                            dataI.agu_issue[i].src2;
-        assign forward.src1[i] = dataI.agu_issue.r1;
-        assign forward.src2[i] = dataI.agu_issue.r2;
+                            dataI.mem_issue[i].src2;
+        assign forward.src1[i] = dataI.mem_issue[i].r1;
+        assign forward.src2[i] = dataI.mem_issue[i].r2;
     end
-    for (genvar i = 0; i < BRANCH_NUM ; i++) begin
+    for (genvar i = 0; i < BRU_NUM ; i++) begin
         assign brusrca[i] = forward.forwards[i].valid1 ? 
                             forward.data[forward.forwards[i].fw1] :
                             dataI.branch_issue[i].src1;
         assign brusrcb[i] = forward.forwards[i].valid2 ? 
                             forward.data[forward.forwards[i].fw2] :
                             dataI.branch_issue[i].src2;
-        assign forward.src1[i] = dataI.branch_issue.r1;
-        assign forward.src2[i] = dataI.branch_issue.r2;
+        assign forward.src1[i] = dataI.branch_issue[i].r1;
+        assign forward.src2[i] = dataI.branch_issue[i].r2;
     end
     for (genvar i = 0; i < MULT_NUM ; i++) begin
         assign multsrca[i] = forward.forwards[i].valid1 ? 
@@ -55,8 +57,8 @@ module execute
         assign multsrcb[i] = forward.forwards[i].valid2 ? 
                             forward.data[forward.forwards[i].fw2] :
                             dataI.mult_issue[i].src2;
-        assign forward.src1[i] = dataI.mult_issue.r1;
-        assign forward.src2[i] = dataI.mult_issue.r2;
+        assign forward.src1[i] = dataI.mult_issue[i].r1;
+        assign forward.src2[i] = dataI.mult_issue[i].r2;
     end
     // ALU
     
@@ -97,7 +99,7 @@ module execute
                 );
     end
     always_comb begin
-        for (int i=0; i<MAX; i++) begin
+        for (int i=0; i<MEM_NUM; i++) begin
             dataE.agu_commit[i].data = aguout[i];
             dataE.agu_commit[i].addr = addr[i];
             dataE.agu_commit[i].rob_addr = dataI.mem_issue[i].dst;
@@ -108,7 +110,7 @@ module execute
 
         end
     end
-    assign mread.valid = dataI.mem_issue[0].ctl.memtoreg & exception_load[i];
+    assign mread.valid = dataI.mem_issue[0].ctl.memtoreg & exception_load[0];
     assign mread.addr = addr[0];
     // BRU
     for (genvar i=0; i<BRU_NUM; i++) begin

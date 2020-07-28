@@ -10,7 +10,7 @@ module issue_queue
     input write_req_t [WRITE_NUM-1:0] write,
     output read_resp_t [READ_NUM-1:0] read,
     input wake_req_t [WAKE_NUM-1:0] wake,
-    input word_t [ISSUE_NUM-1:0] broadcast,
+    input word_t [ISSUE_WIDTH-1:0] broadcast,
     output logic full
 );
     localparam type queue_ptr_t = logic[$clog2(QUEUE_LEN)-1:0];
@@ -21,7 +21,8 @@ module issue_queue
     
     queue_ptr_t head, tail, head_new, tail_new;
     logic[3:0] read_num;
-
+    logic full_new;
+    assign full_new = tail_new == '1;
     // write
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
@@ -68,11 +69,11 @@ module issue_queue
             end
             // ready
             if (queue_new[i].src1.valid && queue_new[i].src2.valid) begin
-                read[read_num] = queue_new[i].entry;
+                read[read_num] = queue_new[i];
                 // remove from issue queue: queue_new[tail-1:i] = queue_new[tail:i+1];
                 for (int j=0; j<QUEUE_LEN; j++) begin
                     if (j > i) begin
-                        tail[j - 1] = tail[j];
+                        queue_new[j - 1] = queue_new[j];
                         if (j == tail_new) begin
                             break;
                         end
@@ -90,7 +91,7 @@ module issue_queue
         queue_after_read = queue_new;
         // check read, else write
         for (int i=0; i<WRITE_NUM; i++) begin
-            if (write[i].entry.entry_type != ENTRY_TYPE) begin
+            if (write[i].entry_type != ENTRY_TYPE) begin
                 continue; // not this type
             end else if (read_num != READ_NUM && write[i].entry.src1.valid && write[i].entry.src2.valid) begin
                 read[read_num] = write[i].entry; // issue immediately

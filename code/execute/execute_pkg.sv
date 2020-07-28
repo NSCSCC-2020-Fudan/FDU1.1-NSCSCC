@@ -12,7 +12,7 @@ package execute_pkg;
     //  Group: Typedefs
     typedef struct packed {
         alu_commit_t[ALU_NUM-1:0] alu_commit;
-        agu_commit_t[MEM_NUM-1:0] agu_commit;
+        mem_commit_t[MEM_NUM-1:0] agu_commit;
         branch_commit_t[BRU_NUM-1:0] branch_commit;
         mult_commit_t[MULT_NUM-1:0] mult_commit;
     } execute_data_t;
