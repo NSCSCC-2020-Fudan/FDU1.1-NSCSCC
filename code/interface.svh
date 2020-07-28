@@ -101,10 +101,6 @@ interface payloadRAM_intf();
         input  cdata1, cdata2,
         output arf1, arf2, prf1, prf2
     );
-    // wake
-    modport commit(
-        output
-    );
     // prf
     modport rob(
         input preg1, preg2,
@@ -210,7 +206,7 @@ interface wake_intf();
     wake_req_t [ALU_NUM-1:0] dst_execute;
     word_t [ISSUE_WIDTH-1:0] broadcast;
     modport issue(
-        input dst_commit, dst_execute, broadcast;
+        input dst_commit, dst_execute, broadcast
     );
     modport execute(
         output dst_execute

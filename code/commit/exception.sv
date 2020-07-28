@@ -3,7 +3,7 @@ module exception
     import common::*;
     import exception_pkg::*;(
     input logic reset,
-    exception_intf.excep ports,
+    exception_intf.excep self,
     pcselect_intf.excep pcselect,
     hazard_intf.excep hazard
 );
@@ -81,20 +81,20 @@ module exception
     assign exception.in_delay_slot = in_delay_slot;
     assign exception.badvaddr = vaddr;
 
-    assign exception_instr = ports.exception_instr;
-    assign exception_ri = ports.exception_ri;
-    assign exception_of = ports.exception_of;
-    assign exception_load =  ports.exception_load;
-    assign exception_bp = ports.exception_bp;
-    assign exception_sys = ports.exception_sys;
-    assign exception_save = ports.exception_save;
+    assign exception_instr = self.exception_instr;
+    assign exception_ri = self.exception_ri;
+    assign exception_of = self.exception_of;
+    assign exception_load =  self.exception_load;
+    assign exception_bp = self.exception_bp;
+    assign exception_sys = self.exception_sys;
+    assign exception_save = self.exception_save;
     assign pcselect.exception_valid = exception_valid;
     assign pcselect.pcexception = EXC_ENTRY;
     assign hazard.exception_valid = exception_valid;
-    assign vaddr = ports.vaddr;
-    assign pc = ports.pc;
-    assign in_delay_slot = ports.in_delay_slot;
-    assign ports.exception = exception;
-    assign interrupt_info = ports.interrupt_info;
-    assign cp0_status = ports.cp0_status;
+    assign vaddr = self.vaddr;
+    assign pc = self.pc;
+    assign in_delay_slot = self.in_delay_slot;
+    assign self.exception = exception;
+    assign interrupt_info = self.interrupt_info;
+    assign cp0_status = self.cp0_status;
 endmodule

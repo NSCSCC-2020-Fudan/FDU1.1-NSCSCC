@@ -4,7 +4,7 @@ module bru
     input word_t src1, src2,
     input word_t pcplus4, imm,
     input branch_t branch_type,
-    output logic branch_taken
+    output logic branch_taken,
     output word_t pcbranch
 );
     always_comb begin

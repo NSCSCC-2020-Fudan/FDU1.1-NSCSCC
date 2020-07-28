@@ -3,7 +3,7 @@ module forward
     import common::*;
     import forward_pkg::*;
     import execute_pkg::*;(
-    forward_intf.forward ports
+    forward_intf.forward self
 );
     forward_t [FU_NUM-1:0] forwards; // to execute
     preg_addr_t [FU_NUM-1:0] src1, src2; // from execute
@@ -24,8 +24,8 @@ module forward
         end
     end
 
-    assign ports.forwards = forwards;
-    assign src1 = ports.src1;
-    assign src2 = ports.src2;
-    assign dst = ports.dst;
+    assign self.forwards = forwards;
+    assign src1 = self.src1;
+    assign src2 = self.src2;
+    assign dst = self.dst;
 endmodule

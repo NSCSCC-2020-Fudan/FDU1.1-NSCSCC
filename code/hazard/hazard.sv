@@ -21,7 +21,7 @@ module hazard
     assign flushI = branch_taken | exception_valid;
     assign flushC = branch_taken | exception_valid;
 
-    // ports
+    // self
     assign self.stallF = stallF;
     assign self.stallD = stallD;
     assign self.stallR = stallR;
@@ -33,8 +33,8 @@ module hazard
     assign self.flushI = flushI;
     assign self.flushE = flushE;
     assign self.flushC = flushC;
-    assign branch_taken = ports.branch_taken;
-    assign exception_valid = ports.exception_valid;
-    assign is_eret = ports.is_eret;
-    assign rob_full = ports.rob_full;
+    assign branch_taken = self.branch_taken;
+    assign exception_valid = self.exception_valid;
+    assign is_eret = self.is_eret;
+    assign rob_full = self.rob_full;
 endmodule

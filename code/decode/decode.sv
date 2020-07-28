@@ -9,7 +9,7 @@ module decode
     decode_data_t [MACHINE_WIDTH-1:0] dataD;
     logic [MACHINE_WIDTH-1:0] exception_ri;
     for (genvar i=0; i<MACHINE_WIDTH; i++) begin
-        decoder decoder(.instr(dataF[i].instr_), .instr(dataD[i].instr), .exception_ri[i]);
+        decoder decoder(.instr(dataF[i].instr_), .instr(dataD[i].instr), .exception_ri(exception_ri[i]));
     end
 
     always_comb begin

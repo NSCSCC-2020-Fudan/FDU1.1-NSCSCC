@@ -1,8 +1,10 @@
 `include "interface.svh"
-
-module cp0(
+`include "cp0.svh"
+module cp0
+    import common::*;
+    import exception_pkg::*;(
     input logic clk, reset,
-    cp0_intf.cp0 ports,
+    cp0_intf.cp0 self,
     exception_intf.cp0 excep,
     pcselect_intf.cp0 pcselect
 );
@@ -50,11 +52,11 @@ module cp0(
         
         cp0_new.count = cp0_new.count + count_switch;
         if (reset) begin
-            ports.timer_interrupt = 1'b0;
+            self.timer_interrupt = 1'b0;
         end else if (cp0_new.count == cp0_new.compare) begin
-            ports.timer_interrupt = 1'b1;
+            self.timer_interrupt = 1'b1;
         end else if (cwrite.wen & cwrite.addr == 5'd11) begin
-            ports.timer_interrupt = 1'b0;
+            self.timer_interrupt = 1'b0;
         end
         // write
         if (cwrite.wen) begin
@@ -88,7 +90,7 @@ module cp0(
             cp0_new.cause.exccode = exception.code;
 
             cp0_new.status.EXL = 1'b1;
-            if (exception.code == `CODE_ADEL || exception.code == `CODE_ADES) begin
+            if (exception.code == CODE_ADEL || exception.code == CODE_ADES) begin
                 cp0_new.badvaddr = exception.badvaddr;
             end
         end
@@ -102,12 +104,12 @@ module cp0(
             // llbit = 1'b0;
         end
     end
-    assign cwrite = ports.cwrite;
-    assign ports.cp0_data = cp0;
-    assign is_eret = ports.is_eret;
+    assign cwrite = self.cwrite;
+    assign self.cp0_data = cp0;
+    assign is_eret = self.is_eret;
     assign exception = excep.exception;
-    assign ra = ports.ra;
-    assign ports.rd = rd;
+    assign ra = self.ra;
+    assign self.rd = rd;
     // assign excep.cp0_data = cp0;
     assign pcselect.is_eret = is_eret;
     assign pcselect.epc = cp0.epc;

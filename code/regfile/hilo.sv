@@ -2,7 +2,8 @@
 module hilo 
     import common::*;(
     input logic clk, resetn,
-    retire_intf.hilo retire
+    retire_intf.hilo retire,
+    payloadRAM_intf.hilo payloadRAM
 );
     word_t hi, lo, hi_new, lo_new;
     always_comb begin
@@ -26,6 +27,6 @@ module hilo
             lo <= lo_new;
         end
     end
-    assign ports.hi = hi_new;
-    assign ports.lo = lo_new;
+    assign payloadRAM.hi = hi_new;
+    assign payloadRAM.lo = lo_new;
 endmodule

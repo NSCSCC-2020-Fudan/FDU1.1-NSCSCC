@@ -2,7 +2,7 @@
 module freg 
     import common::*;(
     input logic clk, resetn,
-    freg_intf.freg ports
+    freg_intf.freg self
 );
     logic stall;
     word_t pc, pc_new;
@@ -14,15 +14,15 @@ module freg
         end
     end
 
-    assign pc_new = ports.pc_new;
-    assign ports.pc = pc;
+    assign pc_new = self.pc_new;
+    assign self.pc = pc;
 endmodule
 
 module dreg 
     import common::*;
     import fetch_pkg::*;(
     input logic clk, resetn,
-    dreg_intf.dreg ports
+    dreg_intf.dreg self
 );
     logic stall, flush;
     fetch_data_t [MACHINE_WIDTH-1:0]dataF, dataF_new;
@@ -34,15 +34,15 @@ module dreg
         end
     end
 
-    assign dataF_new = ports.dataF_new;
-    assign ports.dataF = dataF;
+    assign dataF_new = self.dataF_new;
+    assign self.dataF = dataF;
 endmodule
 
 module rreg 
     import common::*;
     import decode_pkg::*;(
     input logic clk, resetn,
-    rreg_intf.rreg ports
+    rreg_intf.rreg self
 );
     logic stall, flush;    
     decode_data_t [MACHINE_WIDTH-1:0]dataD, dataD_new;
@@ -54,15 +54,15 @@ module rreg
         end
     end
 
-    assign dataD_new = ports.dataD_new;
-    assign ports.dataD = dataD;
+    assign dataD_new = self.dataD_new;
+    assign self.dataD = dataD;
 endmodule
 
 module ireg 
     import common::*;
     import renaming_pkg::*;(
     input logic clk, resetn,
-    ireg_intf.ireg ports
+    ireg_intf.ireg self
 );
     logic stall, flush;    
     renaming_data_t [MACHINE_WIDTH-1:0]dataR, dataR_new;
@@ -74,15 +74,15 @@ module ireg
         end
     end
 
-    assign dataR_new = ports.dataR_new;
-    assign ports.dataR = dataR;
+    assign dataR_new = self.dataR_new;
+    assign self.dataR = dataR;
 endmodule
 
 module ereg 
     import common::*;
     import issue_pkg::*;(
     input logic clk, resetn,
-    ereg_intf.ereg ports
+    ereg_intf.ereg self
 );
     logic stall, flush;    
     issue_data_t dataI, dataI_new;
@@ -94,15 +94,15 @@ module ereg
         end
     end
 
-    assign dataI_new = ports.dataI_new;
-    assign ports.dataI = dataI;
+    assign dataI_new = self.dataI_new;
+    assign self.dataI = dataI;
 endmodule
 
 module creg 
     import common::*;
     import execute_pkg::*;(
     input logic clk, resetn,
-    creg_intf.creg ports
+    creg_intf.creg self
 );
     logic stall, flush;    
     execute_data_t dataE, dataE_new;
@@ -114,6 +114,6 @@ module creg
         end
     end
 
-    assign dataE_new = ports.dataE_new;
-    assign ports.dataE = dataE;
+    assign dataE_new = self.dataE_new;
+    assign self.dataE = dataE;
 endmodule
