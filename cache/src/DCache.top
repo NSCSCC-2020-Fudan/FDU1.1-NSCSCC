@@ -1,4 +1,12 @@
 # ports
+//bram_inst.mem
+bram_inst.new_data_1
+bram_inst.new_data_2
+bram_inst.write_en_1
+bram_inst.write_en_2
+bram_inst.addr_1
+bram_inst.addr_2
+
 req_hit
 req_idx
 req_in_miss

@@ -135,6 +135,14 @@ public:
         inst->eval();
     }
 
+    void issue_read(int addr) {
+        issue_read(addr, addr);
+    }
+
+    void issue_write(int addr, u32 data) {
+        issue_write(addr, addr, data, 0b1111);
+    }
+
 private:
     CacheBusSlave *_bus;
 };
@@ -147,7 +155,17 @@ public:
         if (vaddr < 0)
             vaddr = paddr;
 
-        _a_fifo.push({paddr, vaddr, 0, data});
+        _a_fifo.push({paddr, vaddr, 0, data, nullptr});
+
+        if (!in_req())
+            _top->issue_read(paddr, vaddr);
+    }
+
+    void read(int paddr, u32 *dest, int vaddr = -1) {
+        if (vaddr < 0)
+            vaddr = paddr;
+
+        _a_fifo.push({paddr, vaddr, 0, 0, dest});
 
         if (!in_req())
             _top->issue_read(paddr, vaddr);
@@ -157,7 +175,7 @@ public:
         if (vaddr < 0)
             vaddr = paddr;
 
-        _a_fifo.push({paddr, vaddr, mask, data});
+        _a_fifo.push({paddr, vaddr, mask, data, nullptr});
 
         if (!in_req())
             _top->issue_write(paddr, vaddr, data, mask);
@@ -188,11 +206,18 @@ public:
             assert(!_d_fifo.empty());
             auto u = _d_fifo.front();
             info(
-                "addr 0x%x (v:0x%x), expect/write \"%08x\", got \"%08x\" (mask: %04x)\n",
-                u.paddr, u.vaddr, u.data, data, u.mask
+                "addr 0x%x (v:0x%x), %s \"%08x\", got \"%08x\" (mask:0x%x, dest:%s)\n",
+                u.paddr, u.vaddr,
+                (u.is_read() ? "expect" : "write"),
+                u.data, data, u.mask,
+                (u.dest ? "yes" : "no")
             );
-            if (u.mask == 0)
+
+            if (u.dest)
+                *u.dest = data;
+            else if (u.is_read())
                 assert(u.data == data);
+
             _d_fifo.pop();
         }
 
@@ -222,6 +247,11 @@ private:
         int vaddr;
         int mask;
         u32 data;
+        u32 *dest;
+
+        bool is_read() const {
+            return !mask;
+        }
     };
 
     Top *_top;

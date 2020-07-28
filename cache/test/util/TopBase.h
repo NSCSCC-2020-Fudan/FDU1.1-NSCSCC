@@ -26,7 +26,7 @@ public:
 
     void tick() {
         _tickcount++;
-        int now = 10 * _tickcount;
+        u64 now = 10 * _tickcount;
 
         inst->eval();
         pre_clock_hook();
@@ -50,8 +50,8 @@ public:
         trace_flush();
     }
 
-    void tick(int count) {
-        for (int i = 0; i < count; i++) {
+    void tick(u64 count) {
+        for (u64 i = 0; i < count; i++) {
             tick();
         }
     }
@@ -61,9 +61,9 @@ public:
     virtual void clock_trigger() {}
     virtual void post_clock_hook() {}
 
-    void trace_dump(int time) {
+    void trace_dump(u64 time) {
         if (_trace_fp)
-            _trace_fp->dump(time);
+            _trace_fp->dump(static_cast<vluint64_t>(time));
     }
 
     void trace_flush() {
@@ -87,7 +87,7 @@ public:
         if (_trace_fp) {
             notify("trace: stop @%d\n", tickcount());
             tick();
-            _trace_fp->dump(tickcount() + 10);
+            _trace_fp->dump(static_cast<vluint64_t>(tickcount() + 10));
             _trace_fp->flush();
             _trace_fp->close();
             delete _trace_fp;
@@ -95,11 +95,11 @@ public:
         }
     }
 
-    int tickcount() const {
+    u64 tickcount() const {
         return 10 * _tickcount;
     }
 
 protected:
-    int _tickcount;
+    u64 _tickcount;
     VerilatedFstC *_trace_fp;
 };
