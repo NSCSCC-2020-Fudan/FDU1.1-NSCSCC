@@ -12,11 +12,15 @@ module SRAMxToDataBus(
     assign dbus_req.addr     = sramx_req.addr;
     assign dbus_req.data     = sramx_req.wdata;
 
+    // convert first, since StrobeTranslator has no idea
+    // with "is_write".
+    dbus_wrten_t cvt_wrten;
     StrobeTranslator _strobe_inst(
         .size(sramx_req.size),
         .offset(sramx_req.addr[1:0]),
-        .strobe(dbus_req.write_en)
+        .strobe(cvt_wrten)
     );
+    assign dbus_req.write_en = sramx_req.wr ? cvt_wrten : 0;
 
     assign sramx_resp.addr_ok = dbus_resp.addr_ok;
     assign sramx_resp.data_ok = dbus_resp.data_ok;
