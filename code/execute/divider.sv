@@ -2,7 +2,7 @@
 module divider 
     import common::*;
     import divider_pkg::*;(
-    input logic clk, reset,
+    input logic clk, resetn,
     input logic valid,
     input word_t a, b,
     output dword_t hilo,
@@ -11,7 +11,7 @@ module divider
 );
     dword_t out;
     word_t a_u, b_u;
-    divider_u divider_u(.clk, .reset, .valid, .a(a_u), .b(b_u), .out, .ok);
+    divider_u divider_u(.clk, .resetn, .valid, .a(a_u), .b(b_u), .out, .ok);
 
     assign a_u = (is_signed & a[31]) ? -a:a;
     assign b_u = (is_signed & b[31]) ? -b:b;
@@ -21,7 +21,7 @@ module divider
 endmodule
 
 module divider_u(
-    input logic clk, reset,
+    input logic clk, resetn,
     input logic valid,
     input word_t a, b, // a / b
     output dword_t out, // {hi, lo}
@@ -31,7 +31,7 @@ module divider_u(
     divide_data_t [17:1]div;
     divide_data_t [16:0]div_new;
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~resetn) begin
             div <= '0;
         end else begin
             div[17:1] <= div_new[16:0];

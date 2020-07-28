@@ -2,7 +2,7 @@ module bru
     import common::*;
     import decode_pkg::*;(
     input word_t src1, src2,
-    input word_t pcplus4, imm,
+    input word_t pcplus8, imm,
     input branch_t branch_type,
     output logic branch_taken,
     output word_t pcbranch
@@ -12,7 +12,7 @@ module bru
             T_JR: pcbranch = src1;
             T_J: pcbranch = imm;
             default: begin
-                pcbranch = pcplus4 + {imm[29:0], 2'b00};
+                pcbranch = pcplus8 + {imm[29:0], 2'b00} - 32'd4;
             end
         endcase
     end

@@ -73,6 +73,7 @@ module execute
         for (int i=0; i<ALU_NUM; i++) begin
             dataE.alu_commit[i].data = aluout[i];
             dataE.alu_commit[i].rob_addr = dataI.alu_issue[i].dst;
+            dataE.alu_commit[i].valid = dataI.alu_issue[i].valid;
             dataE.alu_commit[i].exception = dataI.alu_issue[i].exception;
             dataE.alu_commit[i].exception.of = exception_of[i];
         end
@@ -100,21 +101,41 @@ module execute
             dataE.agu_commit[i].data = aguout[i];
             dataE.agu_commit[i].addr = addr[i];
             dataE.agu_commit[i].rob_addr = dataI.mem_issue[i].dst;
+            dataE.agu_commit[i].valid = dataI.mem_issue[i].valid;
             dataE.agu_commit[i].exception = dataI.mem_issue[i].exception;
             dataE.agu_commit[i].exception.load = exception_load[i];
             dataE.agu_commit[i].exception.save = exception_save[i];
+
         end
     end
     assign mread.valid = dataI.mem_issue[0].ctl.memtoreg & exception_load[i];
     assign mread.addr = addr[0];
     // BRU
     for (genvar i=0; i<BRU_NUM; i++) begin
-        bru bru();
+        bru bru(.src1(brusrca[i]),
+                .src2(brusrcb[i]),
+                .pcplus8(dataI.branch_issue[i].pcplus8),
+                .imm(dataI.branch_issue[i].imm),
+                .branch_type(dataI.branch_issue[i].ctl.branch_type),
+                .branch_taken(dataE.branch_commit[i].branch_taken),
+                .pcbranch(dataE.branch_commit[i].pcbranch)
+                );
+        assign dataE.branch_commit[i].valid = dataI.mult_issue[i].valid;
+        assign dataE.branch_commit[i].rob_addr = dataI.mult_issue[i].dst;
+        assign dataE.branch_commit[i].exception = dataI.branch_issue[i].exception;
     end
 
     // MULT
     for (genvar i=0; i<MULT_NUM; i++) begin
-        mult mult();
+        mult mult(.clk, .resetn,
+                  .a(multsrca[i]),
+                  .b(multsrcb[i]),
+                  .op(dataI.mult_issue[i].op),
+                  .hi(dataE.mult_commit[i].hi),
+                  .lo(dataE.mult_commit[i].lo));
+        assign dataE.mult_commit[i].valid = dataI.mult_issue[i].valid;
+        assign dataE.mult_commit[i].rob_addr = dataI.mult_issue[i].dst;
+        assign dataE.mult_commit[i].exception = dataI.mult_issue[i].exception;
     end
 
     // wake
