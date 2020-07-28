@@ -10,6 +10,7 @@ module issue_queue
     input write_req_t [WRITE_NUM-1:0] write,
     output read_resp_t [READ_NUM-1:0] read,
     input wake_req_t [WAKE_NUM-1:0] wake,
+    input word_t [ISSUE_NUM-1:0] broadcast,
     output logic full
 );
     localparam type queue_ptr_t = logic[$clog2(QUEUE_LEN)-1:0];

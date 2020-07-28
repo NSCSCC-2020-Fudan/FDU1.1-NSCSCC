@@ -27,19 +27,21 @@ module commit
     for (genvar i = 0; i < ALU_NUM ; i++) begin
         assign wake.dst_commit[i].id = dataE.alu_commit[i].rob_addr;
         assign wake.dst_commit[i].valid = dataE.alu_commit[i].valid;
+        assign wake.broadcast[i] = dataE.alu_commit[i].data;
     end
     for (genvar i = 0; i < MEM_NUM ; i++) begin
         assign wake.dst_commit[i + ALU_NUM].id = dataE.mem_commit[i].rob_addr;
         assign wake.dst_commit[i + ALU_NUM].valid = dataE.mem_commit[i].valid;
+        assign wake.broadcast[i + ALU_NUM] = dataE.mem_commit[i].data;
     end
     for (genvar i = 0; i < BRU_NUM ; i++) begin
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM].id = dataE.branch_commit[i].rob_addr;
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM].valid = dataE.branch_commit[i].valid;
+        assign wake.broadcast[ + ALU_NUM + MEM_NUMi] = dataE.branch_commit[i].data;
     end
     for (genvar i = 0; i < MULT_NUM ; i++) begin
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM + BRU_NUM].id = dataE.mult_commit[i].rob_addr;
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM + BRU_NUM].valid = dataE.mult_commit[i].valid;
+        assign wake.broadcast[i + ALU_NUM + MEM_NUM + BRU_NUM] = dataE.mult_commit[i].data;
     end
-    // payloadRAM
-    
 endmodule

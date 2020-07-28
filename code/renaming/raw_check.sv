@@ -1,7 +1,10 @@
 module raw_check 
     import common::*;(
     input areg_addr_t[MACHINE_WIDTH-1:0] src1, src2, dst,
-    input preg_addr_t[MACHINE_WIDTH-1:0] psrc1_rat, psrc2_rat, pdst_fl,
+    input struct packed {
+        logic valid;
+        preg_addr_t id;
+    }[MACHINE_WIDTH-1:0] psrc1_rat, psrc2_rat, pdst_fl,
     output preg_addr_t[MACHINE_WIDTH-1:0] psrc1, psrc2
 );
     assign psrc1[0] = psrc1_rat[0];

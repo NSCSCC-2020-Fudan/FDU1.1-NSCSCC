@@ -22,6 +22,7 @@ package commit_pkg;
     typedef struct packed {
         logic valid;
         word_t pcbranch;
+        word_t data;
         rob_addr_t rob_addr;
         exception_pkg::exception_info_t exception;
     } branch_commit_t;

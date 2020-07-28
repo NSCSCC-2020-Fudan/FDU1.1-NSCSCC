@@ -125,6 +125,7 @@ typedef struct packed {
 } decoded_instr_t;
 
 typedef struct packed {
+    logic valid;
     decoded_instr_t instr;
     word_t pcplus8;
     exception_pkg::exception_info_t exception;
