@@ -9,6 +9,7 @@ module rob
     commit_intf.rob commit,
     retire_intf.rob retire,
     payloadRAM_intf.rob payloadRAM,
+    hazard_intf.rob hazard,
     output mem_pkg::write_req_t mwrite,
     input logic d_data_ok
 );
@@ -137,4 +138,6 @@ module rob
         assign payloadRAM.prf2[i].valid = rob_table_new[payloadRAM.preg2[i]].complete;
         assign payloadRAM.prf2[i].data = rob_table_new[payloadRAM.preg2[i]].data[31:0];
     end
+
+    assign hazard.rob_full = 1'b0;
 endmodule

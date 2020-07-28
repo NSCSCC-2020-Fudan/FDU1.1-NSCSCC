@@ -34,8 +34,6 @@ module mycpu
     // end
     assign clk_ = clk;
     word_t vaddr;
-    mem_pkg::read_req_t mread;
-    mem_pkg::write_req_t mwrite;
     datapath datapath(.clk(clk_), .resetn(resetn), .ext_int, 
                       .pc(inst_addr), .instr_(inst_rdata), 
                       .i_data_ok(inst_data_ok), .d_data_ok(data_data_ok),

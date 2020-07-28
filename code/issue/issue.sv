@@ -23,7 +23,8 @@ module issue
 
     // generate write from dataR
     for (genvar i=0; i<WRITE_NUM; i++) begin
-        assign write[i].valid = 1'b1;
+        assign write[i].valid = dataR[i].valid;
+        assign write[i].entry.valid = 1'b1;
         assign write[i].entry_type = dataR[i].ctl.entry_type;
         assign write[i].entry.dst = dataR[i].dst;
         assign write[i].entry.src1.valid = dataR[i].src1.valid ? payloadRAM.prf1[i].valid : 1'b1;
@@ -33,6 +34,7 @@ module issue
         assign write[i].entry.src2.id = dataR[i].src2.id;
         assign write[i].entry.src2.data = dataR[i].src2.valid ? payloadRAM.cdata2[i] : payloadRAM.prf2[i].data;
         assign write[i].entry.ctl = dataR[i].ctl;
+        assign write[i].entry.op = dataR[i].op;
         assign write[i].entry.imm = dataR[i].imm;
         assign write[i].entry.pcplus8 = dataR[i].pcplus8;
         assign write[i].entry.exception = dataR[i].exception;
@@ -77,38 +79,54 @@ module issue
                         );
 
     for (genvar i=0; i<ALU_NUM; i++) begin
+        assign dataI.alu_issue[i].valid = alu_issue[i].entry.valid;
         assign dataI.alu_issue[i].src1 = alu_issue[i].entry.src1.data;
         assign dataI.alu_issue[i].src2 = alu_issue[i].entry.src2.data;
+        assign dataI.alu_issue[i].r1 = alu_issue[i].entry.src1.id;
+        assign dataI.alu_issue[i].r2 = alu_issue[i].entry.src2.id;
         assign dataI.alu_issue[i].imm = alu_issue[i].entry.imm;
         assign dataI.alu_issue[i].dst = alu_issue[i].entry.dst;
         assign dataI.alu_issue[i].ctl = alu_issue[i].entry.ctl;
+        assign dataI.alu_issue[i].op = alu_issue[i].entry.op;
         assign dataI.alu_issue[i].pcplus8 = alu_issue[i].entry.pcplus8;
         assign dataI.alu_issue[i].exception = alu_issue[i].entry.exception;
     end
     for (genvar i=0; i<MEM_NUM; i++) begin
+        assign dataI.mem_issue[i].valid = mem_issue[i].entry.valid;
         assign dataI.mem_issue[i].src1 = mem_issue[i].entry.src1.data;
         assign dataI.mem_issue[i].src2 = mem_issue[i].entry.src2.data;
         assign dataI.mem_issue[i].imm = mem_issue[i].entry.imm;
+        assign dataI.mem_issue[i].r1 = mem_issue[i].entry.src1.id;
+        assign dataI.mem_issue[i].r2 = mem_issue[i].entry.src2.id;
         assign dataI.mem_issue[i].dst = mem_issue[i].entry.dst;
         assign dataI.mem_issue[i].ctl = mem_issue[i].entry.ctl;
+        assign dataI.mem_issue[i].op = mem_issue[i].entry.op;
         assign dataI.mem_issue[i].pcplus8 = mem_issue[i].entry.pcplus8;
         assign dataI.mem_issue[i].exception = mem_issue[i].entry.exception;
     end
     for (genvar i=0; i<BRU_NUM; i++) begin
+        assign dataI.branch_issue[i].valid = branch_issue[i].entry.valid;
         assign dataI.branch_issue[i].src1 = branch_issue[i].entry.src1.data;
         assign dataI.branch_issue[i].src2 = branch_issue[i].entry.src2.data;
         assign dataI.branch_issue[i].imm = branch_issue[i].entry.imm;
+        assign dataI.branch_issue[i].r1 = branch_issue[i].entry.src1.id;
+        assign dataI.branch_issue[i].r2 = branch_issue[i].entry.src2.id;
         assign dataI.branch_issue[i].dst = branch_issue[i].entry.dst;
         assign dataI.branch_issue[i].ctl = branch_issue[i].entry.ctl;
+        assign dataI.branch_issue[i].op = branch_issue[i].entry.op;
         assign dataI.branch_issue[i].pcplus8 = branch_issue[i].entry.pcplus8;
         assign dataI.branch_issue[i].exception = branch_issue[i].entry.exception;
     end
     for (genvar i=0; i<MULT_NUM; i++) begin
+        assign dataI.mult_issue[i].valid = mult_issue[i].entry.valid;
         assign dataI.mult_issue[i].src1 = mult_issue[i].entry.src1.data;
         assign dataI.mult_issue[i].src2 = mult_issue[i].entry.src2.data;
         assign dataI.mult_issue[i].imm = mult_issue[i].entry.imm;
+        assign dataI.mult_issue[i].r1 = mult_issue[i].entry.src1.id;
+        assign dataI.mult_issue[i].r2 = mult_issue[i].entry.src2.id;
         assign dataI.mult_issue[i].dst = mult_issue[i].entry.dst;
         assign dataI.mult_issue[i].ctl = mult_issue[i].entry.ctl;
+        assign dataI.mult_issue[i].op = mult_issue[i].entry.op;
         assign dataI.mult_issue[i].pcplus8 = mult_issue[i].entry.pcplus8;
         assign dataI.mult_issue[i].exception = mult_issue[i].entry.exception;
     end

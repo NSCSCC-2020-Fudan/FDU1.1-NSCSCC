@@ -19,7 +19,7 @@ module issue_queue
 
     queue_t queue, queue_new, queue_after_read;
     
-    queue_ptr_t head, tail, head_new, tail_new;
+    queue_ptr_t tail, tail_new, tail_after_read;
     logic[3:0] read_num;
     logic full_new;
     assign full_new = tail_new == '1;
@@ -89,6 +89,7 @@ module issue_queue
             end
         end
         queue_after_read = queue_new;
+        tail_after_read = tail_new;
         // check read, else write
         for (int i=0; i<WRITE_NUM; i++) begin
             if (write[i].entry_type != ENTRY_TYPE) begin
@@ -99,6 +100,7 @@ module issue_queue
                 queue_new[tail_new] = write[i].entry; // push into the queue
                 tail_new = tail_new + 1;
             end else begin
+                tail_new = tail_after_read;
                 queue_new = queue_after_read; // full
                 full = 1'b1;
             end

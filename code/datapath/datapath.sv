@@ -71,6 +71,7 @@ module datapath
             .commit(commit_intf.rob),
             .retire(retire_intf.rob),
             .payloadRAM(payloadRAM_intf.rob),
+            .hazard(hazard_intf.rob),
             .d_data_ok, .mwrite);
 
     freg freg(.clk, .resetn, .self(freg_intf.freg), .hazard(hazard_intf.freg));

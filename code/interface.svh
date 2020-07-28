@@ -284,6 +284,9 @@ interface hazard_intf();
     modport exception(
         input exception_valid
     );
+    modport rob(
+        output rob_full
+    );
 endinterface
 
 `endif

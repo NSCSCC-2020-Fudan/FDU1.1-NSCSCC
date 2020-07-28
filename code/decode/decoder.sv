@@ -483,7 +483,7 @@ module decoder
             instr.src2 = 7'b0101110; // epc
         end
         if (ctl.is_bp || ctl.is_sys || exception_ri) begin
-            instr.src1 = '0;
+            instr.src2 = '0;
         end
     end
 

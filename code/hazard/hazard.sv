@@ -33,8 +33,8 @@ module hazard
     assign self.flushI = flushI;
     assign self.flushE = flushE;
     assign self.flushC = flushC;
-    assign branch_taken = self.branch_taken;
-    assign exception_valid = self.exception_valid;
-    assign is_eret = self.is_eret;
+    assign branch_taken = 1'b0;
+    assign exception_valid = 1'b0;
+    assign is_eret = 1'b0;
     assign rob_full = self.rob_full;
 endmodule

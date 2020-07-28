@@ -18,11 +18,13 @@ package issue_queue_pkg;
         word_t data;
     } src_data_t;
     typedef struct packed {
+        logic valid;
         preg_addr_t dst;
         src_data_t src1, src2;
         control_t ctl;
         word_t imm;
         word_t pcplus8;
+        decoded_op_t op;
         exception_pkg::exception_info_t exception;
         rob_pkg::rob_addr_t rob_addr;
     } entry_t;

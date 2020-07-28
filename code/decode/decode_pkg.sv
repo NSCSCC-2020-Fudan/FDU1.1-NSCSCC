@@ -117,7 +117,6 @@ typedef enum logic [5:0] {
 } decoded_op_t;
 
 typedef struct packed {
-    areg_addr_t rs, rt, rd;
     creg_addr_t src1, src2, dst;
     decoded_op_t op;
     word_t imm;
