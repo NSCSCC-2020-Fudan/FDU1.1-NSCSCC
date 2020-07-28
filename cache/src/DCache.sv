@@ -3,8 +3,8 @@
 
 module DCache #(
 `ifndef IN_SIMULATION
-    // 4-way 16KB configuration:
-    parameter int IDX_BITS    = 2,
+    // 8-way 32KB configuration:
+    parameter int IDX_BITS    = 3,
     parameter int INDEX_BITS  = 6,
     parameter int OFFSET_BITS = 4,
 `else
