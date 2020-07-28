@@ -68,8 +68,8 @@ tlb_result_t inst_tlbp_result, data_tlbp_result;
             always_ff @ (posedge clk) begin
                 if (rst) begin
                     inst_entries[i] <= '0;
-                end else if (tlb_we && !tlb_index.idx[TLB_INDEX_BITS-1] && 
-                            tlb_index.idx[TLB_INDEX_BITS-2:0] == i) begin
+                end else if (tlb_we && !tlb_index.idx[TLB_INDEX_BITS] && 
+                            tlb_index.idx[TLB_INDEX_BITS-1:0] == i) begin
                     inst_entries[i] <= tlb_wdata;
                 end
             end
@@ -81,20 +81,20 @@ tlb_result_t inst_tlbp_result, data_tlbp_result;
             always_ff @ (posedge clk) begin
                 if (rst) begin
                     data_entries[i] <= '0;
-                end else if (tlb_we && tlb_index.idx[TLB_INDEX_BITS-1] && 
-                            tlb_index.idx[TLB_INDEX_BITS-2:0] == i) begin
+                end else if (tlb_we && tlb_index.idx[TLB_INDEX_BITS] && 
+                            tlb_index.idx[TLB_INDEX_BITS-1:0] == i) begin
                     data_entries[i] <= tlb_wdata;
                 end
             end
         end
     endgenerate
 
-    assign tlb_rdata = !tlb_index.idx[TLB_INDEX_BITS-1] ? 
-        inst_entries[tlb_index.idx[TLB_INDEX_BITS-2:0]] : 
-        data_entries[tlb_index.idx[TLB_INDEX_BITS-2:0]];
+    assign tlb_rdata = !tlb_index.idx[TLB_INDEX_BITS] ? 
+        inst_entries[tlb_index.idx[TLB_INDEX_BITS-1:0]] : 
+        data_entries[tlb_index.idx[TLB_INDEX_BITS-1:0]];
 
     assign tlbp_index = !inst_tlbp_result.index.p ? 
-        inst_tlbp_result : data_tlbp_result;
+        inst_tlbp_result.index : data_tlbp_result.index;
 `else
     tlb_lookup lookup (
         .entries,

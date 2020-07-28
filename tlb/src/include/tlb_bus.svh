@@ -9,7 +9,7 @@
 
 parameter int TLB_VPN2_BITS     = 19;
 parameter int TLB_PFN_BITS      = 20;
-parameter int TLB_OFFSET_BITS     = 32 - TLB_PFN_BITS;
+parameter int TLB_OFFSET_BITS   = 32 - TLB_PFN_BITS;
 parameter int TLB_ASID_BITS     = 8;
 parameter int TLB_CC_BITS       = 3; // cache coherency field
 parameter int TLB_MASK_BITS     = 16; // pagemask
@@ -27,7 +27,11 @@ typedef logic [TLB_PFN_BITS   - 1:0] tlb_pfn_t;
 typedef logic [TLB_ASID_BITS  - 1:0] tlb_asid_t;
 typedef logic [TLB_CC_BITS    - 1:0] tlb_cc_t;
 typedef logic [TLB_MASK_BITS  - 1:0] tlb_mask_t;
+`ifdef SPLIT_MODE
+typedef logic [TLB_INDEX_BITS    :0] tlb_idx_t;
+`else
 typedef logic [TLB_INDEX_BITS - 1:0] tlb_idx_t;
+`endif
 
 typedef struct packed {
     logic [31-TLB_OFFSET_BITS:0]    page;
@@ -70,7 +74,7 @@ typedef struct packed {
 
 typedef struct packed {
     tlb_pfn_t pfn;
-    tlb_cc_t  c;
+    tlb_cc_t  cc;
     logic     d;
     logic     v;
 } tlb_transec_t;

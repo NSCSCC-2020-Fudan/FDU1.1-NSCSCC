@@ -66,7 +66,7 @@ module tlb_lookup #(
                 {result.index.p, result.index.idx} = {1'b0, i};
             `ifdef SPLIT_MODE
                 if (DATA_TLB == 1) begin
-                    result.index.idx[TLB_INDEX_BITS-1] = 1'b1;
+                    result.index.idx[TLB_INDEX_BITS] = 1'b1;
                 end
             `endif
             end

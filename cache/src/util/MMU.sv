@@ -133,7 +133,7 @@ module MMU #(
 
         if (d_uncached) begin
             uncached_req = dmem_req;
-            uncached_req.addr = data_mapped ? data_mmu_result.phys_addr : daddr;
+            uncached_req.addr = daddr;
             dmem_resp = uncached_resp;
         end else begin
             dcache_req = dmem_req;

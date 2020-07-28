@@ -4,6 +4,7 @@
 `define MUL_DELAY       5
 `define DIV_DELAY       16
 `define ALU_DELAY       1
+`define ISSUE_NUM       1
 
 typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;
