@@ -38,6 +38,10 @@ make run top=[顶层模块名称]
 
 可以使用 `make all` 来运行所有在 `test/` 目录下的测试。
 
+## Cache 配置
+
+ICache 和 DCache 的配置参数参见 `cache.svh` 文件。
+
 ## 命名逻辑
 
 所有 master → slave 的请求以 `req` 进行标注，而 slave → master 的反馈以 `resp` 进行标注。例如，`axi_req_t` 和 `axi_resp_t`。
@@ -95,21 +99,45 @@ IBus 对 SRAM* 总线接口做了简化。取指只需要发出请求信号 `req
 
 信号：
 
-* `req`：表示是否有读取请求。
-* `addr`：请求的地址（PC）。要求和指令宽度对齐。
-* `addr_ok`：表示地址是否被 cache 接收（例如通过了 cache 的第一级流水线阶段）。`addr_ok` 握手成功后可以撤下 `req` 信号。
-* `data_ok`：表示数据是否准备好。
-* `data`：抓取到的数据。与 `index` 之间需要配合使用。
-* `index`：`data` 相当于是一个指令的数组，而 `index` 指示这个数组中第一条有效的数据（指令）的下标。例如，如果 `index` 为 0，则表示 `data` 中的所有指令都是有效的。如果是双发射，而且 `index` 为 1，则表示此时只有第二条指令是有效的。
+* `req`：`→`。表示是否有读取请求。
+* `addr`：`→`。请求的地址（PC）。要求和指令宽度对齐。
+* `addr_ok`：`←`。表示地址是否被 cache 接收（例如通过了 cache 的第一级流水线阶段）。`addr_ok` 握手成功后可以撤下 `req` 信号。
+* `data_ok`：`←`。表示数据是否准备好。
+* `data`：`←`。抓取到的数据。与 `index` 之间需要配合使用。
+* `index`：`←`。`data` 相当于是一个指令的数组，而 `index` 指示这个数组中第一条有效的数据（指令）的下标。例如，如果 `index` 为 0，则表示 `data` 中的所有指令都是有效的。如果是双发射，而且 `index` 为 1，则表示此时只有第二条指令是有效的。
 
 在目录 `cache/util/` 下我们提供了一个 IBus 总线转接 SRAM* 总线的转接模块 `InstrBusToSRAMx`，用于在没有接入真正的 cache 时，测试与 IBus 的交互。
 
+## 数据总线（`dbus`/DBus）
+
+数据总线和 SRAM* 总线相比，只是处理 SRAM* 中 `size` 和 `addr` 组合的信息，生成一个 `write_en`。
+
+在 DBus 中，如果 `is_write` 为 0，此时依然要求 `write_en` 为全 0。
+
+参数：
+
+* `DBUS_DATA_WIDTH`：数据宽度。一般和 SRAM* 保持一致。
+
+信号：
+
+* `valid`：`→`。当前周期是否发出请求。
+* `is_write`：`→`。当前周期的请求是否为写请求。
+* `write_en`：`→`。字节写使能。要求当 `is_write` 为 0 时，写使能必须为全 0。
+* `addr`：`→`。读/写地址。
+* `req.data`：`→`。写操作的写入数据。
+* `addr_ok`：`←`。地址是否被接收。
+* `data_ok`：`←`。数据是否准备/写入完成。
+* `resp.data`：`←`。读取到的数据。
+
 ## `mycpu_top`
 
-Cache 部分只会修改 CPU 顶层模块的代码。代码位于 `code/mycpu_top.sv`。
+Cache 部分只会修改 CPU 顶层模块的代码。代码位于 `code/mycpu_top.sv`。一般情况下大部分修改都在 `CacheLayer` 里面。
 
 参数：
 
 * `USE_CACHE`：是否使用 cache layer。如果为 0 则 CPU 需要自己做地址翻译。
 * `USE_ICACHE`：是否使用 ICache。如果为 0 则使用 `OneLineBuffer`。
+* `USE_DCACHE`：是否使用 DCache。如果为 0 则使用 `OneLineBuffer`。
 * `USE_IBUS`：是否使用 IBus 。如果为 0 则会在 ICache 前接一个 `SRAMxToInstrBus` 的转接模块。
+
+对 `mycpu` 而言，需要根据需要使用 `inst_*`、`data_*` 或者是 `inst_ibus_*` 这些信号。
