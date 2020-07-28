@@ -1,80 +1,71 @@
 `include "mips.svh"
 
 module fetch (
-        input logic clk, reset, flushF, stallF,
-        //updata
-        input pc_data_t fetch,
-        output word_t pc,
-        input logic pc_new_commit, 
-        //to branch_control
-        output word_t addr,
-        input logic hit, 
-        input word_t [1: 0] data,
-        input logic addrOK, dataOK,
-        //to imem
-        output fetch_data_t [1: 0] fetch_data,
-        output logic [1: 0] hitF,
-        output logic finishF,
-        //to decode
-        output word_t [1: 0] pc_predict,
-        output word_t [1: 0] instr_predict,
-        input bpb_result_t [1: 0] destpc_predict
-    );
+    input logic clk, reset, flushF, stallF,
+    //updata
+    (*mark_debug = "true"*) input pc_data_t fetch,
+    (*mark_debug = "true"*) output word_t pc,
+    input logic pc_new_commit, 
+    //to branch_control
+    (*mark_debug = "true"*) output word_t addr,
+    input logic hit, 
+    (*mark_debug = "true"*) input word_t [1: 0] data,
+    (*mark_debug = "true"*) input logic dataOK,
+    //to imem
+    output fetch_data_t [1: 0] fetch_data,
+    output logic [1: 0] hitF,
+    output logic finishF,
+    //to decode
+    output word_t [1: 0] pc_predictF,
+    (*mark_debug = "true"*) input bpb_result_t [1: 0] destpc_predictF
+    //to bpb
+);
     
     logic [1: 0] state; 
     logic [1: 0] ien;
     word_t [1: 0] instr;
-    word_t pcplus4, pcplus8, pcplus, pc_new;
+    (*mark_debug = "true"*) word_t pcplus4, pcplus8, pcplus, pc_new;
     
-    logic pc_upd;
+    (*mark_debug = "true"*) logic pc_upd;
     pcselect pcselect(fetch.exception_valid, fetch.is_eret, fetch.branch, fetch.jump, fetch.jr,
                       fetch.pcexception, fetch.epc, fetch.pcbranch, fetch.pcjump, fetch.pcjr, pcplus, 
                       pc_new, pc_upd);
     
-    bpb_result_t last_predict, _last_predict;       
-    logic addr_finish, fetch_commit_conflict;                            
+    (*mark_debug = "true"*) bpb_result_t last_predict, next_predict;                      
+    logic fetch_commit_conflict;                             
     always_ff @(posedge clk, posedge reset)
         begin
             if (reset)
                 begin
                     pc <= 32'Hbfc00000;
-                    addr_finish = 1'b1;
-                    fetch_commit_conflict = 'b0;
+                    last_predict <= '0;
+                    fetch_commit_conflict <= 'b0;
                 end
             else
                 begin
                     if (flushF)
-                        begin
-                            pc <= 32'Hbfc00000;
-                            addr_finish = 1'b1;
-                            fetch_commit_conflict = 'b0;
-                        end                            
+                        pc <= '0;
                     else
                         if ((~stallF & ~fetch_commit_conflict) | pc_upd)
                             begin
                                 pc <= pc_new;
-                                last_predict = (pc_upd) ? ('0) : (_last_predict);                                         
-                            end                            
+                                last_predict <= (pc_upd) ? ('0) : (next_predict);
+                            end                                
                         else
                             pc <= pc;
-                    
-                    if (addrOK)
-                        addr_finish = 1'b1;                                                    
-                    if (pc_upd && addr_finish)
+                            
+                    if (pc_upd)
                         fetch_commit_conflict = 'b1;
                     if (dataOK)
-                        begin
-                            fetch_commit_conflict = 'b0;
-                            addr_finish = 1'b0;
-                        end
+                        fetch_commit_conflict = 'b0;
                 end
         end                                         
     
     assign ien = {1'b1, hit};
+    assign hitF = ien;
     assign addr = pc;
     assign instr = data;
     
-    fetch_data_t [1: 0] dataF;
     logic exception_instr;
     adder#(32) pcadder4(pc, 32'b0100, pcplus4);
     adder#(32) pcadder8(pc, 32'b1000, pcplus8);
@@ -82,33 +73,26 @@ module fetch (
     
     // assign {dataF[1].exception_instr, dataF[0].exception_instr} = {exception_instr, exception_instr};
     
-    
-    assign pc_predict = {pc, pcplus4};
-    assign instr_predict = {instr[0], instr[1]};
-    logic [1: 0] taken_predict;
-    assign taken_predict = {destpc_predict[1].taken, destpc_predict[0].taken};
-    logic pcplus_predict;
-    assign pcplus_predict = (destpc_predict[1].taken & hit);
-    assign pcplus = (pcplus_predict)     ? (destpc_predict[1].destpc) : (
-                    (last_predict.taken) ? (last_predict.destpc)      : (
-                    (hit)                ? (pcplus8)                  : (pcplus4))); 
-    assign _last_predict = (~hit & destpc_predict[1].taken) ? (destpc_predict[1]) : (                              
-                           (hit & destpc_predict[0].taken)  ? (destpc_predict[0]) : ('0));
-    assign hitF[1] = ien[1]; 
-    assign hitF[0] = (hit & ~last_predict.taken);                 
-                              
-    
     assign fetch_data[1].instr_ = instr[0];
-    assign fetch_data[0].instr_ = instr[1];
+    assign fetch_data[0].instr_ = (last_predict.taken) ? ('0) : (instr[1]);
     assign fetch_data[1].pcplus4 = pcplus4;
     assign fetch_data[0].pcplus4 = pcplus8;
-    assign fetch_data[1].en = hitF[1];
-    assign fetch_data[0].en = hitF[0];
+    assign fetch_data[1].en = 1'b1;
+    assign fetch_data[0].en = ien[0] & (~last_predict.taken);
     assign fetch_data[1].exception_instr = exception_instr;
     assign fetch_data[0].exception_instr = exception_instr;
-    assign fetch_data[1].pred = destpc_predict[1].taken;
-    assign fetch_data[0].pred = destpc_predict[0].taken;
-    assign finishF = dataOK && ~fetch_commit_conflict;
+    //assign fetch_data[1].pred = destpc_predictF[1].taken;
+    //assign fetch_data[0].pred = destpc_predictF[0].taken & ien[0];
+    assign fetch_data[1].pred = destpc_predictF[1];
+    assign fetch_data[0].pred = (ien[0]) ? destpc_predictF[0] : ('0);
+    assign finishF = dataOK && ~fetch_commit_conflict;    
+    //to decode
     
+    assign pc_predictF = {pc, pcplus4};
+    assign pcplus = (last_predict.taken)                ? (last_predict.destpc)       :(
+                    (destpc_predictF[1].taken & ien[0]) ? (destpc_predictF[1].destpc) :(
+                    (ien[0])                            ? (pcplus8)                   : (pcplus4)));
+    assign next_predict = (ien[1] & ~ien[0])            ? (destpc_predictF[1])        : (
+                          (ien[0])                      ? (destpc_predictF[0])        : ('0));
     
 endmodule

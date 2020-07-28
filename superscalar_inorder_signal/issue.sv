@@ -23,15 +23,15 @@ module issue(
         output logic mul_timeok, div_timeok
     );
 
-    logic [7: 0] free, valid;
-    decode_data_t [7: 0] issue_queue;
+    logic [`ISSUE_QUEUE_SIZE - 1: 0] free, valid;
+    decode_data_t [`ISSUE_QUEUE_SIZE - 1: 0] issue_queue;
 
-    logic [2: 0] head, headplus1, headplus2;
-    logic [2: 0] tail, tailplus1, tailplus2;
-    assign headplus1 = head + 3'b001;
-    assign headplus2 = head + 3'b010;
-    assign tailplus1 = tail + 3'b001;
-    assign tailplus2 = tail + 3'b010;
+    logic [`ISSUE_QUEUE_WIDTH - 1: 0] head, headplus1, headplus2;
+    logic [`ISSUE_QUEUE_WIDTH - 1: 0] tail, tailplus1, tailplus2;
+    assign headplus1 = head + 5'b001;
+    assign headplus2 = head + 5'b010;
+    assign tailplus1 = tail + 5'b001;
+    assign tailplus2 = tail + 5'b010;
     
     logic queue_overflow;
     //assign queue_overflow = (hitD[1] && !free[0]) || (hitD[0] && !free[1]);
@@ -59,11 +59,12 @@ module issue(
     assign BJ = BJb;
     //issue together
     
-    logic ERETb, CAUSEa, STATUSa, PRIV;
-    assign ERETb = (bD.instr.op == ERET);
+    logic ERETb, CAUSEa, STATUSa, PRIV, EPCa;
+    assign ERETb = (bD.instr.op == ERET) || (aD.instr.op == ERET);
     assign CAUSEa = (aD.instr.ctl.cp0write && aD.cp0_addr == 5'd12);
     assign STATUSa = (aD.instr.ctl.cp0write && aD.cp0_addr == 5'd13);
-    assign PRIV = ERETb || CAUSEa || STATUSa;
+    assign EPCa = (aD.instr.ctl.cp0write && aD.cp0_addr == 5'd14);
+    assign PRIV = ERETb || CAUSEa || STATUSa || EPCa;
     //an instr changes epc before ERET
     //an instr changes cause/status before exception 
     
@@ -71,10 +72,10 @@ module issue(
     //assign enb = 1'b0;
 
     logic [1: 0] issue_en;
-    //assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
-    //assign issue_en[0] = enb && (valid[headplus1]);
     assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
-    assign issue_en[0] = (BJa) && (valid[headplus1]);
+    assign issue_en[0] = enb && (valid[headplus1]);
+    //assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
+    //assign issue_en[0] = (BJa) && (valid[headplus1]);
     
     logic [`MUL_DELAY - 1: 0] MULU_TIMER;
     logic [`DIV_DELAY - 1: 0] DIVU_TIMER;
@@ -89,7 +90,7 @@ module issue(
                     out[0] <= '0;
                     head = '0;
                     tail = '0;
-                    valid = {(8){1'b0}};
+                    valid = {(`ISSUE_QUEUE_SIZE){1'b0}};
                     issue_queue = '0;
                     MULU_TIMER <= {(`MUL_DELAY){1'b1}};
                     DIVU_TIMER <= {(`DIV_DELAY){1'b1}};
@@ -147,7 +148,7 @@ module issue(
                         begin
                             head = '0;
                             tail = '0;
-                            valid = {(8){1'b0}};
+                            valid = {(`ISSUE_QUEUE_SIZE){1'b0}};
                             issue_queue = '0;
                         end
                     else
