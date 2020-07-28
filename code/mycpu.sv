@@ -1,7 +1,9 @@
 // sram
-module mycpu #(
+module mycpu 
+	import common::*;
+	#(
     parameter logic DO_ADDR_TRANSLATION = 1
-) import common::*;(
+) (
     input logic clk,
     input logic resetn,  //low active
     input logic[5:0] ext_int,  //interrupt,high active

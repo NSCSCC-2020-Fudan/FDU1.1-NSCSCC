@@ -1,4 +1,5 @@
-module mult (
+module mult 
+	import common::*;(
     input logic clk, 
     input word_t a, b,
     output dword_t hilo,

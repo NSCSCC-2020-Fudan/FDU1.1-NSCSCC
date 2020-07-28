@@ -32,7 +32,7 @@ module datapath
     payloadRAM_intf payloadRAM_intf();
     hazard_intf hazard_intf();
     pcselect pcselect(.freg(freg_intf.pcselect),
-                      .ports(pcselect_intf.pcselect));
+                      .self(pcselect_intf.pcselect));
     fetch fetch(.instr_, .pc,
                 .freg(freg_intf.fetch),
                 .dreg(dreg_intf.fetch),
@@ -40,7 +40,7 @@ module datapath
                 );
     decode decode(.dreg(dreg_intf.dreg),
                   .rreg(rreg_intf.rreg));
-    renaming renaming(.ports(renaming_intf.renaming),
+    renaming renaming(.self(renaming_intf.renaming),
                       .rreg(rreg_intf.renaming),
                       .ireg(ireg_intf.renaming)
                       );
@@ -65,12 +65,12 @@ module datapath
     rat rat(.clk, .resetn);
     rob rob(.clk, .resetn);
 
-    freg freg(.clk, .resetn, .ports(freg_intf.freg), .hazard(hazard_intf.freg));
-    dreg dreg(.clk, .resetn, .ports(dreg_intf.dreg), .hazard(hazard_intf.dreg));
-    rreg rreg(.clk, .resetn, .ports(rreg_intf.rreg), .hazard(hazard_intf.rreg));
-    ireg ireg(.clk, .resetn, .ports(ireg_intf.ireg), .hazard(hazard_intf.ireg));
-    ereg ereg(.clk, .resetn, .ports(ereg_intf.ereg), .hazard(hazard_intf.ereg));
-    creg creg(.clk, .resetn, .ports(creg_intf.creg), .hazard(hazard_intf.creg));
+    freg freg(.clk, .resetn, .self(freg_intf.freg), .hazard(hazard_intf.freg));
+    dreg dreg(.clk, .resetn, .self(dreg_intf.dreg), .hazard(hazard_intf.dreg));
+    rreg rreg(.clk, .resetn, .self(rreg_intf.rreg), .hazard(hazard_intf.rreg));
+    ireg ireg(.clk, .resetn, .self(ireg_intf.ireg), .hazard(hazard_intf.ireg));
+    ereg ereg(.clk, .resetn, .self(ereg_intf.ereg), .hazard(hazard_intf.ereg));
+    creg creg(.clk, .resetn, .self(creg_intf.creg), .hazard(hazard_intf.creg));
 
     hazard hazard(.i_data_ok, .d_data_ok, 
                   .self(hazard_intf.hazard));
@@ -78,4 +78,7 @@ module datapath
     cp0 cp0(.clk, .resetn);
     arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite);
     creg_select creg_select(.self(payloadRAM_intf.creg_select));
+    hilo hilo(.retire(retire_intf.hilo),
+              .payloadRAM(payloadRAM_intf.hilo));
+    forward forward(.self(forward_intf.forward));
 endmodule

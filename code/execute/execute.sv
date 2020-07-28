@@ -122,7 +122,7 @@ module execute
         assign wake.dst_execute[i].id = dataI.alu_issue[i].dst;
         assign wake.dst_execute[i].valid = dataI.alu_issue[i].valid;
     end
-    // ports
+    // self
     assign dataI = ereg.dataI;
     assign creg.dataE_new = dataE;
 endmodule

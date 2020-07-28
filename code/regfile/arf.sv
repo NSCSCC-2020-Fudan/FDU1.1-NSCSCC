@@ -35,7 +35,7 @@ module arf
 		end
 	end
 
-	// ports
+	// self
 	for (genvar i = 0; i < AREG_READ_PORTS ; i++) begin
 		
 	end

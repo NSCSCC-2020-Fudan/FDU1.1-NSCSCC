@@ -41,11 +41,17 @@ module issue_queue
         // wake up
         for (int i=0; i<WAKE_NUM; i++) begin
             for (int j=0; j<QUEUE_LEN; j++) begin
-                if (queue_new.src1.id == wake[i]) begin
-                    queue_new.src1.valid = 1'b1;
+                if (queue_new[j].src1.id == wake[i].id && wake[i].valid) begin
+                    queue_new[j].src1.valid = 1'b1;
+                    if (i < ISSUE_WIDTH) begin
+                        queue_new[j].src1.data = broadcast[i];
+                    end
                 end
-                if (queue_new.src2.id == wake[i]) begin
-                    queue_new.src2.valid = 1'b1;
+                if (queue_new[j].src2.id == wake[i].id && wake[i].valid) begin
+                    queue_new[j].src2.valid = 1'b1;
+                    if (i < ISSUE_WIDTH) begin
+                        queue_new[j].src1.data = broadcast[i];
+                    end
                 end
                 if (j == tail_new) begin
                     break;

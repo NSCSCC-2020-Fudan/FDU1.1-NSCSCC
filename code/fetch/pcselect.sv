@@ -1,7 +1,7 @@
 module pcselect 
     import common::*;(
     freg_intf.pcselect freg,
-    pcselect_intf.pcselect ports
+    pcselect_intf.pcselect self
 );
     word_t pc;
     logic exception_valid, branch_taken;
@@ -9,8 +9,8 @@ module pcselect
     assign pc = exception_valid ? pcexception : 
                 (branch_taken ? pcbranch : pcplus4);
 
-    assign ports.pc_new = pc;
-    assign pcexception = ports.pcexception;
-    assign pcbranch = ports.pcbranch;
-    assign pcplus4 = ports.pcplus4;
+    assign self.pc_new = pc;
+    assign pcexception = self.pcexception;
+    assign pcbranch = self.pcbranch;
+    assign pcplus4 = self.pcplus4;
 endmodule

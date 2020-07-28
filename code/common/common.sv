@@ -11,6 +11,7 @@ package common;
     parameter MACHINE_WIDTH = 1; // maximum decode&renaming
     //  Group: Typedefs
     typedef logic[31:0] word_t;
+    typedef logic[63:0] dword_t;
     typedef logic[31:0] vaddr_t;
     typedef logic[31:0] paddr_t;
     typedef logic[$clog2(PREG_NUM)-1:0]  preg_addr_t; // physical

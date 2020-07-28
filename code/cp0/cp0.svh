@@ -72,7 +72,7 @@ word_t
     compare,    // 11, Timer interrupt control, R/W, normally write only
     entryhi,    // 10, High-order portion of the TLB entry
     count,      // 09, Processor cycle count, R/W
-    badvaddr,   // 08, Reports the address for the most recent address-related exception, R
+    badvaddr,   // 08, Reself the address for the most recent address-related exception, R
     hwrena,     // 07, Enables access via the RDHWR instruction to selected hardware registers
     wired,      // 06, Controls the number of fixed (“wired”) TLB entries
     pagemask,   // 05, Control for variable page size in TLB entries
