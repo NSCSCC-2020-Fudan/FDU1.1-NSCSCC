@@ -106,7 +106,11 @@ module DualPortBRAM #(
             end
 
             {hazard_reg_1, hazard_reg_2} <= {hazard_1, hazard_2};
-            {mem[addr_1], mem[addr_2]}   <= {new_data_1, new_data_2};
+
+            if (|write_en_1)
+                mem[addr_1] <= new_data_1;
+            if (|write_en_2)
+                mem[addr_2] <= new_data_2;
         end
     end
 

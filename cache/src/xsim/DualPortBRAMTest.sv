@@ -26,8 +26,12 @@ module DualPortBRAMTest();
     #10
         write_en_1 = 4'b1111;
         addr_1 = 0;
+        addr_2 = 0;
         data_in_1 = 32'h12345678;
+    #10
+        write_en_1 = 0;
     #20
+        write_en_1 = 4'b1111;
         addr_1 = 1;
         data_in_1 = 32'h87654321;
     #10
