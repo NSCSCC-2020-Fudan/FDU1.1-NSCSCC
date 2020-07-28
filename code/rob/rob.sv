@@ -6,7 +6,8 @@ module rob
     input logic clk, resetn,
     renaming_intf.rob renaming,
     commit_intf.rob commit,
-    retire_intf.rob retire
+    retire_intf.rob retire,
+    payloadRAM_intf.rob payloadRAM
 );
 
     // table
@@ -124,5 +125,13 @@ module rob
         end else begin
             rob_table <= rob_table_new;
         end
+    end
+
+    // payloadRAM
+    for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
+        assign payloadRAM.prf1[i].valid = rob_table_new[payloadRAM.preg1[i]].complete;
+        assign payloadRAM.prf1[i].data = rob_table_new[payloadRAM.preg1[i]].data[31:0];
+        assign payloadRAM.prf2[i].valid = rob_table_new[payloadRAM.preg2[i]].complete;
+        assign payloadRAM.prf2[i].data = rob_table_new[payloadRAM.preg2[i]].data[31:0];
     end
 endmodule

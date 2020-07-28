@@ -77,4 +77,5 @@ module datapath
     exception exception();
     cp0 cp0(.clk, .resetn);
     arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite);
+    creg_select creg_select(.self(payloadRAM_intf.creg_select));
 endmodule

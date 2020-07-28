@@ -67,7 +67,7 @@ module rat
         assign renaming.renaming_info[i].src1.id = mapping_table_new[renaming.instr.src1].id;
         assign renaming.renaming_info[i].src2.valid = mapping_table_new[renaming.instr.src2].valid;
         assign renaming.renaming_info[i].src2.id = mapping_table_new[renaming.instr.src2].id;
-        assign renaming.renaming_info[i].dst = mapping_table_new[renaming.instr.dst].id;
+        assign renaming.renaming_info[i].dst = mapping_table_new[renaming.instr.dst];
     end
 
 

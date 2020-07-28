@@ -23,12 +23,12 @@ module issue
         assign write[i].valid = 1'b1;
         assign write[i].entry_type = dataR[i].ctl.entry_type;
         assign write[i].entry.dst = dataR[i].dst;
-        assign write[i].entry.src1.valid = ;
-        assign write[i].entry.src1.id = dataR[i].src1;
-        assign write[i].entry.src1.data = ;
-        assign write[i].entry.src2.valid = ;
-        assign write[i].entry.src2.id = dataR[i].src2;
-        assign write[i].entry.src2.data = ;
+        assign write[i].entry.src1.valid = dataR[i].src1.valid ? payloadRAM.prf1[i].valid : 1'b1;
+        assign write[i].entry.src1.id = dataR[i].src1.id;
+        assign write[i].entry.src1.data = dataR[i].src1.valid ? payloadRAM.cdata1[i] : payloadRAM.prf1[i].data;
+        assign write[i].entry.src2.valid = dataR[i].src1.valid ? payloadRAM.prf1[i].valid : 1'b1;
+        assign write[i].entry.src2.id = dataR[i].src2.id;
+        assign write[i].entry.src2.data = dataR[i].src2.valid ? payloadRAM.cdata2[i] : payloadRAM.prf2[i].data;
         assign write[i].entry.ctl = dataR[i].ctl;
         assign write[i].entry.imm = dataR[i].imm;
         assign write[i].entry.pcplus8 = dataR[i].pcplus8;
@@ -36,33 +36,42 @@ module issue
     end
 
     logic [3:0] full;
+    word_t [ISSUE_NUM-1:0] broadcast;
     issue_queue #(.QUEUE_LEN(ALU_QUEUE_LEN), .ENTRY_TYPE(ALU), .READ_NUM(execute_pkg::ALU_NUM))
         alu_issue_queue(.clk, .resetn, .flush,
                         .write,
                         .read(alu_issue),
                         .wake,
-                        .full(full[0]));
+                        .full(full[0]),
+                        .broadcast
+                        );
     
     issue_queue #(.QUEUE_LEN(MEM_QUEUE_LEN), .ENTRY_TYPE(MEM), .READ_NUM(execute_pkg::MEM_NUM))
         mem_issue_queue(.clk, .resetn, .flush,
                         .write,
                         .read(mem_issue),
                         .wake,
-                        .full(full[1]));
+                        .full(full[1]),
+                        .broadcast
+                        );
     
     issue_queue #(.QUEUE_LEN(BRANCH_QUEUE_LEN), .ENTRY_TYPE(BRANCH), .READ_NUM(execute_pkg::BRU_NUM))
         branch_issue_queue(.clk, .resetn, .flush,
                         .write,
                         .read(branch_issue),
                         .wake,
-                        .full(full[2]);
+                        .full(full[2]),
+                        .broadcast
+                        );
 
     issue_queue #(.QUEUE_LEN(MULT_QUEUE_LEN), .ENTRY_TYPE(MULT), .READ_NUM(execute_pkg::MULT_NUM))
         mult_issue_queue(.clk, .resetn, .flush,
                         .write,
                         .read(mult_issue),
                         .wake,
-                        .full(full[3]);
+                        .full(full[3]),
+                        .broadcast
+                        );
 
     for (genvar i=0; i<ALU_NUM; i++) begin
         assign dataI.alu_issue[i].src1 = alu_issue[i].entry.src1.data;
@@ -101,6 +110,7 @@ module issue
         assign dataI.mult_issue[i].exception = mult_issue[i].entry.exception;
     end
     assign wake = {wake.dst_commit, wake.dst_execute};
+    assign broadcast = wake.broadcast;
     assign dataR = ireg.dataR;
     assign ereg.dataI_new = dataI;
 endmodule

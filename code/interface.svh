@@ -89,14 +89,17 @@ endinterface
 
 interface payloadRAM_intf();
     word_t [MACHINE_WIDTH-1:0] arf1, arf2;
-    word_t [MACHINE_WIDTH-1:0] prf1, prf2;
-    word_t [MACHINE_WIDTH-1:0] cp01, cp02, hilo1, hilo2;
+    struct packed {
+        logic valid;
+        word_t data;
+    } [MACHINE_WIDTH-1:0] prf1, prf2;
+    word_t [MACHINE_WIDTH-1:0] cp01, cp02, hi, lo;
     creg_addr_t [MACHINE_WIDTH-1:0] creg1, creg2;
     preg_addr_t [MACHINE_WIDTH-1:0] preg1, preg2; 
-    
+    word_t [MACHINE_WIDTH-1:0] cdata1, cdata2;
     modport issue(
-        input arf1, arf2, prf1, prf2,
-        output 
+        input  cdata1, cdata2,
+        output arf1, arf2, prf1, prf2
     );
     // wake
     modport commit(
@@ -119,10 +122,14 @@ interface payloadRAM_intf();
     );
     // hilo
     modport hilo(
-        input creg1, creg2,
-        output hilo1, hilo2
+        output hi, lo
     );
     // selection
+    modport creg_select(
+        input creg1, creg2,
+        input arf1, arf2, cp01, cp02, hi, lo,
+        output cdata1, cdata2
+    );
 endinterface
 
 interface renaming_intf();
@@ -138,8 +145,7 @@ interface renaming_intf();
         struct packed {
             logic valid;
             preg_addr_t id;
-        } src1, src2;
-        preg_addr_t dst;
+        } src1, src2, dst;
     } [MACHINE_WIDTH-1:0]renaming_info;
     modport renaming(
         input renaming_info,
@@ -202,14 +208,15 @@ endinterface
 interface wake_intf();
     wake_req_t [ISSUE_WIDTH-1:0] dst_commit;
     wake_req_t [ALU_NUM-1:0] dst_execute;
+    word_t [ISSUE_WIDTH-1:0] broadcast;
     modport issue(
-        input dst_commit, dst_execute
+        input dst_commit, dst_execute, broadcast;
     );
     modport execute(
         output dst_execute
     );
     modport commit(
-        output dst_commit
+        output dst_commit, broadcast
     );
 endinterface
 
