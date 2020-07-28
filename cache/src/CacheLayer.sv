@@ -3,10 +3,12 @@
 `include "sramx.svh"
 `include "cache_bus.svh"
 `include "instr_bus.svh"
+`include "data_bus.svh"
 `include "cache.svh"
 
 module CacheLayer #(
     parameter logic USE_ICACHE = 1,
+    parameter logic USE_DCACHE = 1,
     parameter logic USE_IBUS   = 1
 ) (
     input  logic aclk, aresetn,
@@ -149,18 +151,41 @@ module CacheLayer #(
         );
     end else begin: use_ibuf
         // NOTE: "USE_IBUS" does not affect ibuf
-        OneLineBuffer ibuf(
+        OneLineBuffer ibuf_inst(
             .clk(aclk), .resetn(aresetn),
             .sramx_req(isramx_req), .sramx_resp(isramx_resp),
             .cbus_req(icbus_req), .cbus_resp(icbus_resp)
         );
     end
 
-    OneLineBuffer dbuf(
-        .clk(aclk), .resetn(aresetn),
-        .sramx_req(dcache_req), .sramx_resp(dcache_resp),
-        .cbus_req(dcbus_req), .cbus_resp(dcbus_resp)
-    );
+    if (USE_DCACHE == 1) begin: use_dcache
+        dbus_req_t  dbus_req;
+        dbus_resp_t dbus_resp;
+
+        SRAMxToDataBus sramx_dbus_inst(
+            .sramx_req(dcache_req),
+            .sramx_resp(dcache_resp),
+            .dbus_req, .dbus_resp
+        );
+
+        DCache #(
+            .IDX_BITS(DCACHE_IDX_BITS),
+            .INDEX_BITS(DCACHE_INDEX_BITS),
+            .OFFSET_BITS(DCACHE_OFFSET_BITS)
+        ) dcache_inst(
+            .clk(aclk), .resetn(aresetn),
+            .dbus_req_vaddr(data_addr),
+            .dbus_req, .dbus_resp,
+            .cbus_req(dcbus_req),
+            .cbus_resp(dcbus_resp)
+        );
+    end else begin: use_dbuf
+        OneLineBuffer dbuf_inst(
+            .clk(aclk), .resetn(aresetn),
+            .sramx_req(dcache_req), .sramx_resp(dcache_resp),
+            .cbus_req(dcbus_req), .cbus_resp(dcbus_resp)
+        );
+    end
 
     /**
      * $bus to AXI

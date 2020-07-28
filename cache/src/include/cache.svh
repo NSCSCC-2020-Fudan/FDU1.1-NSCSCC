@@ -9,4 +9,9 @@ parameter int ICACHE_INDEX_BITS  = 6;  // index bits (set)
 parameter int ICACHE_OFFSET_BITS = 3;  // offset bits
 parameter int ICACHE_ALIGN_BITS  = 3;  // aligned bits
 
+// 4-way 16KB 64bytes-line
+parameter int DCACHE_IDX_BITS    = 2;  // id bits
+parameter int DCACHE_INDEX_BITS  = 6;  // index bits (set)
+parameter int DCACHE_OFFSET_BITS = 4;  // offset bits
+
 `endif
