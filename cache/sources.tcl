@@ -1,6 +1,0 @@
-cd [file dirname [info script]]
-add_files [glob src/include/*.svh]
-add_files [glob src/ip/*/*.xci]
-add_files [glob src/ram/*.sv]
-add_files [glob src/util/*.sv]
-add_files [glob src/*.sv]

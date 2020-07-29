@@ -1,9 +1,0 @@
-build/*
-!build/.gitkeeper
-*.out
-
-.top
-*.bak
-*.vcd
-*.fst
-*.hier
