@@ -86,6 +86,38 @@ module ICache #(
     input  cbus_resp_t cbus_resp
 );
     /**
+     * storages for cache tags & records
+     */
+    logic ram_write_en;
+    bundle_t ram_bundle;
+    bundle_t ram_new_bundle;
+    select_t ram_select;
+    select_t ram_new_select;
+
+    LUTRAM #(
+        .DATA_WIDTH($bits(bundle_t)),
+        .ADDR_WIDTH(INDEX_BITS),
+        .ENABLE_BYTE_WRITE(0)
+    ) ram_bundle_inst(
+        .clk(clk),
+        .write_en(ram_write_en),
+        .addr(ibus_req_vaddr.index),
+        .data_in(ram_new_bundle),
+        .data_out(ram_bundle)
+    );
+    LUTRAM #(
+        .DATA_WIDTH($bits(select_t)),
+        .ADDR_WIDTH(INDEX_BITS),
+        .ENABLE_BYTE_WRITE(0)
+    ) ram_select_inst(
+        .clk(clk),
+        .write_en(ram_write_en),
+        .addr(ibus_req_vaddr.index),
+        .data_in(ram_new_select),
+        .data_out(ram_select)
+    );
+
+    /**
      * process request address
      * related signals/variables are prefixed with "req_"
      */
@@ -93,24 +125,6 @@ module ICache #(
     addr_t req_vaddr, req_paddr;
     assign req_vaddr = ibus_req_vaddr;
     assign req_paddr = ibus_req.addr;
-
-    // set info storage
-    // set_t [NUM_SETS - 1:0] sets;
-    // set_t req_set;
-    // assign req_set = sets[req_vaddr.index];  // virtually indexed
-
-`ifdef NO_VIVADO
-    bundle_t [NUM_SETS - 1:0] set_lines;
-    select_t [NUM_SETS - 1:0] set_select;
-`else
-    // what m*****-******g Vivado.
-    bundle_t set_lines[NUM_SETS - 1:0];
-    select_t set_select[NUM_SETS - 1:0];
-`endif
-
-    set_t req_set;
-    assign req_set.select = set_select[req_vaddr.index];
-    assign req_set.lines  = set_lines[req_vaddr.index];
 
     // full associative search
     // part 1: hit tests
@@ -120,8 +134,8 @@ module ICache #(
 
     assign req_hit = |req_hit_bits;
     for (genvar i = 0; i < NUM_WAYS; i++) begin
-        assign req_hit_bits[i] = req_set.lines[i].valid &&
-            req_paddr.tag == req_set.lines[i].tag;
+        assign req_hit_bits[i] = ram_bundle[i].valid &&
+            req_paddr.tag == ram_bundle[i].tag;
     end
 
     OneHotToBinary #(.SIZE(NUM_WAYS)) _decoder_inst(
@@ -134,7 +148,7 @@ module ICache #(
     PLRU #(
         .NUM_WAYS(NUM_WAYS)
     ) replacement_inst(
-        .select(req_set.select),
+        .select(ram_select),
         .victim_idx(req_victim_idx),
         .idx(req_idx),
         .new_select(req_new_select)
@@ -280,6 +294,38 @@ module ICache #(
     /**
      * pipelining & state transitions
      */
+    // LUTRAM updates
+    assign ram_write_en = 1;
+
+    always_comb
+    if (resetn) begin
+        unique if (req_to_hit) begin
+            ram_new_bundle = ram_bundle;
+            ram_new_select = req_new_select;
+        end else if (req_to_miss) begin
+            for (int i = 0; i < NUM_WAYS; i++) begin
+                if (req_victim_idx == idx_t'(i)) begin
+                    ram_new_bundle[i].valid = 1;
+                    ram_new_bundle[i].tag   = req_paddr.tag;
+                end else
+                    ram_new_bundle[i] = ram_bundle[i];
+            end
+
+            ram_new_select = ram_select;
+        end else begin
+            ram_new_bundle = ram_bundle;
+            ram_new_select = ram_select;
+        end
+    end else begin
+        for (int i = 0; i < NUM_WAYS; i++) begin
+            ram_new_bundle[i].valid = 0;
+            ram_new_bundle[i].tag   = ram_bundle[i].tag;
+        end
+
+        ram_new_select = 0;
+    end
+
+    // FSM updates
     always_ff @(posedge clk)
     if (resetn) begin
         // bram_out_port <= (bram_addr_eq && bram_on_write) ? 1 : 0;
@@ -287,15 +333,6 @@ module ICache #(
         // to hit stage
         hit_data_ok    <= req_to_hit;
         hit_resp_index <= req_paddr.aligned.shamt;
-
-        // update hit stage
-        if (req_to_hit) begin
-            for (int i = 0; i < NUM_SETS; i++) begin
-                set_lines[i]  <= set_lines[i];
-                set_select[i] <= req_iaddr.index == index_t'(i) ?
-                    req_new_select : set_select[i];
-            end
-        end
 
         // update miss stage
         // NOTE: "req_to_miss" needs to reset "miss_mark" & "miss_count"
@@ -317,28 +354,8 @@ module ICache #(
             miss_count.offset <= req_iaddr.offset;
             miss_count.shamt  <= req_paddr.aligned.shamt;
             miss_mark         <= 0;
-
-            for (int i = 0; i < NUM_SETS; i++) begin
-                set_select[i] <= set_select[i];
-
-                for (int j = 0; j < NUM_WAYS; j++) begin
-                    if (req_iaddr.index == index_t'(i) &&
-                        req_victim_idx == idx_t'(j)) begin
-                        set_lines[i][j].valid <= 1;
-                        set_lines[i][j].tag   <= req_paddr.tag;
-                    end else
-                        set_lines[i][j] <= set_lines[i][j];
-                end
-            end
         end
     end else begin
-        for (int i = 0; i < NUM_SETS; i++) begin
-            set_select[i] <= 0;
-            for (int j = 0; j < NUM_WAYS; j++) begin
-                set_lines[i][j].valid <= 0;
-            end
-        end
-
         hit_data_ok    <= 0;
         hit_resp_index <= 0;
         miss_busy      <= 0;
