@@ -85,9 +85,41 @@ module mycpu_top #(
     );
 
     if (USE_CACHE == 0) begin: without_cache
+        logic mux_inst_req;
+        logic mux_inst_wr;
+        logic [1:0]mux_inst_size;
+        word_t mux_inst_addr;
+        word_t mux_inst_wdata;
+        word_t mux_inst_rdata;
+        logic mux_inst_addr_ok;
+        logic mux_inst_data_ok;
+
+        if (USE_IBUS == 1) begin
+            assign inst_req   = inst_ibus_req;
+            assign inst_wr    = 0;
+            assign inst_size  = 2;
+            assign inst_addr  = inst_ibus_addr;
+            assign inst_wdata = 0;
+            assign inst_ibus_addr_ok = inst_addr_ok;
+            assign inst_ibus_data_ok = inst_data_ok;
+            assign inst_ibus_index   = 1'b1;
+            assign inst_ibus_data    = {
+                inst_rdata, 32'b0
+            };
+        end else begin
+            assign mux_inst_req = inst_req;
+            assign mux_inst_wr = inst_wr;
+            assign mux_inst_size = inst_size;
+            assign mux_inst_addr = inst_addr;
+            assign mux_inst_wdata = inst_wdata;
+            assign inst_rdata = mux_inst_rdata;
+            assign inst_addr_ok = mux_inst_addr_ok;
+            assign inst_data_ok = mux_inst_data_ok;
+        end
+
         cpu_axi_interface cpu_axi_interface(
             .clk(aclk), .resetn(aresetn),
-            .inst_req, .inst_wr, .inst_size, .inst_addr, .inst_wdata, .inst_rdata, .inst_addr_ok, .inst_data_ok,
+            .inst_req(mux_inst_req), .inst_wr(mux_inst_wr), .inst_size(mux_inst_size), .inst_addr(mux_inst_addr), .inst_wdata(mux_inst_wdata), .inst_rdata(mux_inst_rdata), .inst_addr_ok(mux_inst_addr_ok), .inst_data_ok(mux_inst_data_ok),
             .data_req, .data_wr, .data_size, .data_addr, .data_wdata, .data_rdata, .data_addr_ok, .data_data_ok,
             .arid, .araddr, .arlen, .arsize, .arburst, .arlock, .arcache, .arprot, .arvalid , .arready,
             .rid, .rdata, .rresp, .rlast, .rvalid, .rready,
