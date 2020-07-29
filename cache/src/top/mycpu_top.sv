@@ -95,16 +95,16 @@ module mycpu_top #(
         logic mux_inst_data_ok;
 
         if (USE_IBUS == 1) begin
-            assign inst_req   = inst_ibus_req;
-            assign inst_wr    = 0;
-            assign inst_size  = 2;
-            assign inst_addr  = inst_ibus_addr;
-            assign inst_wdata = 0;
-            assign inst_ibus_addr_ok = inst_addr_ok;
-            assign inst_ibus_data_ok = inst_data_ok;
+            assign mux_inst_req   = inst_ibus_req;
+            assign mux_inst_wr    = 0;
+            assign mux_inst_size  = 2;
+            assign mux_inst_addr  = inst_ibus_addr;
+            assign mux_inst_wdata = 0;
+            assign inst_ibus_addr_ok = mux_inst_addr_ok;
+            assign inst_ibus_data_ok = mux_inst_data_ok;
             assign inst_ibus_index   = 1'b1;
             assign inst_ibus_data    = {
-                inst_rdata, 32'b0
+                mux_inst_rdata, 32'b0
             };
         end else begin
             assign mux_inst_req = inst_req;
