@@ -63,19 +63,13 @@ module ICache #(
         index_t  index;
         offset_t offset;
     },
-    localparam type line_t = struct packed {
+
+    localparam type record_t = struct packed {
         logic valid;
-        tag_t tag;
     },
-    localparam type bundle_t = line_t [NUM_WAYS - 1:0],
-
-    // for tree-based PLRU
-    localparam type select_t = logic [NUM_WAYS - 2:0],
-
-    localparam type set_t    = struct packed {
-        select_t select;
-        bundle_t lines;
-    }
+    localparam type meta_t   = record_t [NUM_WAYS - 1:0],
+    localparam type bundle_t = tag_t    [NUM_WAYS - 1:0],
+    localparam type select_t = logic [NUM_WAYS - 2:0]
 ) (
     input logic clk, resetn,
 
@@ -88,30 +82,35 @@ module ICache #(
     /**
      * storages for cache tags & records
      */
-    logic ram_write_en;
-    bundle_t ram_bundle;
-    bundle_t ram_new_bundle;
-    select_t ram_select;
-    select_t ram_new_select;
+    meta_t   ram_meta,   ram_new_meta;
+    bundle_t ram_tags,   ram_new_tags;
+    select_t ram_select, ram_new_select;
 
+    FFRAM #(
+        .DATA_WIDTH($bits(meta_t)),
+        .ADDR_WIDTH(INDEX_BITS)
+    ) ram_meta_inst(
+        .clk(clk), .resetn(resetn), .write_en(1),
+        .addr(ibus_req_vaddr.index),
+        .data_in(ram_new_meta),
+        .data_out(ram_meta)
+    );
     LUTRAM #(
         .DATA_WIDTH($bits(bundle_t)),
         .ADDR_WIDTH(INDEX_BITS),
         .ENABLE_BYTE_WRITE(0)
-    ) ram_bundle_inst(
-        .clk(clk),
-        .write_en(ram_write_en),
+    ) ram_tags_inst(
+        .clk(clk), .write_en(1),
         .addr(ibus_req_vaddr.index),
-        .data_in(ram_new_bundle),
-        .data_out(ram_bundle)
+        .data_in(ram_new_tags),
+        .data_out(ram_tags)
     );
     LUTRAM #(
         .DATA_WIDTH($bits(select_t)),
         .ADDR_WIDTH(INDEX_BITS),
         .ENABLE_BYTE_WRITE(0)
     ) ram_select_inst(
-        .clk(clk),
-        .write_en(ram_write_en),
+        .clk(clk), .write_en(1),
         .addr(ibus_req_vaddr.index),
         .data_in(ram_new_select),
         .data_out(ram_select)
@@ -134,8 +133,8 @@ module ICache #(
 
     assign req_hit = |req_hit_bits;
     for (genvar i = 0; i < NUM_WAYS; i++) begin
-        assign req_hit_bits[i] = ram_bundle[i].valid &&
-            req_paddr.tag == ram_bundle[i].tag;
+        assign req_hit_bits[i] = ram_meta[i].valid &&
+            req_paddr.tag == ram_tags[i];
     end
 
     OneHotToBinary #(.SIZE(NUM_WAYS)) _decoder_inst(
@@ -295,34 +294,33 @@ module ICache #(
      * pipelining & state transitions
      */
     // LUTRAM updates
-    assign ram_write_en = 1;
-
     always_comb
     if (resetn) begin
         unique if (req_to_hit) begin
-            ram_new_bundle = ram_bundle;
+            ram_new_meta   = ram_meta;
+            ram_new_tags   = ram_tags;
             ram_new_select = req_new_select;
         end else if (req_to_miss) begin
             for (int i = 0; i < NUM_WAYS; i++) begin
                 if (req_victim_idx == idx_t'(i)) begin
-                    ram_new_bundle[i].valid = 1;
-                    ram_new_bundle[i].tag   = req_paddr.tag;
-                end else
-                    ram_new_bundle[i] = ram_bundle[i];
+                    ram_new_meta[i] = 1;
+                    ram_new_tags[i] = req_paddr.tag;
+                end else begin
+                    ram_new_meta[i] = ram_meta[i];
+                    ram_new_tags[i] = ram_tags[i];
+                end
             end
 
             ram_new_select = ram_select;
         end else begin
-            ram_new_bundle = ram_bundle;
+            ram_new_meta   = ram_meta;
+            ram_new_tags   = ram_tags;
             ram_new_select = ram_select;
         end
     end else begin
-        for (int i = 0; i < NUM_WAYS; i++) begin
-            ram_new_bundle[i].valid = 0;
-            ram_new_bundle[i].tag   = ram_bundle[i].tag;
-        end
-
-        ram_new_select = 0;
+        ram_new_meta   = ram_meta;
+        ram_new_tags   = ram_tags;
+        ram_new_select = ram_select;
     end
 
     // FSM updates

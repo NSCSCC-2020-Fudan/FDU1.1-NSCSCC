@@ -19,6 +19,34 @@ WITH LOG {
     p.wait(32);
 } AS("test pipeline");
 
+WITH {
+    for (int addr = 0; addr < 8192; addr++) {
+        top->issue_read(_i(addr));
+        top->inst->dbus_req_x_valid = 0;
+        top->eval();
+
+        for (int i = 0; i < 256; i++) {
+            assert(top->inst->req_hit == 0);
+            assert(top->inst->dbus_resp_x_data_ok == 0);
+            top->tick();
+        }
+    }
+} AS("fake read");
+
+WITH {
+    for (int addr = 0; addr < 8192; addr++) {
+        top->issue_write(_i(addr), randu());
+        top->inst->dbus_req_x_valid = 0;
+        top->eval();
+
+        for (int i = 0; i < 256; i++) {
+            assert(top->inst->req_hit == 0);
+            assert(top->inst->dbus_resp_x_data_ok == 0);
+            top->tick();
+        }
+    }
+} AS("fake write");
+
 WITH SKIP {
     Pipeline p(top);
     for (int i = 0; i < MEMORY_SIZE; i++) {
@@ -61,30 +89,6 @@ WITH SKIP {
 
     p.wait();
 } AS("memcpy");
-
-WITH {
-    top->issue_read(7 * 4);
-    top->inst->dbus_req_x_valid = 0;
-    top->eval();
-
-    for (int i = 0; i < 256; i++) {
-        assert(top->inst->req_hit == 0);
-        assert(top->inst->dbus_resp_x_data_ok == 0);
-        top->tick();
-    }
-} AS("fake read");
-
-WITH {
-    top->issue_write(123 * 4, randu());
-    top->inst->dbus_req_x_valid = 0;
-    top->eval();
-
-    for (int i = 0; i < 256; i++) {
-        assert(top->inst->req_hit == 0);
-        assert(top->inst->dbus_resp_x_data_ok == 0);
-        top->tick();
-    }
-} AS("fake write");
 
 WITH {
     Pipeline p(top);
@@ -160,7 +164,7 @@ WITH SKIP {
     p.wait();
 } AS("random block read/write");
 
-WITH {
+WITH SKIP {
     std::vector<u32> ref;
     ref.resize(MEMORY_SIZE);
     std::iota(ref.begin(), ref.end(), 0);

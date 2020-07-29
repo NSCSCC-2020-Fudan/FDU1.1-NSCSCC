@@ -31,6 +31,19 @@ WITH LOG {
 } AS("on pipeline");
 
 WITH {
+    for (int addr = 0; addr < 8192; addr++) {
+        top->issue_read(addr * 4);
+        top->inst->ibus_req_x_req = 0;
+        top->eval();
+        for (int i = 0; i < 256; i++) {
+            assert(top->inst->req_hit == 0);
+            assert(top->inst->ibus_resp_x_data_ok == 0);
+            top->tick();
+        }
+    }
+} AS("fake read");
+
+WITH {
     Pipeline p(top);
     for (int i = 0; i < MEMORY_SIZE; i += 2) {
         p.expect(i);
@@ -71,16 +84,6 @@ WITH SKIP {
 
     p.wait();
 } AS("random read");
-
-WITH {
-    top->issue_read(7 * 4);
-    top->inst->ibus_req_x_req = 0;
-    top->eval();
-    for (int i = 0; i < 256; i++) {
-        assert(top->inst->ibus_resp_x_data_ok == 0);
-        top->tick();
-    }
-} AS("fake read");
 
 WITH {
     Pipeline p(top);

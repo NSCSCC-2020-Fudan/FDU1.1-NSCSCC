@@ -47,17 +47,13 @@ module DCache #(
     },
 
     // set info storages
-    localparam type line_t = struct packed {
+    localparam type record_t = struct packed {
         logic valid;
         logic dirty;
-        tag_t tag;
     },
-    localparam type bundle_t = line_t [NUM_WAYS - 1:0],
-    localparam type select_t = logic [NUM_WAYS - 2:0],
-    localparam type set_t = struct packed {
-        select_t select;
-        bundle_t lines;
-    }
+    localparam type meta_t   = record_t [NUM_WAYS - 1:0],
+    localparam type bundle_t = tag_t    [NUM_WAYS - 1:0],
+    localparam type select_t = logic    [NUM_WAYS - 2:0]
 ) (
     input logic clk, resetn,
 
@@ -68,24 +64,48 @@ module DCache #(
     input  cbus_resp_t cbus_resp
 );
     /**
+     * storages for cache tags & records
+     */
+    meta_t   ram_meta,   ram_new_meta;
+    bundle_t ram_tags,   ram_new_tags;
+    select_t ram_select, ram_new_select;
+
+    FFRAM #(
+        .DATA_WIDTH($bits(meta_t)),
+        .ADDR_WIDTH(INDEX_BITS)
+    ) ram_meta_inst(
+        .clk(clk), .resetn(resetn), .write_en(1),
+        .addr(dbus_req_vaddr.index),
+        .data_in(ram_new_meta),
+        .data_out(ram_meta)
+    );
+    LUTRAM #(
+        .DATA_WIDTH($bits(bundle_t)),
+        .ADDR_WIDTH(INDEX_BITS),
+        .ENABLE_BYTE_WRITE(0)
+    ) ram_tags_inst(
+        .clk(clk), .write_en(1),
+        .addr(dbus_req_vaddr.index),
+        .data_in(ram_new_tags),
+        .data_out(ram_tags)
+    );
+    LUTRAM #(
+        .DATA_WIDTH($bits(select_t)),
+        .ADDR_WIDTH(INDEX_BITS),
+        .ENABLE_BYTE_WRITE(0)
+    ) ram_select_inst(
+        .clk(clk), .write_en(1),
+        .addr(dbus_req_vaddr.index),
+        .data_in(ram_new_select),
+        .data_out(ram_select)
+    );
+
+    /**
      * process request addresses
      */
     addr_t req_vaddr, req_paddr;
     assign req_vaddr = dbus_req_vaddr;
     assign req_paddr = dbus_req.addr;
-
-    // set info storage
-`ifdef NO_VIVADO
-    bundle_t [NUM_SETS - 1:0] set_lines;
-    select_t [NUM_SETS - 1:0] set_select;
-`else
-    bundle_t set_lines[NUM_SETS - 1:0];
-    select_t set_select[NUM_SETS - 1:0];
-`endif
-
-    set_t req_set;
-    assign req_set.lines  = set_lines[req_vaddr.index];
-    assign req_set.select = set_select[req_vaddr.index];
 
     // full associative search
     logic [NUM_WAYS - 1:0] req_hit_bits;
@@ -94,8 +114,8 @@ module DCache #(
 
     assign req_hit = |req_hit_bits;
     for (genvar i = 0; i < NUM_WAYS; i++) begin
-        assign req_hit_bits[i] = req_set.lines[i].valid &&
-            req_paddr.tag == req_set.lines[i].tag;
+        assign req_hit_bits[i] = ram_meta[i].valid &&
+            req_paddr.tag == ram_tags[i];
     end
 
     OneHotToBinary #(.SIZE(NUM_WAYS)) _decoder_inst(
@@ -108,7 +128,7 @@ module DCache #(
     PLRU #(
         .NUM_WAYS(NUM_WAYS)
     ) replacement_inst(
-        .select(req_set.select),
+        .select(ram_select),
         .victim_idx(req_victim_idx),
         .idx(req_idx),
         .new_select(req_new_select)
@@ -157,7 +177,8 @@ module DCache #(
     ready_bits_t miss_ready;
 
     // NOTE: victim buffer has one cycle delay
-    line_t   miss_vline;
+    record_t miss_vrecord;
+    tag_t    miss_vtag;
     logic    miss_vwrten;
     offset_t miss_voffset;
     buffer_t miss_victim;
@@ -171,7 +192,7 @@ module DCache #(
     view_t  miss_wdata;
 
     assign miss_busy     = miss_state != IDLE;
-    assign miss_is_dirty = miss_vline.valid && miss_vline.dirty;
+    assign miss_is_dirty = miss_vrecord.valid && miss_vrecord.dirty;
     assign miss_avail    = miss_state == IDLE || (miss_state == WRITE && cbus_resp.last);
     assign miss_write_en = miss_state == READ && cbus_resp.okay ? BRAM_FULL_MASK : 0;
     assign miss_wdata    = cbus_resp.rdata;
@@ -209,29 +230,54 @@ module DCache #(
     );
 
     /**
-     * state transitions
+     * pipelining & state transitions
      */
+    // LUTRAM updates
+    always_comb
+    if (resetn) begin
+        unique if (req_to_hit) begin
+            if (dbus_req.is_write) begin
+                for (int i = 0; i < NUM_WAYS; i++) begin
+                    if (req_iaddr.idx == idx_t'(i)) begin
+                        ram_new_meta[i].dirty = 1;
+                        ram_new_meta[i].valid = ram_meta[i].valid;
+                    end else
+                        ram_new_meta[i] = ram_meta[i];
+                end
+            end else
+                ram_new_meta = ram_meta;
+
+            ram_new_tags   = ram_tags;
+            ram_new_select = req_new_select;
+        end else if (req_to_miss) begin
+            for (int i = 0; i < NUM_WAYS; i++) begin
+                if (req_victim_idx == idx_t'(i)) begin
+                    ram_new_meta[i].valid = 1;
+                    ram_new_meta[i].dirty = 0;
+                    ram_new_tags[i]       = req_paddr.tag;
+                end else begin
+                    ram_new_meta[i] = ram_meta[i];
+                    ram_new_tags[i] = ram_tags[i];
+                end
+            end
+
+            ram_new_select = ram_select;
+        end else begin
+            ram_new_meta   = ram_meta;
+            ram_new_tags   = ram_tags;
+            ram_new_select = ram_select;
+        end
+    end else begin
+        ram_new_meta   = ram_meta;
+        ram_new_tags   = ram_tags;
+        ram_new_select = ram_select;
+    end
+
+    // FSM updates
     always_ff @(posedge clk)
     if (resetn) begin
         // to hit stage
         hit_data_ok <= req_to_hit;
-        if (req_to_hit) begin
-            for (int i = 0; i < NUM_SETS; i++) begin
-                set_select[i] <= req_iaddr.index == index_t'(i) ?
-                    req_new_select : set_select[i];
-            end
-
-            if (dbus_req.is_write) begin
-                for (int i = 0; i < NUM_SETS; i++)
-                if (req_iaddr.index == index_t'(i))
-                for (int j = 0; j < NUM_WAYS; j++) begin
-                    set_lines[i][j].dirty <= req_iaddr.idx == idx_t'(j) ?
-                        1 : set_lines[i][j].dirty;
-                    set_lines[i][j].valid <= set_lines[i][j].valid;
-                    set_lines[i][j].tag   <= set_lines[i][j].tag;
-                end
-            end
-        end
 
         // update miss stage
         // some changes may be overwritten by "req_to_miss"
@@ -245,7 +291,7 @@ module DCache #(
 
                 if (cbus_resp.last) begin
                     miss_state    <= miss_is_dirty ? WRITE : IDLE;
-                    miss_addr.tag <= miss_vline.tag;
+                    miss_addr.tag <= miss_vtag;
                 end
 
                 if (cbus_resp.okay) begin
@@ -290,33 +336,13 @@ module DCache #(
             miss_pos.offset <= req_iaddr.offset;
             miss_ready      <= 0;
             // miss_vwrten     <= 0;
-            miss_vline      <= set_lines[req_iaddr.index][req_victim_idx];
-
-            for (int i = 0; i < NUM_SETS; i++)
-            for (int j = 0; j < NUM_WAYS; j++) begin
-                if (req_iaddr.index == index_t'(i) &&
-                    req_victim_idx == idx_t'(j)) begin
-                    set_lines[i][j].valid <= 1;
-                    set_lines[i][j].dirty <= 0;
-                    set_lines[i][j].tag   <= req_paddr.tag;
-                end else begin
-                    set_lines[i][j] <= set_lines[i][j];
-                end
-            end
+            miss_vrecord    <= ram_meta[req_victim_idx];
+            miss_vtag       <= ram_tags[req_victim_idx];
         end
     end else begin
         hit_data_ok <= 0;
         miss_state  <= IDLE;
         miss_vwrten <= 0;
-
-        for (int i = 0; i < NUM_SETS; i++) begin
-            set_select[i] <= 0;
-
-            for (int j = 0; j < NUM_WAYS; j++) begin
-                set_lines[i][j].valid <= 0;
-                set_lines[i][j].dirty <= 0;
-            end
-        end
     end
 
     /**

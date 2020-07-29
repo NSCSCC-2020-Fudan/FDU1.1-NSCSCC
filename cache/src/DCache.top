@@ -36,6 +36,3 @@ hit_pos
 hit_rdata
 hit_wdata
 hit_write_en
-
-set_lines
-set_select
