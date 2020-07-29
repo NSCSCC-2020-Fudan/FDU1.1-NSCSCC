@@ -28,7 +28,7 @@ module datapath
     exception_intf exception_intf();
     wake_intf wake_intf();
     commit_intf commit_intf();
-    retire_intf retire_intf();
+    retire_intf retire_intf(.wb_pc);
     payloadRAM_intf payloadRAM_intf();
     hazard_intf hazard_intf();
     pcselect pcselect(.freg(freg_intf.pcselect),

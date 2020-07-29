@@ -26,7 +26,6 @@ package issue_queue_pkg;
         word_t pcplus8;
         decoded_op_t op;
         exception_pkg::exception_info_t exception;
-        rob_pkg::rob_addr_t rob_addr;
     } entry_t;
     // typedef entry_t[ALU_QUEUE_LEN-1:0] alu_queue_t;
     // typedef entry_t[MEM_QUEUE_LEN-1:0] mem_queue_t;

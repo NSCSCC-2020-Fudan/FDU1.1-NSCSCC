@@ -40,7 +40,7 @@ module renaming
     // self                    
     for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
         assign dataR[i].valid = dataD[i].valid;
-        assign dataR[i].dst = self.renaming_info[i].dst.id;
+        assign dataR[i].dst = self.rob_addr_new[i];
         assign dataR[i].src1 = psrc1[i];
         assign dataR[i].src2 = psrc2[i];
         assign dataR[i].dst_ = dataD[i].instr.dst;

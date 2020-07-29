@@ -54,7 +54,7 @@ module rat
         // write
         for (int i=0; i<TABLE_LEN; i++) begin
             for (int j=0; j<MACHINE_WIDTH; j++) begin
-                if (renaming.instr[i].valid && renaming.instr[i].dst != 0 && renaming.instr[i].dst == i) begin
+                if (renaming.instr[j].valid && renaming.instr[j].dst != 0 && renaming.instr[j].dst == i) begin
                     mapping_table_new[i].id = renaming.rob_addr_new[j];
                     mapping_table_new[i].valid = 1'b1;
                 end

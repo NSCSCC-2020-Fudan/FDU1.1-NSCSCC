@@ -25,6 +25,8 @@ module agu
             addr <= addr_new;
         end
     end
+    assign exception_load = '0;
+    assign exception_save = '0;
     assign data = memtoreg ? wd : rd;
 endmodule
 

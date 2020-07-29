@@ -122,9 +122,10 @@ module execute
                 .branch_taken(dataE.branch_commit[i].branch_taken),
                 .pcbranch(dataE.branch_commit[i].pcbranch)
                 );
-        assign dataE.branch_commit[i].valid = dataI.mult_issue[i].valid;
-        assign dataE.branch_commit[i].rob_addr = dataI.mult_issue[i].dst;
+        assign dataE.branch_commit[i].valid = dataI.branch_issue[i].valid;
+        assign dataE.branch_commit[i].rob_addr = dataI.branch_issue[i].dst;
         assign dataE.branch_commit[i].exception = dataI.branch_issue[i].exception;
+        assign dataE.branch_commit[i].data = dataI.branch_issue[i].pcplus8;
     end
 
     // MULT

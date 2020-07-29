@@ -150,7 +150,7 @@ interface renaming_intf();
         } src1, src2, dst;
     } [MACHINE_WIDTH-1:0]renaming_info;
     modport renaming(
-        input renaming_info,
+        input renaming_info, rob_addr_new,
         output instr
     );
     modport rat(
@@ -163,8 +163,8 @@ interface renaming_intf();
     );
 endinterface
 
-interface retire_intf();
-    import common::*;
+interface retire_intf
+    import common::*;(output word_t[ISSUE_WIDTH-1:0] wb_pc);
     import decode_pkg::*;
     struct packed {
         logic valid;
@@ -183,7 +183,7 @@ interface retire_intf();
         input retire
     );
     modport rob(
-        output retire
+        output retire, wb_pc
     );
     modport arf(
         input retire
@@ -202,8 +202,8 @@ interface commit_intf();
     import execute_pkg::*;
     alu_commit_t [ALU_NUM-1:0] alu_commit;
     mem_commit_t [MEM_NUM-1:0] mem_commit;
-    branch_commit_t [ALU_NUM-1:0] branch_commit;
-    mult_commit_t [ALU_NUM-1:0] mult_commit;
+    branch_commit_t [BRU_NUM-1:0] branch_commit;
+    mult_commit_t [MULT_NUM-1:0] mult_commit;
     modport commit(
         output alu_commit, mem_commit, branch_commit, mult_commit
     );
@@ -285,7 +285,7 @@ interface hazard_intf();
         input exception_valid
     );
     modport rob(
-        output rob_full
+        output rob_full, branch_taken
     );
 endinterface
 

@@ -67,6 +67,9 @@ module issue_queue
             if (read_num == READ_NUM) begin
                 break;
             end
+            if (i == tail_new) begin
+                break;
+            end
             // ready
             if (queue_new[i].src1.valid && queue_new[i].src2.valid) begin
                 read[read_num] = queue_new[i];
@@ -84,15 +87,13 @@ module issue_queue
             end
 
             // reach the last entry
-            if (i == tail_new) begin
-                break;
-            end
+            
         end
         queue_after_read = queue_new;
         tail_after_read = tail_new;
         // check read, else write
         for (int i=0; i<WRITE_NUM; i++) begin
-            if (write[i].entry_type != ENTRY_TYPE) begin
+            if (write[i].entry_type != ENTRY_TYPE || ~write[i].valid) begin
                 continue; // not this type
             end else if (read_num != READ_NUM && write[i].entry.src1.valid && write[i].entry.src2.valid) begin
                 read[read_num] = write[i].entry; // issue immediately

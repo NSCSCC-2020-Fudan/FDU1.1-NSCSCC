@@ -9,7 +9,7 @@ module freg
     word_t pc, pc_new;
     always_ff @(posedge clk) begin
         if (~resetn) begin
-            pc <= '0;
+            pc <= 32'hbfc00000;
         end else if (~stall) begin
             pc <= pc_new;
         end
