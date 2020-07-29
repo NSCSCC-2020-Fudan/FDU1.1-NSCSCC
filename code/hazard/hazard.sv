@@ -9,7 +9,7 @@ module hazard
     logic branch_taken, exception_valid, is_eret;
     logic rob_full;
 
-    assign stallF = ~i_data_ok | rob_full;
+    assign stallF = (~i_data_ok | rob_full) & (~branch_taken);
     assign stallD = rob_full;
     assign stallR = rob_full;
     assign stallI = 1'b0;
@@ -33,7 +33,7 @@ module hazard
     assign self.flushI = flushI;
     assign self.flushE = flushE;
     assign self.flushC = flushC;
-    assign branch_taken = 1'b0;
+    assign branch_taken = self.branch_taken;
     assign exception_valid = 1'b0;
     assign is_eret = 1'b0;
     assign rob_full = self.rob_full;

@@ -3,7 +3,7 @@ module agu
     import common::*;
     import mem_pkg::*;
     (
-    input logic clk, resetn, memtoreg, memwrite,
+    input logic clk, resetn, flush, memtoreg, memwrite,
     input word_t src1, src2,
     input word_t rd_, wd_,
     output word_t data,
@@ -19,7 +19,7 @@ module agu
     assign addr_new = src1 + src2;
     
     always_ff @(posedge clk) begin
-        if (~resetn) begin
+        if (~resetn | flush) begin
             addr <= '0;
         end else begin
             addr <= addr_new;

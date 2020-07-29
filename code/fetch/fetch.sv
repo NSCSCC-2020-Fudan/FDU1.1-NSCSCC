@@ -16,6 +16,7 @@ module fetch
     for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
         assign dataF[i].instr_ = instr_;
         assign dataF[i].pcplus8 = pcplus8;
+        assign dataF[i].pcplus4 = pcplus4;
         assign dataF[i].valid = 1'b1;
     end
     
