@@ -1,0 +1,76 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Fri Jul 17 02:00:35 2020
+[*]
+[dumpfile] "./sequential-read.fst"
+[dumpfile_mtime] "Fri Jul 17 02:00:13 2020"
+[dumpfile_size] 237887
+[savefile] "./sequential-read.gtkw"
+[timestart] 403
+[size] 1920 1032
+[pos] -1 -1
+*-3.333450 31 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[signals_width] 430
+@28
+TOP.OneLineBufferTop.reset
+@200
+-
+@28
+TOP.OneLineBufferTop.cbus_req.valid
+TOP.OneLineBufferTop.cbus_req.is_write
+@22
+TOP.OneLineBufferTop.cbus_req.order[3:0]
+TOP.OneLineBufferTop.cbus_req.addr[31:0]
+TOP.OneLineBufferTop.cbus_req.wdata.word[31:0]
+@200
+-
+@28
+TOP.OneLineBufferTop.cbus_resp.last
+TOP.OneLineBufferTop.cbus_resp.okay
+@22
+TOP.OneLineBufferTop.cbus_resp.rdata.word[31:0]
+@200
+-
+@28
+[color] 1
+TOP.OneLineBufferTop.clk
+@200
+-
+@28
+TOP.OneLineBufferTop.sramx_req.req
+TOP.OneLineBufferTop.sramx_req.size[1:0]
+TOP.OneLineBufferTop.sramx_req.wr
+@22
+TOP.OneLineBufferTop.sramx_req.addr[31:0]
+TOP.OneLineBufferTop.sramx_req.wdata.word[31:0]
+@200
+-
+@28
+TOP.sramx_resp.addr_ok
+TOP.sramx_resp.data_ok
+@22
+TOP.sramx_resp.rdata.word[31:0]
+@200
+-
+@29
+TOP.state[1:0]
+@22
+TOP.tag[25:0]
+@28
+TOP.valid
+TOP.tag_hit
+TOP.offset_hit
+@200
+-
+@28
+TOP.req_addr_x_index[1:0]
+@22
+TOP.req_addr_x_offset[3:0]
+TOP.req_addr_x_tag[25:0]
+@28
+TOP.saved_addr_x_index[1:0]
+@22
+TOP.saved_addr_x_offset[3:0]
+TOP.saved_addr_x_tag[25:0]
+[pattern_trace] 1
+[pattern_trace] 0
