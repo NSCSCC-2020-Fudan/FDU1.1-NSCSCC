@@ -10,7 +10,8 @@
     * `include/`：SystemVerilog 头文件。
     * `ip/`：Vivado 中用到 IP 核的配置文件（`.xci`）。
     * `ram/`：RAM 相关的基础模块。
-    * `synth`：用于单独进行 Vivado 综合和布线的模块代码。
+    * `synth/`：用于单独进行 Vivado 综合和布线的模块代码。
+    * `top/`：存放 `mycpu_top.sv`。
     * `util/`：辅助模块、总线转接模块。
     * `xsim/`：Vivado 下的测试源码。
 * `test/`：测试代码。
@@ -18,6 +19,8 @@
 * `.gitignore`
 * `Makefile`：使用 `make run` 运行测试。
 * `README.md`：本文件。
+* `sources.tcl`：用于加入 cache 源码的 Tcl 脚本。
+* `sources-cache.tcl`：在 `sources.tcl` 的基础上加入文件 `xsim/global.svh`。
 * `wrap.py`：顶层模块生成器。用于测试。
 
 ## 模块测试
