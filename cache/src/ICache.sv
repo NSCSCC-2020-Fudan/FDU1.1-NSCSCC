@@ -269,7 +269,8 @@ module ICache #(
 
     DualPortBRAM #(
         .DATA_WIDTH(DATA_WIDTH),
-        .ADDR_WIDTH(MEM_ADDR_BITS)
+        .ADDR_WIDTH(MEM_ADDR_BITS),
+        .WRITE_MODE("read_first")
     ) bram_inst(
         .clk(clk), .reset(~resetn), .en(1),
 
