@@ -4,7 +4,7 @@ module execute
     import common::*;
     import execute_pkg::*;
     import decode_pkg::*;(
-    input clk, resetn,
+    input clk, resetn, flush,
     ereg_intf.execute ereg,
     creg_intf.execute creg,
     forward_intf.execute forward,
@@ -21,40 +21,40 @@ module execute
     word_t [BRU_NUM-1:0]brusrca, brusrcb;
     word_t [MULT_NUM-1:0]multsrca, multsrcb;
     for (genvar i = 0; i < ALU_NUM ; i++) begin
-        assign alusrca[i] = forward.forwards[i].valid1 ? 
+        assign alusrca[i] = forward.forwards[i].valid1 & dataI.alu_issue[i].forward_en1 ? 
                             forward.data[forward.forwards[i].fw1] :
                             dataI.alu_issue[i].src1;
-        assign alusrcb[i] = forward.forwards[i].valid2 ? 
+        assign alusrcb[i] = forward.forwards[i].valid2 & dataI.alu_issue[i].forward_en2 ? 
                             forward.data[forward.forwards[i].fw2] :
                             dataI.alu_issue[i].src2;
         assign forward.src1[i] = dataI.alu_issue[i].r1;
         assign forward.src2[i] = dataI.alu_issue[i].r2;
     end
     for (genvar i = 0; i < MEM_NUM ; i++) begin
-        assign agusrca[i] = forward.forwards[i].valid1 ? 
+        assign agusrca[i] = forward.forwards[i].valid1 & dataI.mem_issue[i].forward_en1 ? 
                             forward.data[forward.forwards[i].fw1] :
                             dataI.mem_issue[i].src1;
-        assign agusrcb[i] = forward.forwards[i].valid2 ? 
+        assign agusrcb[i] = forward.forwards[i].valid2 & dataI.mem_issue[i].forward_en2 ? 
                             forward.data[forward.forwards[i].fw2] :
                             dataI.mem_issue[i].src2;
         assign forward.src1[i] = dataI.mem_issue[i].r1;
         assign forward.src2[i] = dataI.mem_issue[i].r2;
     end
     for (genvar i = 0; i < BRU_NUM ; i++) begin
-        assign brusrca[i] = forward.forwards[i].valid1 ? 
+        assign brusrca[i] = forward.forwards[i].valid1 & dataI.branch_issue[i].forward_en1 ? 
                             forward.data[forward.forwards[i].fw1] :
                             dataI.branch_issue[i].src1;
-        assign brusrcb[i] = forward.forwards[i].valid2 ? 
+        assign brusrcb[i] = forward.forwards[i].valid2 & dataI.branch_issue[i].forward_en2 ? 
                             forward.data[forward.forwards[i].fw2] :
                             dataI.branch_issue[i].src2;
         assign forward.src1[i] = dataI.branch_issue[i].r1;
         assign forward.src2[i] = dataI.branch_issue[i].r2;
     end
     for (genvar i = 0; i < MULT_NUM ; i++) begin
-        assign multsrca[i] = forward.forwards[i].valid1 ? 
+        assign multsrca[i] = forward.forwards[i].valid1 & dataI.mult_issue[i].forward_en1 ? 
                             forward.data[forward.forwards[i].fw1] :
                             dataI.mult_issue[i].src1;
-        assign multsrcb[i] = forward.forwards[i].valid2 ? 
+        assign multsrcb[i] = forward.forwards[i].valid2 & dataI.mult_issue[i].forward_en2 ? 
                             forward.data[forward.forwards[i].fw2] :
                             dataI.mult_issue[i].src2;
         assign forward.src1[i] = dataI.mult_issue[i].r1;
@@ -86,7 +86,7 @@ module execute
     word_t [MEM_NUM-1:0]aguout;
     vaddr_t [MEM_NUM-1:0]addr;
     for (genvar i=0; i<MEM_NUM; i++) begin
-        agu agu(.clk, .resetn, 
+        agu agu(.clk, .resetn, .flush,
                 .memtoreg(dataI.mem_issue[i].ctl.memtoreg),
                 .src1(dataI.mem_issue[i].src1), 
                 .src2(dataI.mem_issue[i].imm),
@@ -130,7 +130,7 @@ module execute
 
     // MULT
     for (genvar i=0; i<MULT_NUM; i++) begin
-        mult mult(.clk, .resetn,
+        mult mult(.clk, .resetn, .flush,
                   .a(multsrca[i]),
                   .b(multsrcb[i]),
                   .op(dataI.mult_issue[i].op),

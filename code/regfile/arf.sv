@@ -4,7 +4,8 @@ module arf
 	(
 	input logic clk, resetn,
 	retire_intf.arf retire,
-	output rf_w_t [AREG_WRITE_PORTS-1:0]rfwrite
+	output rf_w_t [AREG_WRITE_PORTS-1:0]rfwrite,
+	payloadRAM_intf.arf payloadRAM
 );
     word_t[AREG_NUM-1:0] regfile, regfile_new;
 	read_req_t [AREG_READ_PORTS-1:0]reads;
@@ -37,7 +38,8 @@ module arf
 
 	// self
 	for (genvar i = 0; i < AREG_READ_PORTS ; i++) begin
-		
+		assign payloadRAM.arf1[i] = regfile_new[payloadRAM.creg1[i][4:0]];
+		assign payloadRAM.arf2[i] = regfile_new[payloadRAM.creg2[i][4:0]];
 	end
 	for (genvar i = 0; i < AREG_WRITE_PORTS ; i++) begin
 		assign writes[i].valid = retire.retire[i].ctl.regwrite;

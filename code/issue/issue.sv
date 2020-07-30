@@ -4,14 +4,12 @@ module issue
     import issue_queue_pkg::*;
     import issue_pkg::*;
     import execute_pkg::*;(
-    input clk, resetn,
+    input clk, resetn, flush,
     ireg_intf.issue ireg,
     ereg_intf.issue ereg,
     wake_intf.issue wakes,
     payloadRAM_intf.issue payloadRAM
 );
-	logic flush;
-	assign flush = '0;
     renaming_pkg::renaming_data_t[MACHINE_WIDTH-1:0] dataR;
     issue_data_t dataI;
     write_req_t[WRITE_NUM-1:0] write;
@@ -29,10 +27,12 @@ module issue
         assign write[i].entry.dst = dataR[i].dst;
         assign write[i].entry.src1.valid = dataR[i].src1.valid ? payloadRAM.prf1[i].valid : 1'b1;
         assign write[i].entry.src1.id = dataR[i].src1.id;
-        assign write[i].entry.src1.data = dataR[i].src1.valid ? payloadRAM.cdata1[i] : payloadRAM.prf1[i].data;
-        assign write[i].entry.src2.valid = dataR[i].src1.valid ? payloadRAM.prf1[i].valid : 1'b1;
+        assign write[i].entry.src1.data = ~dataR[i].src1.valid ? payloadRAM.cdata1[i] : payloadRAM.prf1[i].data;
+        assign write[i].entry.src1.forward_en = dataR[i].src1_ != '0;
+        assign write[i].entry.src2.valid = dataR[i].src2.valid ? payloadRAM.prf2[i].valid : 1'b1;
         assign write[i].entry.src2.id = dataR[i].src2.id;
-        assign write[i].entry.src2.data = dataR[i].src2.valid ? payloadRAM.cdata2[i] : payloadRAM.prf2[i].data;
+        assign write[i].entry.src2.data = ~dataR[i].src2.valid ? payloadRAM.cdata2[i] : payloadRAM.prf2[i].data;
+        assign write[i].entry.src2.forward_en = dataR[i].src2_ != '0;
         assign write[i].entry.ctl = dataR[i].ctl;
         assign write[i].entry.op = dataR[i].op;
         assign write[i].entry.imm = dataR[i].imm;
@@ -86,6 +86,8 @@ module issue
         assign dataI.alu_issue[i].r2 = alu_issue[i].entry.src2.id;
         assign dataI.alu_issue[i].imm = alu_issue[i].entry.imm;
         assign dataI.alu_issue[i].dst = alu_issue[i].entry.dst;
+        assign dataI.alu_issue[i].forward_en1 = alu_issue[i].entry.src1.forward_en;
+        assign dataI.alu_issue[i].forward_en2 = alu_issue[i].entry.src2.forward_en;
         assign dataI.alu_issue[i].ctl = alu_issue[i].entry.ctl;
         assign dataI.alu_issue[i].op = alu_issue[i].entry.op;
         assign dataI.alu_issue[i].pcplus8 = alu_issue[i].entry.pcplus8;
@@ -99,6 +101,8 @@ module issue
         assign dataI.mem_issue[i].r1 = mem_issue[i].entry.src1.id;
         assign dataI.mem_issue[i].r2 = mem_issue[i].entry.src2.id;
         assign dataI.mem_issue[i].dst = mem_issue[i].entry.dst;
+        assign dataI.mem_issue[i].forward_en1 = mem_issue[i].entry.src1.forward_en;
+        assign dataI.mem_issue[i].forward_en2 = mem_issue[i].entry.src2.forward_en;
         assign dataI.mem_issue[i].ctl = mem_issue[i].entry.ctl;
         assign dataI.mem_issue[i].op = mem_issue[i].entry.op;
         assign dataI.mem_issue[i].pcplus8 = mem_issue[i].entry.pcplus8;
@@ -112,6 +116,8 @@ module issue
         assign dataI.branch_issue[i].r1 = branch_issue[i].entry.src1.id;
         assign dataI.branch_issue[i].r2 = branch_issue[i].entry.src2.id;
         assign dataI.branch_issue[i].dst = branch_issue[i].entry.dst;
+        assign dataI.branch_issue[i].forward_en1 = branch_issue[i].entry.src1.forward_en;
+        assign dataI.branch_issue[i].forward_en2 = branch_issue[i].entry.src2.forward_en;
         assign dataI.branch_issue[i].ctl = branch_issue[i].entry.ctl;
         assign dataI.branch_issue[i].op = branch_issue[i].entry.op;
         assign dataI.branch_issue[i].pcplus8 = branch_issue[i].entry.pcplus8;
@@ -125,6 +131,8 @@ module issue
         assign dataI.mult_issue[i].r1 = mult_issue[i].entry.src1.id;
         assign dataI.mult_issue[i].r2 = mult_issue[i].entry.src2.id;
         assign dataI.mult_issue[i].dst = mult_issue[i].entry.dst;
+        assign dataI.mult_issue[i].forward_en1 = mult_issue[i].entry.src1.forward_en;
+        assign dataI.mult_issue[i].forward_en2 = mult_issue[i].entry.src2.forward_en;
         assign dataI.mult_issue[i].ctl = mult_issue[i].entry.ctl;
         assign dataI.mult_issue[i].op = mult_issue[i].entry.op;
         assign dataI.mult_issue[i].pcplus8 = mult_issue[i].entry.pcplus8;
@@ -134,4 +142,10 @@ module issue
     assign broadcast = wakes.broadcast;
     assign dataR = ireg.dataR;
     assign ereg.dataI_new = dataI;
+    for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
+        assign payloadRAM.creg1 = dataR[i].src1_;
+        assign payloadRAM.creg2 = dataR[i].src2_;
+        assign payloadRAM.preg1 = dataR[i].src1.id;
+        assign payloadRAM.preg2 = dataR[i].src2.id;
+    end
 endmodule

@@ -58,7 +58,7 @@ module mult
         endcase
     end
     always_ff @(posedge clk) begin
-        if (~resetn) begin
+        if (~resetn | flush) begin
             state <= INIT;
             counter <= '0;
         end else begin

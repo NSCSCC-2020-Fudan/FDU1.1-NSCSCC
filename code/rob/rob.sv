@@ -4,7 +4,7 @@ module rob
     import rob_pkg::*;
     import commit_pkg::*;
     import execute_pkg::*;(
-    input logic clk, resetn,
+    input logic clk, resetn, flush,
     renaming_intf.rob renaming,
     commit_intf.rob commit,
     retire_intf.rob retire,
@@ -146,7 +146,7 @@ module rob
 
     end
     always_ff @(posedge clk) begin
-        if (~resetn) begin
+        if (~resetn | flush) begin
             rob_table <= '0;
             head_ptr <= '0;
             tail_ptr <= '0;

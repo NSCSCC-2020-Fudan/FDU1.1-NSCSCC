@@ -2,14 +2,15 @@
 module hazard 
     import common::*;(
     hazard_intf.hazard self,
-    input logic i_data_ok, d_data_ok
+    input logic i_data_ok, d_data_ok,
+    output logic flush
 );
     logic stallF, stallD, stallR, stallI, stallE, stallC;
     logic         flushD, flushR, flushI, flushE, flushC;
     logic branch_taken, exception_valid, is_eret;
     logic rob_full;
 
-    assign stallF = (~i_data_ok | rob_full) & (~branch_taken);
+    assign stallF = (~i_data_ok | rob_full);
     assign stallD = rob_full;
     assign stallR = rob_full;
     assign stallI = 1'b0;
@@ -20,6 +21,8 @@ module hazard
     assign flushE = branch_taken | exception_valid;
     assign flushI = branch_taken | exception_valid;
     assign flushC = branch_taken | exception_valid;
+    assign flush = (branch_taken | exception_valid) &
+                    ~stallF;
 
     // self
     assign self.stallF = stallF;

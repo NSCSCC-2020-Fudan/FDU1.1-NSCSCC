@@ -103,8 +103,8 @@ interface payloadRAM_intf();
     preg_addr_t [MACHINE_WIDTH-1:0] preg1, preg2; 
     word_t [MACHINE_WIDTH-1:0] cdata1, cdata2;
     modport issue(
-        input  cdata1, cdata2,
-        output arf1, arf2, prf1, prf2
+        input  cdata1, cdata2, prf1, prf2,
+        output creg1, creg2, preg1, preg2
     );
     // prf
     modport rob(

@@ -15,6 +15,8 @@ module datapath
     // output logic inst_en,
     input i_data_ok, d_data_ok
 );
+    logic flush;
+    
     freg_intf freg_intf();
     dreg_intf dreg_intf();
     rreg_intf rreg_intf();
@@ -44,13 +46,13 @@ module datapath
                       .rreg(rreg_intf.renaming),
                       .ireg(ireg_intf.renaming)
                       );
-    issue issue(.clk, .resetn,
+    issue issue(.clk, .resetn, .flush, 
                 .ireg(ireg_intf.issue),
                 .ereg(ereg_intf.issue),
                 .wakes(wake_intf.issue),
                 .payloadRAM(payloadRAM_intf.issue)
                 );
-    execute execute(.clk, .resetn,
+    execute execute(.clk, .resetn, .flush, 
                     .ereg(ereg_intf.execute),
                     .creg(creg_intf.execute),
                     .forward(forward_intf.execute),
@@ -62,11 +64,11 @@ module datapath
                   .wake(wake_intf.commit)
                   );
 
-    rat rat(.clk, .resetn,
+    rat rat(.clk, .resetn, .flush, 
             .renaming(renaming_intf.rat),
             .retire(retire_intf.rat)
             );
-    rob rob(.clk, .resetn, 
+    rob rob(.clk, .resetn, .flush, 
             .renaming(renaming_intf.rob),
             .commit(commit_intf.rob),
             .retire(retire_intf.rob),
@@ -81,13 +83,13 @@ module datapath
     ereg ereg(.clk, .resetn, .self(ereg_intf.ereg), .hazard(hazard_intf.ereg));
     creg creg(.clk, .resetn, .self(creg_intf.creg), .hazard(hazard_intf.creg));
 
-    hazard hazard(.i_data_ok, .d_data_ok, 
+    hazard hazard(.i_data_ok, .d_data_ok, .flush, 
                   .self(hazard_intf.hazard));
     exception exception(.reset(resetn),.self(exception_intf.excep),
                         .pcselect(pcselect_intf.exception),
                         .hazard(hazard_intf.exception));
     // cp0 cp0(.clk);
-    arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite);
+    arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite, .payloadRAM(payloadRAM_intf.arf));
     creg_select creg_select(.self(payloadRAM_intf.creg_select));
     hilo hilo(.retire(retire_intf.hilo),
               .payloadRAM(payloadRAM_intf.hilo));

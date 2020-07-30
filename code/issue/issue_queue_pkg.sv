@@ -16,6 +16,7 @@ package issue_queue_pkg;
         logic valid;
         preg_addr_t id;
         word_t data;
+        logic forward_en;
     } src_data_t;
     typedef struct packed {
         logic valid;

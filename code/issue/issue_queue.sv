@@ -20,6 +20,7 @@ module issue_queue
     queue_t queue, queue_new, queue_after_read;
     
     queue_ptr_t tail, tail_new, tail_after_read;
+    write_req_t [WRITE_NUM-1:0] write_waken;
     logic[3:0] read_num;
     logic full_new;
     assign full_new = tail_new == '1;
@@ -39,6 +40,7 @@ module issue_queue
         tail_new = tail;
         full = 1'b0;
         read = '0;
+        write_waken = write;
         // wake up
         for (int i=0; i<WAKE_NUM; i++) begin
             for (int j=0; j<QUEUE_LEN; j++) begin
@@ -51,11 +53,25 @@ module issue_queue
                 if (queue_new[j].src2.id == wake[i].id && wake[i].valid) begin
                     queue_new[j].src2.valid = 1'b1;
                     if (i < ISSUE_WIDTH) begin
-                        queue_new[j].src1.data = broadcast[i];
+                        queue_new[j].src2.data = broadcast[i];
                     end
                 end
                 if (j == tail_new) begin
                     break;
+                end
+            end
+            for (int j=0; j<WRITE_NUM; j++) begin
+                if (write_waken[j].entry.src1.id == wake[i].id && wake[i].valid) begin
+                    write_waken[j].entry.src1.valid = 1'b1;
+                    if (i < ISSUE_WIDTH) begin
+                        write_waken[j].entry.src1.data = broadcast[i];
+                    end
+                end
+                if (write_waken[j].entry.src2.id == wake[i].id && wake[i].valid) begin
+                    write_waken[j].entry.src2.valid = 1'b1;
+                    if (i < ISSUE_WIDTH) begin
+                        write_waken[j].entry.src2.data = broadcast[i];
+                    end
                 end
             end
         end
@@ -93,12 +109,12 @@ module issue_queue
         tail_after_read = tail_new;
         // check read, else write
         for (int i=0; i<WRITE_NUM; i++) begin
-            if (write[i].entry_type != ENTRY_TYPE || ~write[i].valid) begin
+            if (write_waken[i].entry_type != ENTRY_TYPE || ~write_waken[i].valid) begin
                 continue; // not this type
-            end else if (read_num != READ_NUM && write[i].entry.src1.valid && write[i].entry.src2.valid) begin
-                read[read_num] = write[i].entry; // issue immediately
+            end else if (read_num != READ_NUM && write_waken[i].entry.src1.valid && write_waken[i].entry.src2.valid) begin
+                read[read_num] = write_waken[i].entry; // issue immediately
             end else if (~full_new) begin
-                queue_new[tail_new] = write[i].entry; // push into the queue
+                queue_new[tail_new] = write_waken[i].entry; // push into the queue
                 tail_new = tail_new + 1;
             end else begin
                 tail_new = tail_after_read;
