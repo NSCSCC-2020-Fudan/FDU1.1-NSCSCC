@@ -65,7 +65,7 @@ module execute
     word_t [ALU_NUM-1:0]aluout;
     logic [ALU_NUM-1:0]exception_of;
     for (genvar i=0; i<ALU_NUM; i++) begin
-        alu alu(.a(alusrca[i]), 
+        alu alu(.a(dataI.alu_issue[i].ctl.shamt_valid ? dataI.alu_issue[i].imm :alusrca[i]), 
                 .b(dataI.alu_issue[i].ctl.alusrc == IMM ? dataI.alu_issue[i].imm :alusrcb[i]),
                 .alufunc(dataI.alu_issue[i].ctl.alufunc),
                 .c(aluout[i]),

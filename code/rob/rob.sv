@@ -51,7 +51,9 @@ module rob
 
     logic branch_taken;
     assign branch_taken = rob_table[head_addr_new].data.branch.branch_taken &&
-                          rob_table[head_addr_new].ctl.branch;
+                          (rob_table[head_addr_new].ctl.branch ||
+                          rob_table[head_addr_new].ctl.jump
+                          );
     always_comb begin
         rob_table_retire = rob_table;
         head_ptr_retire = head_ptr;
@@ -95,31 +97,38 @@ module rob
         // retire
         retire.retire = '0;
         for (int i=0; i<ISSUE_WIDTH; i++) begin
-            if (empty) begin
+            if (head_ptr_retire == tail_ptr) begin
                 break;
             end
             // check exception
             if (exception_valid) begin
                 break;
             end
-            // check branch
-            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
-                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch) begin
-                break;
-            end
-                // write delay slot
-
+            
             // write register
             if (~rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].complete) begin
                 break;
             end
             retire.retire[i].valid = 1'b1;
             retire.retire[i].ctl = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl;
-            retire.retire[i].data = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data[63:0];
+            retire.retire[i].data = (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
+                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.jump)? 
+                {32'b0, rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].pcplus8} : 
+                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data[63:0];
             retire.retire[i].dst = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].creg;
+            retire.retire[i].preg = head_ptr_retire[ROB_ADDR_LEN-1:0];
+            rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].creg = '0;
             retire.wb_pc[i] = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].pcplus8;
             // rob_table_retire[head_addr_retire] = '0;
             // update head_ptr
+            // check branch
+            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
+                (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
+                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.jump)) begin
+                break;
+            end
+                // write delay slot
+
             head_ptr_retire = head_ptr_retire + 1;
         end
 

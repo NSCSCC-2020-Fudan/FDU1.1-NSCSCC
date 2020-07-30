@@ -454,7 +454,7 @@ module decoder
     assign rs = instr_[25:21];
     assign rt = instr_[20:16];
     assign rd = instr_[15:11];
-	assign instr.imm = ctl.jump ? {pcplus4[31:28], instr[25:0], 2'b0 }: (ctl.shamt_valid ? {27'b0, instr_[10:6]} : 
+	assign instr.imm = ctl.jump ? {pcplus4[31:28], instr_[25:0], 2'b0 }: (ctl.shamt_valid ? {27'b0, instr_[10:6]} : 
     (ctl.zeroext ? {16'b0, instr_[15:0]} : {{16{instr_[15]}}, instr_[15:0]}));
     always_comb begin
         instr.src1 = {2'b0, rs};
@@ -489,6 +489,9 @@ module decoder
 
     always_comb begin
         instr.dst = ctl.regdst == RT ? {2'b0, rt} : {2'b0, rd};
+        if (ctl.jump | ctl.branch) begin
+            instr.dst = 7'b0011111;
+        end
         if (~ctl.regwrite) begin
             instr.dst = '0;
         end
