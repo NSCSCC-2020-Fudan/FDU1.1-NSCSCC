@@ -37,7 +37,7 @@ module bpb_line0(
                         if (tag != tag_commit || ~valid)
                             begin
                                 valid = 1'b1;
-                                state = 2'b00;
+                                state = 2'b01;
                                 tag = tag_commit;
                                 destpc = destpc_commit.destpc;
                             end
