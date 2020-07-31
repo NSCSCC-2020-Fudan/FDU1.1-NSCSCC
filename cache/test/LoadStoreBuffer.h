@@ -30,8 +30,9 @@ public:
         _sw_count_reg = 0;
     }
 
-    auto current(int addr) -> u32 {
-        return (addr * _sw_count) ^ _sw_bits;
+    auto current(int addr, bool use_reg = false) -> u32 {
+        return use_reg ? _sw_count_reg : _sw_count;
+        // return (addr * _sw_count) ^ _sw_bits;
     }
 
     void pre_clock_hook() {
@@ -39,7 +40,7 @@ public:
             inst->s_resp_x_addr_ok = randu(0, 3) != 3;
 
             if (inst->s_resp_x_addr_ok)
-                _fifo.push(current(inst->s_req_x_addr));
+                _fifo.push(current(inst->s_req_x_addr, true));
         } else
             inst->s_resp_x_addr_ok = 0;
 
@@ -55,14 +56,14 @@ public:
     }
 
     void clock_trigger() {
-        if (inst->m_req_x_req && inst->m_req_x_wr) {
+        if (inst->m_req_x_req && inst->m_req_x_wr && inst->m_resp_x_addr_ok) {
             _sw_bits_reg ^= inst->m_req_x_wdata;
             _sw_count_reg++;
-        }
 
-        if (inst->resetn) {
-            assert(_sw_bits_reg == _sw_bits);
-            assert(_sw_count_reg == _sw_count);
+            if (inst->resetn) {
+                assert(_sw_bits_reg == _sw_bits);
+                assert(_sw_count_reg == _sw_count);
+            }
         }
     }
 
@@ -133,8 +134,8 @@ public:
         if (data_ok) {
             assert(!_d_fifo.empty());
             auto u = _d_fifo.front();
-            info("addr 0x%x, data %08x, is_write %d\n",
-                u.addr, u.data, u.is_write);
+            info("addr 0x%x, data \"%08x\", got \"%08x\", is_write %d\n",
+                u.addr, u.data, data, u.is_write);
 
             if (!u.is_write)
                 assert(u.data == data);
@@ -146,7 +147,7 @@ public:
         if (_a_fifo.empty()) {
             in_req() = 0;
             _top->eval();
-        } else {
+        } else if (addr_ok || !in_req()) {
             auto u = _a_fifo.front();
             if (u.is_write)
                 _top->issue_store(u.addr, u.data);

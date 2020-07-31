@@ -49,7 +49,7 @@ module LoadStoreBuffer #(
     assign req_ff_ok  = fifo_empty && s_resp.data_ok;
     assign fifo_avail = meta[head].avail;
     assign fifo_empty = meta[tail].avail;
-    assign fifo_push  = fifo_avail && req_is_wr && !req_ff_ok;
+    assign fifo_push  = m_req.req && fifo_avail && (fifo_empty || req_is_wr == tail_elem.wr) && !req_ff_ok;
     assign fifo_pop   = !fifo_empty && s_resp.data_ok;
 
     /**
@@ -67,9 +67,10 @@ module LoadStoreBuffer #(
         end
 
         for (int i = 0; i < BUFFER_LENGTH; i++) begin
-            /*unique*/ if (fifo_push && head == index_t'(i))
-                fifo[i] <= m_req;
-            else if (tail == index_t'(i) && s_resp.addr_ok) begin
+            /*unique*/ if (fifo_push && head == index_t'(i)) begin
+                fifo[i]     <= m_req;
+                fifo[i].req <= fifo_empty ? ~s_resp.addr_ok : 1;
+            end else if (tail == index_t'(i) && s_resp.addr_ok) begin
                 fifo[i]     <= fifo[i];
                 fifo[i].req <= 0;
             end else
@@ -88,13 +89,9 @@ module LoadStoreBuffer #(
     /**
      * driver for master
      */
-    logic lw_addr_ok, lw_data_ok;
-    assign lw_addr_ok = fifo_empty && s_resp.addr_ok;
-    assign lw_data_ok = fifo_empty && s_resp.data_ok;
-
     assign m_resp.rdata   = s_resp.rdata;
-    assign m_resp.addr_ok = m_req.wr ? fifo_avail : lw_addr_ok;
-    assign m_resp.data_ok = lw_data_ok || (fifo_avail && req_is_wr);
+    assign m_resp.addr_ok = fifo_push || req_ff_ok;
+    assign m_resp.data_ok = req_ff_ok || (fifo_push && req_is_wr) || (!tail_elem.wr && s_resp.data_ok);
 
     assign s_req = fifo_empty ? m_req : tail_elem;
 endmodule

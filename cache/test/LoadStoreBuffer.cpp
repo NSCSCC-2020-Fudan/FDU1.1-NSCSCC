@@ -30,3 +30,11 @@ WITH {
     }
     p.wait(8192);
 } AS("full load");
+
+WITH {
+    for (int i = 0; i < 256; i++) {
+        p.write(randu(), randu());
+        p.inspect(randu());
+    }
+    p.wait(8192);
+} AS("interleave");

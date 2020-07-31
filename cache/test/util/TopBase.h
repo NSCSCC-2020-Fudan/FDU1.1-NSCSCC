@@ -26,38 +26,12 @@ public:
     }
 
     void tick() {
-        _tickcount++;
-        u64 now = 10 * _tickcount;
-
-        inst->eval();
-        pre_clock_hook();
-        inst->eval();
-        trace_dump(now - 7);
-
-        inst->clk = 1;
-
-        for (auto &fn : _trigger_hooks)
-            fn();
-
-        clock_trigger();
-        inst->eval_step();
-        trace_dump(now);
-
-        inst->eval_end_step();
-        inst->clk = 0;
-        inst->eval();
-        trace_dump(now + 1);
-
-        post_clock_hook();
-        inst->eval();
-        trace_dump(now + 2);
-
-        trace_flush();
+        _tick();
     }
 
     void tick(u64 count) {
         for (u64 i = 0; i < count; i++) {
-            tick();
+            _tick();
         }
     }
 
@@ -88,14 +62,14 @@ public:
         inst->trace(_trace_fp, 32);
         _trace_fp->open(filename);
 
-        tick();
+        _tick();
         // _trace_fp->dump(0);
     }
 
     void stop_trace() {
         if (_trace_fp) {
             notify("trace: stop @%d\n", tickcount());
-            tick();
+            inst->eval();
             _trace_fp->dump(static_cast<vluint64_t>(tickcount() + 10));
             _trace_fp->flush();
             _trace_fp->close();
@@ -109,6 +83,39 @@ public:
     }
 
 protected:
+    void _tick(bool no_callback = false) {
+        _tickcount++;
+        u64 now = 10 * _tickcount;
+
+        inst->eval();
+        pre_clock_hook();
+        inst->eval();
+        trace_dump(now - 7);
+
+        inst->clk = 1;
+
+        if (!no_callback) {
+            for (auto &fn : _trigger_hooks) {
+                fn();
+            }
+        }
+
+        clock_trigger();
+        inst->eval_step();
+        trace_dump(now);
+
+        inst->eval_end_step();
+        inst->clk = 0;
+        inst->eval();
+        trace_dump(now + 1);
+
+        post_clock_hook();
+        inst->eval();
+        trace_dump(now + 2);
+
+        trace_flush();
+    }
+
     u64 _tickcount;
     VerilatedFstC *_trace_fp;
     std::vector<DirectHook> _trigger_hooks;
