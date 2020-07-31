@@ -6,11 +6,7 @@
 class Top : public TopBase {
 public:
     void reset() {
-        _sw_bits = 0;
-        _sw_count = 0;
-        _sw_bits = 0;
-        _sw_count = 0;
-
+        _tickcount = 0;
         inst->clk = 0;
         inst->resetn = 1;
         inst->m_req_x_addr = 0;
@@ -27,6 +23,11 @@ public:
         tick();
         inst->resetn = 1;
         tick();
+
+        _sw_bits = 0;
+        _sw_count = 0;
+        _sw_bits_reg = 0;
+        _sw_count_reg = 0;
     }
 
     auto current(int addr) -> u32 {
@@ -35,14 +36,15 @@ public:
 
     void post_clock_hook() {
         if (inst->s_req_x_req) {
-            inst->s_resp_x_addr_ok = randu(0, 3) == 0;
+            inst->s_resp_x_addr_ok = randu(0, 3) != 3;
 
             if (inst->s_resp_x_addr_ok)
                 _fifo.push(current(inst->s_req_x_addr));
-        }
+        } else
+            inst->s_resp_x_addr_ok = 0;
 
         if (!_fifo.empty()) {
-            inst->s_resp_x_data_ok = randu(0, 3) == 0;
+            inst->s_resp_x_data_ok = randu(0, 3) != 3;
 
             if (inst->s_resp_x_data_ok) {
                 inst->s_resp_x_rdata = _fifo.front();
@@ -58,8 +60,10 @@ public:
             _sw_count_reg++;
         }
 
-        assert(_sw_bits_reg == _sw_bits);
-        assert(_sw_count_reg == _sw_count);
+        if (inst->resetn) {
+            assert(_sw_bits_reg == _sw_bits);
+            assert(_sw_count_reg == _sw_count);
+        }
     }
 
     void issue_store(int addr, u32 wdata) {
@@ -117,9 +121,12 @@ public:
 
         if (addr_ok && in_req()) {
             assert(!_a_fifo.empty());
-            _d_fifo.push(_a_fifo.front());
-            info("a %d\n", _a_fifo.front().addr);
+            auto u = _a_fifo.front();
             _a_fifo.pop();
+
+            info("a 0x%x\n", u.addr);
+            u.data = _top->current(u.addr);
+            _d_fifo.push(u);
         }
         if (data_ok) {
             assert(!_d_fifo.empty());
@@ -130,7 +137,7 @@ public:
             if (!u.is_write)
                 assert(u.data == data);
 
-            info("d %d\n", u.addr);
+            info("d 0x%x\n", u.addr);
             _d_fifo.pop();
         }
 
@@ -141,8 +148,10 @@ public:
             auto u = _a_fifo.front();
             if (u.is_write)
                 _top->issue_store(u.addr, u.data);
-            else
+            else {
+                u.data = _top->current(u.addr);
                 _top->issue_load(u.addr);
+            }
         }
     }
 

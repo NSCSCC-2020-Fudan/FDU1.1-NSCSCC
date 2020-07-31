@@ -37,15 +37,19 @@ module LoadStoreBuffer #(
      * FIFO signals
      */
     req_t tail_elem;
+    logic req_is_wr;
+    logic req_ff_ok;  // fast-forward
     logic fifo_avail;
     logic fifo_empty;
     logic fifo_push;
     logic fifo_pop;
 
     assign tail_elem  = fifo[tail];
+    assign req_is_wr  = m_req.req && m_req.wr;
+    assign req_ff_ok  = fifo_empty && s_resp.data_ok;
     assign fifo_avail = meta[head].avail;
     assign fifo_empty = meta[tail].avail;
-    assign fifo_push  = fifo_avail && m_req.req && !(fifo_empty && s_resp.data_ok);
+    assign fifo_push  = fifo_avail && req_is_wr && !req_ff_ok;
     assign fifo_pop   = !fifo_empty && s_resp.data_ok;
 
     /**
@@ -84,19 +88,13 @@ module LoadStoreBuffer #(
     /**
      * driver for master
      */
-    assign m_resp.rdata = s_resp.rdata;
+    logic lw_addr_ok, lw_data_ok;
+    assign lw_addr_ok = fifo_empty && s_resp.addr_ok;
+    assign lw_data_ok = fifo_empty && s_resp.data_ok;
 
-    always_comb begin
-        if (fifo_empty) begin
-            s_req = m_req;
+    assign m_resp.rdata   = s_resp.rdata;
+    assign m_resp.addr_ok = m_req.wr ? fifo_avail : lw_addr_ok;
+    assign m_resp.data_ok = lw_data_ok || (fifo_avail && req_is_wr);
 
-            m_resp.addr_ok = 1;
-            m_resp.data_ok = m_req.wr || s_resp.data_ok;
-        end else begin
-            s_req = tail_elem;
-
-            m_resp.addr_ok = fifo_push;
-            m_resp.data_ok = !tail_elem.wr && s_resp.data_ok;
-        end
-    end
+    assign s_req = fifo_empty ? m_req : tail_elem;
 endmodule

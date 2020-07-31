@@ -13,3 +13,12 @@ WITH LOG {
     p.inspect(0x11223344);
     p.wait(256);
 } AS("simple test");
+
+WITH {
+    Pipeline p(top);
+    for (int i = 0; i < 256; i++) {
+        p.write(randu(), randu());
+    }
+    p.inspect(randu());
+    p.wait(8192);
+} AS("full store");
