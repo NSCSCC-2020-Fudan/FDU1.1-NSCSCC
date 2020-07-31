@@ -2,7 +2,7 @@
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
 [*] Fri Jul 31 12:21:24 2020
 [*]
-[dumpfile] "./full-store.fst"
+[dumpfile] "./full-load.fst"
 [dumpfile_mtime] "Fri Jul 31 12:20:22 2020"
 [dumpfile_size] 199214
 [savefile] "./ls-buffer.gtkw"

@@ -1,3 +1,4 @@
+#include "util.h"
 #include "SimpleTopBase.h"
 #include "verilated_fst_c.h"
 
@@ -34,6 +35,10 @@ public:
         trace_dump(now - 7);
 
         inst->clk = 1;
+
+        for (auto &fn : _trigger_hooks)
+            fn();
+
         clock_trigger();
         inst->eval_step();
         trace_dump(now);
@@ -60,6 +65,10 @@ public:
     virtual void pre_clock_hook() {}
     virtual void clock_trigger() {}
     virtual void post_clock_hook() {}
+
+    void add_clock_trigger(const DirectHook &fn) {
+        _trigger_hooks.push_back(fn);
+    }
 
     void trace_dump(u64 time) {
         if (_trace_fp)
@@ -102,4 +111,5 @@ public:
 protected:
     u64 _tickcount;
     VerilatedFstC *_trace_fp;
+    std::vector<DirectHook> _trigger_hooks;
 };

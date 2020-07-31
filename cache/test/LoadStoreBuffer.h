@@ -34,7 +34,7 @@ public:
         return (addr * _sw_count) ^ _sw_bits;
     }
 
-    void post_clock_hook() {
+    void pre_clock_hook() {
         if (inst->s_req_x_req) {
             inst->s_resp_x_addr_ok = randu(0, 3) != 3;
 
@@ -44,7 +44,7 @@ public:
             inst->s_resp_x_addr_ok = 0;
 
         if (!_fifo.empty()) {
-            inst->s_resp_x_data_ok = randu(0, 3) != 3;
+            inst->s_resp_x_data_ok = randu(0, 1) == 0;
 
             if (inst->s_resp_x_data_ok) {
                 inst->s_resp_x_rdata = _fifo.front();
@@ -96,7 +96,13 @@ private:
 
 class Pipeline {
 public:
-    Pipeline(Top *top) : _top(top) {}
+    Pipeline(Top *top) : _top(top) {
+        top->add_clock_trigger([this] {
+            this->addr_ok = this->_top->inst->m_resp_x_addr_ok;
+            this->data_ok = this->_top->inst->m_resp_x_data_ok;
+            this->data = this->_top->inst->m_resp_x_rdata;
+        });
+    }
 
     void inspect(int addr) {
         _a_fifo.push({false, addr, _top->current(addr)});
@@ -113,10 +119,6 @@ public:
     }
 
     void tick() {
-        bool addr_ok = _top->inst->m_resp_x_addr_ok;
-        bool data_ok = _top->inst->m_resp_x_data_ok;
-        u64 data = _top->inst->m_resp_x_rdata;
-
         _top->tick();
 
         if (addr_ok && in_req()) {
@@ -180,6 +182,9 @@ private:
     };
 
     Top *_top;
+    bool addr_ok;
+    bool data_ok;
+    u64 data;
     std::queue<_task_t> _a_fifo;
     std::queue<_task_t> _d_fifo;
 };

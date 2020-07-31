@@ -9,9 +9,10 @@ using u64  = unsigned long long;
 using i64  = long long;
 using cstr = const char*;
 
-using PretestHook  = std::function<void(void)>;
-using PosttestHook = std::function<void(void)>;
-using DeferHook    = std::function<void(void)>;  // mimic Go's `defer`
+using DirectHook   = std::function<void(void)>;
+using PretestHook  = DirectHook;
+using PosttestHook = DirectHook;
+using DeferHook    = DirectHook;  // mimic Go's `defer`
 
 extern PretestHook   _pretest_hook;
 extern PosttestHook  _posttest_hook;
