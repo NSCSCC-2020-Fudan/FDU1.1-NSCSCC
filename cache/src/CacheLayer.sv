@@ -9,7 +9,8 @@
 module CacheLayer #(
     parameter logic USE_ICACHE = 1,
     parameter logic USE_DCACHE = 1,
-    parameter logic USE_IBUS   = 1
+    parameter logic USE_IBUS   = 1,
+    parameter logic USE_BUFFER = 1
 ) (
     input  logic aclk, aresetn,
 
@@ -209,12 +210,36 @@ module CacheLayer #(
     /**
      * uncached converter
      */
+    sramx_req_t  mux_uncached_req;
+    sramx_resp_t mux_uncached_resp;
+
+    if (USE_BUFFER == 1) begin
+        sramx_req_t  buf_uncached_req;
+        sramx_resp_t buf_uncached_resp;
+
+        LoadStoreBuffer #(
+            .BUFFER_LENGTH(LSBUF_LENGTH)
+        ) ls_buffer_inst(
+            .clk(aclk), .resetn(aresetn),
+            .m_req(uncached_req),
+            .m_resp(uncached_resp),
+            .s_req(buf_uncached_req),
+            .s_resp(buf_uncached_resp)
+        );
+
+        assign mux_uncached_req  = buf_uncached_req;
+        assign buf_uncached_resp = mux_uncached_resp;
+    end else begin
+        assign mux_uncached_req = uncached_req;
+        assign uncached_resp    = mux_uncached_resp;
+    end
+
     axi_req_t  axi_uncached_req;
     axi_resp_t axi_uncached_resp;
 
     SRAMxToAXI axi_uncached_inst(
         .clk(aclk), .resetn(aresetn),
-        .sramx_req(uncached_req), .sramx_resp(uncached_resp),
+        .sramx_req(mux_uncached_req), .sramx_resp(mux_uncached_resp),
         .axi_req(axi_uncached_req),
         .axi_resp(axi_uncached_resp)
     );

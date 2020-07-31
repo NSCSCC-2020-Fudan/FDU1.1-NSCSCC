@@ -6,7 +6,8 @@ module mycpu_top #(
     parameter logic USE_CACHE  = 1,
     parameter logic USE_ICACHE = 1,
     parameter logic USE_DCACHE = 1,
-    parameter logic USE_IBUS   = 1
+    parameter logic USE_IBUS   = 1,
+    parameter logic USE_BUFFER = 1
 ) (
     input logic[5:0] ext_int,  //high active
 
@@ -131,7 +132,8 @@ module mycpu_top #(
         CacheLayer #(
             .USE_ICACHE(USE_ICACHE),
             .USE_DCACHE(USE_DCACHE),
-            .USE_IBUS(USE_IBUS)
+            .USE_IBUS(USE_IBUS),
+            .USE_BUFFER(USE_BUFFER)
         ) layer_inst(.*);
     end
 endmodule
