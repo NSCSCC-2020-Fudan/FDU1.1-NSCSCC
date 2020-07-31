@@ -13,4 +13,5 @@ module pcselect
     assign pcexception = self.pcexception;
     assign pcbranch = self.pcbranch;
     assign pcplus4 = self.pcplus4;
+    assign branch_taken = self.branch_taken;
 endmodule

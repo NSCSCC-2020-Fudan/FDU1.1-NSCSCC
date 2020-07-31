@@ -10,6 +10,7 @@ module rob
     retire_intf.rob retire,
     payloadRAM_intf.rob payloadRAM,
     hazard_intf.rob hazard,
+    pcselect_intf.rob pcselect,
     output m_w_t mwrite,
     input logic d_data_ok
     // mem_ctrl_intf.rob mem_ctrl
@@ -20,7 +21,9 @@ module rob
 
     // fifo ptrs
     rob_ptr_t head_ptr, tail_ptr, head_ptr_new, tail_ptr_new, head_ptr_retire, tail_ptr_retire;
+    rob_ptr_t head_ptr_temp, head_ptr_b;
     rob_addr_t head_addr, tail_addr, head_addr_new, tail_addr_new, head_addr_retire, tail_addr_retire;
+    rob_addr_t head_addr_b;
     assign head_addr = head_ptr[ROB_ADDR_LEN-1:0];
     assign tail_addr = tail_ptr[ROB_ADDR_LEN-1:0];
     assign head_addr_new = head_ptr_new[ROB_ADDR_LEN-1:0];
@@ -51,11 +54,14 @@ module rob
     assign exception_valid = rob_table[head_addr].exception.valid;
 
     logic branch_taken;
-    assign branch_taken = rob_table[head_addr_new].data.branch.branch_taken &&
-                          (rob_table[head_addr_new].ctl.branch ||
-                          rob_table[head_addr_new].ctl.jump
+    assign head_ptr_b = head_ptr_new - 2;
+    assign head_addr_b = head_ptr_b[ROB_ADDR_LEN-1:0];
+    assign branch_taken = rob_table[head_addr_b].data.branch.branch_taken &&
+                          (rob_table[head_addr_b].ctl.branch ||
+                          rob_table[head_addr_b].ctl.jump
                           );
     m_w_t mwrite_new;
+    logic[9:0] ds_counter;
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
             mwrite <= '0;
@@ -109,6 +115,10 @@ module rob
         // retire
         retire.retire = '0;
         mwrite_new = '0;
+
+        ds_counter = 10'b10_0000_0000;
+        
+        head_ptr_temp = '0;
         for (int i=0; i<ISSUE_WIDTH; i++) begin
             if (head_ptr_retire == tail_ptr) begin
                 break;
@@ -122,7 +132,26 @@ module rob
             if (~rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].complete) begin
                 break;
             end
-
+            head_ptr_temp = head_ptr_retire - 2;
+            if (ds_counter == 10'b0 || (rob_table[head_ptr_temp[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
+                          (rob_table[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.branch ||
+                          rob_table[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.jump))) begin
+                break;
+            end
+            ds_counter = {1'b0, ds_counter[9:1]};
+            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
+                (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
+                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.jump)) begin
+                if (i == ISSUE_WIDTH - 1) begin
+                    break;
+                end
+                head_ptr_temp = head_ptr_retire + 1;
+                if (head_ptr_temp == tail_ptr || ~rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].complete) begin
+                    break;
+                end
+                ds_counter = 10'b1;
+                // branch_taken = 1'b1;
+            end
             retire.retire[i].valid = 1'b1;
             retire.retire[i].ctl = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl;
             retire.retire[i].data = (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
@@ -142,12 +171,7 @@ module rob
             // rob_table_retire[head_addr_retire] = '0;
             // update head_ptr
             // check branch
-            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
-                (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
-                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.jump)) begin
-                break;
-            end
-                // write delay slot
+            
 
             head_ptr_retire = head_ptr_retire + 1;
             
@@ -203,7 +227,7 @@ module rob
     assign hazard.rob_full = 1'b0;
     assign hazard.branch_taken = branch_taken;
     assign pcselect.branch_taken = branch_taken;
-    assign pcselect.pcbranch = rob_table_new[head_addr_new].data.branch.pcbranch;
+    assign pcselect.pcbranch = rob_table_new[head_addr_b].data.branch.pcbranch;
     
     // commit
     assign alu_commit = commit.alu_commit;

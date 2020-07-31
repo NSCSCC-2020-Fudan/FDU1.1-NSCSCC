@@ -76,6 +76,7 @@ module datapath
             .retire(retire_intf.rob),
             .payloadRAM(payloadRAM_intf.rob),
             .hazard(hazard_intf.rob),
+            .pcselect(pcselect_intf.rob),
             .d_data_ok, .mwrite
             );
 
