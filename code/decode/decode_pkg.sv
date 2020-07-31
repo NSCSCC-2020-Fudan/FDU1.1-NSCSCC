@@ -104,6 +104,7 @@ typedef struct packed {
     logic is_sys;
     logic hitoreg, lotoreg, cp0toreg;
     entry_type_t entry_type;
+    logic[1:0] msize;
 } control_t;
 
 typedef enum logic [5:0] { 

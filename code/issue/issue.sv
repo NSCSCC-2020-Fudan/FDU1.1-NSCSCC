@@ -8,7 +8,8 @@ module issue
     ireg_intf.issue ireg,
     ereg_intf.issue ereg,
     wake_intf.issue wakes,
-    payloadRAM_intf.issue payloadRAM
+    payloadRAM_intf.issue payloadRAM,
+    mem_ctrl_intf.issue mem_ctrl
 );
     renaming_pkg::renaming_data_t[MACHINE_WIDTH-1:0] dataR;
     issue_data_t dataI;
@@ -48,7 +49,8 @@ module issue
                         .read(alu_issue),
                         .wake,
                         .full(full[0]),
-                        .broadcast
+                        .broadcast,
+                        .wait_mem(mem_ctrl.wait_mem)
                         );
     
     issue_queue #(.QUEUE_LEN(MEM_QUEUE_LEN), .ENTRY_TYPE(MEM), .READ_NUM(execute_pkg::MEM_NUM))
@@ -57,7 +59,8 @@ module issue
                         .read(mem_issue),
                         .wake,
                         .full(full[1]),
-                        .broadcast
+                        .broadcast,
+                        .wait_mem(mem_ctrl.wait_mem)
                         );
     
     issue_queue #(.QUEUE_LEN(BRANCH_QUEUE_LEN), .ENTRY_TYPE(BRANCH), .READ_NUM(execute_pkg::BRU_NUM))
@@ -66,7 +69,8 @@ module issue
                         .read(branch_issue),
                         .wake,
                         .full(full[2]),
-                        .broadcast
+                        .broadcast,
+                        .wait_mem(mem_ctrl.wait_mem)
                         );
 
     issue_queue #(.QUEUE_LEN(MULT_QUEUE_LEN), .ENTRY_TYPE(MULTI), .READ_NUM(execute_pkg::MULT_NUM))
@@ -75,7 +79,8 @@ module issue
                         .read(mult_issue),
                         .wake,
                         .full(full[3]),
-                        .broadcast
+                        .broadcast,
+                        .wait_mem(mem_ctrl.wait_mem)
                         );
 
     for (genvar i=0; i<ALU_NUM; i++) begin
@@ -138,7 +143,7 @@ module issue
         assign dataI.mult_issue[i].pcplus8 = mult_issue[i].entry.pcplus8;
         assign dataI.mult_issue[i].exception = mult_issue[i].entry.exception;
     end
-    assign wake = {wakes.dst_commit, wakes.dst_execute};
+    assign wake = {wakes.dst_execute, wakes.dst_commit};
     assign broadcast = wakes.broadcast;
     assign dataR = ireg.dataR;
     assign ereg.dataI_new = dataI;
@@ -148,4 +153,5 @@ module issue
         assign payloadRAM.preg1 = dataR[i].src1.id;
         assign payloadRAM.preg2 = dataR[i].src2.id;
     end
+    assign mem_ctrl.mem_issued = dataI.mem_issue[0].valid;
 endmodule

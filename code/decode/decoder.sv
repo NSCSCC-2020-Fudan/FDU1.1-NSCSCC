@@ -157,6 +157,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b00;
             end
             OP_LBU: begin
                 op = LBU;
@@ -165,6 +166,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b00;
             end   
             OP_LH: begin
                 op = LH;
@@ -173,6 +175,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b01;
             end    
             OP_LHU: begin
                 op = LHU;
@@ -181,6 +184,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b01;
             end   
             OP_LW: begin
                 op = LW;
@@ -189,24 +193,28 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b10;
             end    
             OP_SB: begin
                 op = SB;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b00;
             end    
             OP_SH: begin
                 op = SH;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b01;
             end    
             OP_SW: begin
                 op = SW;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b10;
             end    
             OP_ERET: begin
                 case (instr_[25:21])
@@ -478,7 +486,9 @@ module decoder
         if (ctl.alufunc == ALU_PASSA) begin
             instr.src2 = 7'b0;
         end
-        
+        if (ctl.memwrite | ctl.memtoreg) begin
+            instr.src2 = {2'b0, rt};
+        end
         if (ctl.is_eret) begin
             instr.src2 = 7'b0101110; // epc
         end

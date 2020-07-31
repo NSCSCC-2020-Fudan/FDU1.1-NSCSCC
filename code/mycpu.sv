@@ -36,7 +36,7 @@ module mycpu
     word_t vaddr;
     datapath datapath(.clk(clk_), .resetn(resetn), .ext_int, 
                       .pc(inst_addr), .instr_(inst_rdata), 
-                      .i_data_ok(inst_data_ok), .d_data_ok(data_data_ok),
+                      .i_data_ok(i_data_ok), .d_data_ok(d_data_ok),
                       // .iaddrOK(inst_addr_ok),
                       .mread, .mwrite,
                       .rfwrite(rfw_out), .rd(data_rdata), .wb_pc(rt_pc_out));

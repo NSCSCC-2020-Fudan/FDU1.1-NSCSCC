@@ -14,7 +14,7 @@ module commit
 
     // commit
     assign self.alu_commit = dataE.alu_commit;
-    assign self.mem_commit = dataE.agu_commit;
+    assign self.mem_commit = dataE.mem_commit;
     assign self.branch_commit = dataE.branch_commit;
     assign self.mult_commit = dataE.mult_commit;
 
@@ -30,9 +30,9 @@ module commit
         assign wake.broadcast[i] = dataE.alu_commit[i].data;
     end
     for (genvar i = 0; i < MEM_NUM ; i++) begin
-        assign wake.dst_commit[i + ALU_NUM].id = dataE.agu_commit[i].rob_addr;
-        assign wake.dst_commit[i + ALU_NUM].valid = dataE.agu_commit[i].valid;
-        assign wake.broadcast[i + ALU_NUM] = dataE.agu_commit[i].data;
+        assign wake.dst_commit[i + ALU_NUM].id = dataE.mem_commit[i].rob_addr;
+        assign wake.dst_commit[i + ALU_NUM].valid = dataE.mem_commit[i].valid;
+        assign wake.broadcast[i + ALU_NUM] = dataE.mem_commit[i].data;
     end
     for (genvar i = 0; i < BRU_NUM ; i++) begin
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM].id = dataE.branch_commit[i].rob_addr;

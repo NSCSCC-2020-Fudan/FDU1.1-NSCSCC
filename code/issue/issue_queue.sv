@@ -11,7 +11,8 @@ module issue_queue
     output read_resp_t [READ_NUM-1:0] read,
     input wake_req_t [WAKE_NUM-1:0] wake,
     input word_t [ISSUE_WIDTH-1:0] broadcast,
-    output logic full
+    output logic full,
+    input logic wait_mem
 );
     localparam type queue_ptr_t = logic[$clog2(QUEUE_LEN)-1:0];
     localparam type queue_t = entry_t[QUEUE_LEN-1:0];
@@ -86,6 +87,9 @@ module issue_queue
             if (i == tail_new) begin
                 break;
             end
+            if (wait_mem && ENTRY_TYPE == MEM) begin
+                break;
+            end
             // ready
             if (queue_new[i].src1.valid && queue_new[i].src2.valid) begin
                 read[read_num] = queue_new[i];
@@ -111,7 +115,8 @@ module issue_queue
         for (int i=0; i<WRITE_NUM; i++) begin
             if (write_waken[i].entry_type != ENTRY_TYPE || ~write_waken[i].valid) begin
                 continue; // not this type
-            end else if (read_num != READ_NUM && write_waken[i].entry.src1.valid && write_waken[i].entry.src2.valid) begin
+            end else if (read_num != READ_NUM && write_waken[i].entry.src1.valid && write_waken[i].entry.src2.valid
+                        && ~(wait_mem && ENTRY_TYPE == MEM)) begin
                 read[read_num] = write_waken[i].entry; // issue immediately
             end else if (~full_new) begin
                 queue_new[tail_new] = write_waken[i].entry; // push into the queue

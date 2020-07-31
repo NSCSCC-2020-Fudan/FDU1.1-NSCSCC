@@ -32,14 +32,14 @@ module rfwrite_queue
                 end
             else
                 begin
-                    case ({rfw[1].wen, rfw[0].wen})
-                        2'b01:
+                    case ({rfw[0].wen, rfw[1].wen})
+                        2'b10:
                             begin
                                 rf_queue[tail] <= rfw[0];
                                 pc_queue[tail] <= rt_pc[0] - 8;
                                 en_queue[tail] <= 1'b1;
                             end
-                        2'b10:
+                        2'b01:
                             begin
                                 rf_queue[tail] <= rfw[1];
                                 pc_queue[tail] <= rt_pc[1] - 8;
@@ -47,10 +47,10 @@ module rfwrite_queue
                             end
                         2'b11:
                             begin
-                                rf_queue[tail] <= rfw[1];
-                                rf_queue[tailplus1] <= rfw[0];
-                                pc_queue[tail] <= rt_pc[1] - 8;
-                                pc_queue[tailplus1] <= rt_pc[0] - 8;
+                                rf_queue[tail] <= rfw[0];
+                                rf_queue[tailplus1] <= rfw[1];
+                                pc_queue[tail] <= rt_pc[0] - 8;
+                                pc_queue[tailplus1] <= rt_pc[1] - 8;
                                 en_queue[tail] <= 1'b1;
                                 en_queue[tailplus1] <= 1'b1;
                             end

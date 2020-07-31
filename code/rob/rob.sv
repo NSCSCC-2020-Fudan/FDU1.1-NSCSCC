@@ -10,10 +10,11 @@ module rob
     retire_intf.rob retire,
     payloadRAM_intf.rob payloadRAM,
     hazard_intf.rob hazard,
-    output mem_pkg::write_req_t mwrite,
+    output m_w_t mwrite,
     input logic d_data_ok
+    // mem_ctrl_intf.rob mem_ctrl
 );
-    
+    // assign mwrite = '0;
     // table
     rob_table_t rob_table, rob_table_new, rob_table_retire;
 
@@ -54,6 +55,14 @@ module rob
                           (rob_table[head_addr_new].ctl.branch ||
                           rob_table[head_addr_new].ctl.jump
                           );
+    m_w_t mwrite_new;
+    always_ff @(posedge clk) begin
+        if (~resetn | flush) begin
+            mwrite <= '0;
+        end else if (d_data_ok) begin
+            mwrite <= mwrite_new;
+        end
+    end
     always_comb begin
         rob_table_retire = rob_table;
         head_ptr_retire = head_ptr;
@@ -61,6 +70,7 @@ module rob
         for (int i=0; i<ALU_NUM; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (alu_commit[i].valid && alu_commit[i].rob_addr == j) begin
+                    rob_table_retire[j].data.alu.zeros = '0;
                     rob_table_retire[j].data.alu.data = alu_commit[i].data;
                     rob_table_retire[j].complete = 1'b1;
                     rob_table_retire[j].exception = alu_commit[i].exception;
@@ -71,6 +81,7 @@ module rob
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (mem_commit[i].valid && mem_commit[i].rob_addr == j) begin
                     rob_table_retire[j].data.mem.data = mem_commit[i].data;
+                    rob_table_retire[j].data.mem.addr = mem_commit[i].addr;
                     rob_table_retire[j].complete = 1'b1;
                     rob_table_retire[j].exception = mem_commit[i].exception;
                 end
@@ -81,6 +92,7 @@ module rob
                 if (branch_commit[i].valid && branch_commit[i].rob_addr == j) begin
                     rob_table_retire[j].complete = 1'b1;
                     rob_table_retire[j].exception = branch_commit[i].exception;
+                    rob_table_retire[j].data.branch.zeros = '0;
                     rob_table_retire[j].data.branch.pcbranch = branch_commit[i].pcbranch;
                     rob_table_retire[j].data.branch.branch_taken = branch_commit[i].branch_taken;
                 end
@@ -96,6 +108,7 @@ module rob
         end
         // retire
         retire.retire = '0;
+        mwrite_new = '0;
         for (int i=0; i<ISSUE_WIDTH; i++) begin
             if (head_ptr_retire == tail_ptr) begin
                 break;
@@ -109,6 +122,7 @@ module rob
             if (~rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].complete) begin
                 break;
             end
+
             retire.retire[i].valid = 1'b1;
             retire.retire[i].ctl = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl;
             retire.retire[i].data = (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
@@ -119,6 +133,12 @@ module rob
             retire.retire[i].preg = head_ptr_retire[ROB_ADDR_LEN-1:0];
             rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].creg = '0;
             retire.wb_pc[i] = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].pcplus8;
+            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.memwrite) begin
+                mwrite_new.wen = 1'b1;
+                mwrite_new.addr = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.mem.addr;
+                mwrite_new.size = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.msize;
+                mwrite_new.wd = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.mem.data;
+            end
             // rob_table_retire[head_addr_retire] = '0;
             // update head_ptr
             // check branch
@@ -130,6 +150,7 @@ module rob
                 // write delay slot
 
             head_ptr_retire = head_ptr_retire + 1;
+            
         end
 
         // write

@@ -7,8 +7,8 @@ module datapath
     output word_t pc,
     input word_t instr_,
 
-    output mem_pkg::read_req_t mread,
-    output mem_pkg::write_req_t mwrite,
+    output m_r_t mread,
+    output m_w_t mwrite,
     output rf_w_t[ISSUE_WIDTH-1:0] rfwrite,
     input word_t rd,
     output word_t[ISSUE_WIDTH-1:0] wb_pc,
@@ -23,6 +23,7 @@ module datapath
     ireg_intf ireg_intf();
     ereg_intf ereg_intf();
     creg_intf creg_intf();
+    mem_ctrl_intf mem_ctrl_intf();
 
     pcselect_intf pcselect_intf();
     renaming_intf renaming_intf();
@@ -50,7 +51,8 @@ module datapath
                 .ireg(ireg_intf.issue),
                 .ereg(ereg_intf.issue),
                 .wakes(wake_intf.issue),
-                .payloadRAM(payloadRAM_intf.issue)
+                .payloadRAM(payloadRAM_intf.issue),
+                .mem_ctrl(mem_ctrl_intf.issue)
                 );
     execute execute(.clk, .resetn, .flush, 
                     .ereg(ereg_intf.execute),
@@ -74,7 +76,8 @@ module datapath
             .retire(retire_intf.rob),
             .payloadRAM(payloadRAM_intf.rob),
             .hazard(hazard_intf.rob),
-            .d_data_ok, .mwrite);
+            .d_data_ok, .mwrite
+            );
 
     freg freg(.clk, .resetn, .self(freg_intf.freg), .hazard(hazard_intf.freg));
     dreg dreg(.clk, .resetn, .self(dreg_intf.dreg), .hazard(hazard_intf.dreg));
@@ -94,4 +97,9 @@ module datapath
     hilo hilo(.retire(retire_intf.hilo),
               .payloadRAM(payloadRAM_intf.hilo));
     forward forward(.self(forward_intf.forward));
+
+    mem_ctrl mem_ctrl(.clk, .resetn, .flush, .d_data_ok, 
+                      .ren(mread.ren),
+                      .wen(mwrite.wen),
+                      .self(mem_ctrl_intf.mem_ctrl));
 endmodule

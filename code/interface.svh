@@ -289,4 +289,12 @@ interface hazard_intf();
     );
 endinterface
 
+interface mem_ctrl_intf();
+    logic wait_mem;
+    logic mem_issued;
+    modport mem_ctrl(output wait_mem, input mem_issued);
+    // modport rob(input wait_write);
+    modport issue(input wait_mem, output mem_issued);
+endinterface
+
 `endif
