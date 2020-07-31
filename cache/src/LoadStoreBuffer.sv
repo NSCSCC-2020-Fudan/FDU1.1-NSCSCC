@@ -44,9 +44,9 @@ module LoadStoreBuffer #(
 
     assign tail_elem  = fifo[tail];
     assign fifo_avail = meta[head].avail;
-    assign fifo_empty = ~meta[tail].avail;
+    assign fifo_empty = meta[tail].avail;
     assign fifo_push  = fifo_avail && m_req.req && !(fifo_empty && s_resp.data_ok);
-    assign fifo_pop   = /*!fifo_empty &&*/ s_resp.data_ok;
+    assign fifo_pop   = !fifo_empty && s_resp.data_ok;
 
     /**
      * state updates

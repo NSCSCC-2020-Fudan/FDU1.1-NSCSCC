@@ -1,0 +1,132 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Fri Jul 31 10:24:19 2020
+[*]
+[dumpfile] "./simple-test.fst"
+[dumpfile_mtime] "Fri Jul 31 10:20:13 2020"
+[dumpfile_size] 59465
+[savefile] "./ls-buffer.gtkw"
+[timestart] 23
+[size] 1920 1032
+[pos] -1 -1
+*-3.600000 50 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[signals_width] 189
+@28
+[color] 2
+TOP.clk
+@200
+-
+-MASTER
+@28
+TOP.LoadStoreBufferTop.m_req.req
+TOP.LoadStoreBufferTop.m_req.wr
+TOP.LoadStoreBufferTop.m_req.size[1:0]
+@22
+TOP.LoadStoreBufferTop.m_req.addr[31:0]
+TOP.LoadStoreBufferTop.m_req.wdata.word[31:0]
+@200
+-
+@28
+TOP.LoadStoreBufferTop.m_resp.addr_ok
+TOP.LoadStoreBufferTop.m_resp.data_ok
+@22
+TOP.LoadStoreBufferTop.m_resp.rdata.word[31:0]
+@200
+-
+-STATES
+@28
+TOP.head[1:0]
+TOP.tail[1:0]
+TOP.fifo_avail
+TOP.fifo_empty
+TOP.fifo_pop
+TOP.fifo_push
+@200
+-
+-SLAVE
+@28
+TOP.LoadStoreBufferTop.s_req.req
+TOP.LoadStoreBufferTop.s_req.wr
+TOP.LoadStoreBufferTop.s_req.size[1:0]
+@22
+TOP.LoadStoreBufferTop.s_req.addr[31:0]
+TOP.LoadStoreBufferTop.s_req.wdata.word[31:0]
+@200
+-
+@28
+TOP.LoadStoreBufferTop.s_resp.addr_ok
+TOP.LoadStoreBufferTop.s_resp.data_ok
+@22
+TOP.LoadStoreBufferTop.s_resp.rdata.word[31:0]
+@200
+-
+@28
+[color] 2
+TOP.clk
+@200
+-
+@201
+-FIFO
+@28
+TOP.meta(0).avail
+TOP.meta(1).avail
+TOP.meta(2).avail
+TOP.meta(3).avail
+@200
+-
+@28
+[color] 1
+TOP.LoadStoreBufferTop.fifo(0).req
+[color] 2
+TOP.LoadStoreBufferTop.fifo(0).wr
+[color] 3
+TOP.LoadStoreBufferTop.fifo(0).size[1:0]
+@22
+[color] 4
+TOP.LoadStoreBufferTop.fifo(0).addr[31:0]
+[color] 5
+TOP.LoadStoreBufferTop.fifo(0).wdata.word[31:0]
+@200
+-
+@28
+[color] 7
+TOP.LoadStoreBufferTop.fifo(1).req
+[color] 1
+TOP.LoadStoreBufferTop.fifo(1).wr
+[color] 2
+TOP.LoadStoreBufferTop.fifo(1).size[1:0]
+@22
+[color] 3
+TOP.LoadStoreBufferTop.fifo(1).addr[31:0]
+[color] 4
+TOP.LoadStoreBufferTop.fifo(1).wdata.word[31:0]
+@200
+-
+@28
+[color] 6
+TOP.LoadStoreBufferTop.fifo(2).req
+[color] 7
+TOP.LoadStoreBufferTop.fifo(2).wr
+[color] 1
+TOP.LoadStoreBufferTop.fifo(2).size[1:0]
+@22
+[color] 2
+TOP.LoadStoreBufferTop.fifo(2).addr[31:0]
+[color] 3
+TOP.LoadStoreBufferTop.fifo(2).wdata.word[31:0]
+@200
+-
+@28
+[color] 5
+TOP.LoadStoreBufferTop.fifo(3).req
+[color] 6
+TOP.LoadStoreBufferTop.fifo(3).wr
+[color] 7
+TOP.LoadStoreBufferTop.fifo(3).size[1:0]
+@22
+[color] 1
+TOP.LoadStoreBufferTop.fifo(3).addr[31:0]
+[color] 2
+TOP.LoadStoreBufferTop.fifo(3).wdata.word[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
