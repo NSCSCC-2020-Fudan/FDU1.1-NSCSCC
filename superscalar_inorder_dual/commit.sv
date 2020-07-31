@@ -62,7 +62,7 @@ module commit(
     assign ctl[0] = _out[0].instr.ctl;
     assign __mem = (ctl[1].memtoreg | ctl[1].memwrite) ? (_mem[1]) : (_mem[0]);
     assign __op = (ctl[1].memtoreg | ctl[1].memwrite) ? (_out[1].instr.op) : (_out[0].instr.op);
-    
+    /*
     assign mem.wt = __mem.wt;
     assign mem.size = __mem.size;
     assign mem.addr = __mem.addr;
@@ -73,10 +73,23 @@ module commit(
     assign dmem_wd = mem.wd;
     assign dmem_en = mem.en;
     assign dmem_size = mem.size;
-    readdata_format readdata_format (dmem_rd, mem.rd, mem.addr[1: 0], __op); 
+    */
+    logic sbuffer_of, finishS;
+    sbuffer sbuffer(.clk, .reset, 
+                    .in(__mem), .out(mem),
+                    .sbuffer_of, .finishS, .__op,
+                    .dmem_wt,
+                    .dmem_addr, .dmem_wd, 
+                    .dmem_rd,
+                    .dmem_en,
+                    .dmem_size,     
+                    .dataOK(dmem_dataOK));
+    assign finishC = finishS;                    
+    
+    //readdata_format readdata_format (dmem_rd, mem.rd, mem.addr[1: 0], __op); 
 //    assign mem.rd = dmem_rd;
     
-    assign finishC = ((first_cycleC) ? (~mem.en) : ((~mem.en) | (dmem_dataOK)));
+    //assign finishC = ((first_cycleC) ? (~mem.en) : ((~mem.en) | (dmem_dataOK)));
     assign pc_mC = fetch.jump | fetch.jr | fetch.branch;
     
     exec_data_t [1: 0] __out;

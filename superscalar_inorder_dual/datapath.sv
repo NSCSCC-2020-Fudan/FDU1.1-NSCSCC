@@ -18,6 +18,8 @@ module datapath(
         output word_t [1: 0] rt_pc_out,
         output logic stallF_out, flush_ex,
         //output word_t pc
+        output logic inst_ibus_req, 
+        input logic inst_ibus_addr_ok,
         input logic inst_ibus_data_ok,
         input logic [63: 0] inst_ibus_data,
         input logic inst_ibus_index
@@ -71,7 +73,7 @@ module datapath(
     word_t [1: 0] pc_predictF;
     bpb_result_t [1: 0] destpc_predictF;
     
-    
+    /*
     fetch fetch (clk, reset, 1'b0, stallF,
                  pc_new, pc, pc_new_commit,
                  iaddr, ihit, idata, idataOK,
@@ -79,7 +81,15 @@ module datapath(
                  pc_predictF, destpc_predictF,
                  inst_ibus_data_ok, inst_ibus_data,
                  inst_ibus_index);
-                     
+    */
+    quickfetch quickfetch(.clk, .reset, .flushF(1'b0), .stallF,
+                          .fetch(pc_new), .pc, .pc_new_commit,
+                          .addr(iaddr), .hit(ihit), .data(idata), .dataOK(idataOK),
+                          .fetch_data, .hitF(hitF_out), .finishF,
+                          .pc_predictF, .destpc_predictF,
+                          .inst_ibus_req, .inst_ibus_addr_ok,
+                          .inst_ibus_data_ok, .inst_ibus_data,
+                          .inst_ibus_index);                     
     
     dreg dreg (clk, reset, stallD, flushD,
                fetch_data, decode_data_in,

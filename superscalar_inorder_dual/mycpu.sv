@@ -17,11 +17,11 @@ module mycpu #(
     input logic inst_addr_ok, data_addr_ok,
     input logic inst_data_ok, data_data_ok,
     
-    output logic inst_ibus_req,
-    output word_t inst_ibus_addr,
-    input logic inst_ibus_addr_ok, inst_ibus_data_ok,
-    input logic [63: 0] inst_ibus_data,
-    input logic inst_ibus_index,
+    (*mark_debug = "true"*) output logic inst_ibus_req,
+    (*mark_debug = "true"*) output word_t inst_ibus_addr,
+    (*mark_debug = "true"*) input logic inst_ibus_addr_ok, inst_ibus_data_ok,
+    (*mark_debug = "true"*) input logic [63: 0] inst_ibus_data,
+    (*mark_debug = "true"*) input logic inst_ibus_index,
 
     //debug
     output word_t debug_wb_pc,
@@ -53,6 +53,7 @@ module mycpu #(
                       .dwd(dwd), .den(den), .dwt(dwt), .daddr(daddr), .dsize(dsize),
                       .rfw_out(rfw_out), .drd(data_rdata), .rt_pc_out(rt_pc_out),
                       .stallF_out(stallF), .flush_ex(flushE),
+                      .inst_ibus_req, .inst_ibus_addr_ok, 
                       .inst_ibus_data_ok, .inst_ibus_data, .inst_ibus_index);
     
     // assign inst_req = 1'b1;
@@ -62,9 +63,11 @@ module mycpu #(
     logic inst_req_;
 //    assign inst_req = inst_req_ & d_data_ok;
     //handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req));
+    /*
     handshake i_handshake(.clk, .reset(~resetn), 
                           .cpu_req(1'b1), .addr_ok(inst_ibus_addr_ok), .data_ok(inst_ibus_data_ok), 
                           .cpu_data_ok(i_data_ok), .req(inst_ibus_req));
+    */                          
     // assign data_req = (mread.ren) | (mwrite.wen);
 //    assign data_req = den;
     assign data_wr = dwt;

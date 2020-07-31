@@ -7,10 +7,10 @@ module fetch (
     (*mark_debug = "true"*) output word_t pc,
     input logic pc_new_commit, 
     //to branch_control
-    (*mark_debug = "true"*) output word_t addr,
+    output word_t addr,
     input logic hit, 
-    (*mark_debug = "true"*) input word_t [1: 0] data,
-    (*mark_debug = "true"*) input logic dataOK,
+    input word_t [1: 0] data,
+    input logic dataOK,
     //to imem
     output fetch_data_t [1: 0] fetch_data,
     output logic [1: 0] hitF,
@@ -19,9 +19,9 @@ module fetch (
     output word_t [1: 0] pc_predictF,
     (*mark_debug = "true"*) input bpb_result_t [1: 0] destpc_predictF,
     //to bpb
-    input logic inst_ibus_data_ok,
-    input logic [63: 0] inst_ibus_data,
-    input logic inst_ibus_index
+    (*mark_debug = "true"*) input logic inst_ibus_data_ok,
+    (*mark_debug = "true"*) input logic [63: 0] inst_ibus_data,
+    (*mark_debug = "true"*) input logic inst_ibus_index
 );
     
     logic [1: 0] state; 
@@ -49,7 +49,7 @@ module fetch (
                     if (flushF)
                         pc <= '0;
                     else
-                        if ((~stallF & ~fetch_commit_conflict) | pc_upd)
+                        if ((~stallF & finishF & ~fetch_commit_conflict) | pc_upd)
                             begin
                                 pc <= pc_new;
                                 last_predict <= (pc_upd) ? ('0) : (next_predict);

@@ -26,7 +26,8 @@ module control(
     
     assign flushD = (~finishF & ~queue_ofI) | pcF | flush_ex;
     assign stallD = queue_ofI;
-    assign stallF = ~finishF | queue_ofI;
+    //assign stallF = ~finishF | queue_ofI;
+    assign stallF = queue_ofI;
     
     assign pc_new_commit = pcF | flush_ex;
     

@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module FU(
-        input logic clk, reset, first_cycpeE,
+        input logic clk, reset, flushE, first_cycpeE,
         input issue_data_t in,
         output exec_data_t out,
         output logic finish,
@@ -26,7 +26,7 @@ module FU(
     DIVU DIVU (alusrcaE, alusrcbE, op, divtype, hi_div, lo_div, div_finish);
     MULU MULU (alusrcaE, alusrcbE, op, multype, hi_mul, lo_mul, mul_finish);
     */
-    mult mult(clk, reset, alusrcaE, alusrcbE, op, hi, lo, multok);
+    mult mult(clk, reset, flushE, alusrcaE, alusrcbE, op, hi, lo, multok);
     ALU ALU (alusrcaE, alusrcbE, func, result, exception_of);
     JUDGE JUDGE(alusrcaE, alusrcbE, in.instr.ctl.branch_type, taken);
     assign multfinish = (multok & ~first_cycpeE);
