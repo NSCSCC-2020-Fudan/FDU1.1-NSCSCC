@@ -213,7 +213,7 @@ module CacheLayer #(
     sramx_req_t  mux_uncached_req;
     sramx_resp_t mux_uncached_resp;
 
-    if (USE_BUFFER == 1) begin
+    if (USE_BUFFER == 1) begin: with_lsbuf
         sramx_req_t  buf_uncached_req;
         sramx_resp_t buf_uncached_resp;
 
@@ -229,7 +229,7 @@ module CacheLayer #(
 
         assign mux_uncached_req  = buf_uncached_req;
         assign buf_uncached_resp = mux_uncached_resp;
-    end else begin
+    end else begin: without_lsbuf
         assign mux_uncached_req = uncached_req;
         assign uncached_resp    = mux_uncached_resp;
     end
