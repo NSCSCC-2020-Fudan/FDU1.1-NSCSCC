@@ -36,6 +36,7 @@ package rob_pkg;
         entry_data_t data;
         word_t pcplus8;
         control_t ctl;
+        logic in_delay_slot;
         exception_pkg::exception_t exception;
     } entry_t;
     typedef entry_t[2**ROB_ADDR_LEN-1:0] rob_table_t;

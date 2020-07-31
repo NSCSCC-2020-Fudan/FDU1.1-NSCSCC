@@ -166,6 +166,11 @@ module rob
                     rob_table_new[j].creg = renaming.instr[i].dst;
                     rob_table_new[j].pcplus8 = renaming.instr[i].pcplus8;
                     rob_table_new[j].ctl = renaming.instr[i].ctl;
+                    if (j == ROB_TABLE_LEN - 1) begin
+                        rob_table_new[0].in_delay_slot = rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump;
+                    end else begin
+                        rob_table_new[j + 1].in_delay_slot = rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump;
+                    end
                     // renaming.rob_addr_new[i] = rob_addr_t'(j);
                     tail_ptr_new += 1;
                     break;

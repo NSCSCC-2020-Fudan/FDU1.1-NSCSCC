@@ -76,11 +76,7 @@ module mycpu
     assign data_size = mwrite.wen ? mwrite.size : mread.size;
     handshake d_handshake(.clk, .reset(~resetn), .cpu_req(mread.ren | mwrite.wen), .addr_ok(data_addr_ok), .data_ok(data_data_ok), .cpu_data_ok(d_data_ok), .req(data_req));
         
-    rfwrite_queue rfwrite_queue(.clk, .reset(~resetn),
+    rfwrite_queue rfwrite_queue(.clk, .resetn(resetn),
                                 .rfw(rfw_out), .rt_pc(rt_pc_out),
-                                .rfw_out(rfwrite), .rt_pc_out(debug_wb_pc));
-    
-    assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
-    assign debug_wb_rf_wnum = rfwrite.addr;
-    assign debug_wb_rf_wdata = rfwrite.wd;
+                                .*);
 endmodule
