@@ -45,13 +45,13 @@ module issue_queue
         // wake up
         for (int i=0; i<WAKE_NUM; i++) begin
             for (int j=0; j<QUEUE_LEN; j++) begin
-                if (queue_new[j].src1.id == wake[i].id && wake[i].valid) begin
+                if (queue_new[j].src1.id == wake[i].id && wake[i].valid && ~queue_new[j].src1.valid) begin
                     queue_new[j].src1.valid = 1'b1;
                     if (i < ISSUE_WIDTH) begin
                         queue_new[j].src1.data = broadcast[i];
                     end
                 end
-                if (queue_new[j].src2.id == wake[i].id && wake[i].valid) begin
+                if (queue_new[j].src2.id == wake[i].id && wake[i].valid && ~queue_new[j].src2.valid) begin
                     queue_new[j].src2.valid = 1'b1;
                     if (i < ISSUE_WIDTH) begin
                         queue_new[j].src2.data = broadcast[i];
@@ -62,13 +62,13 @@ module issue_queue
                 end
             end
             for (int j=0; j<WRITE_NUM; j++) begin
-                if (write_waken[j].entry.src1.id == wake[i].id && wake[i].valid) begin
+                if (write_waken[j].entry.src1.id == wake[i].id && wake[i].valid && ~write_waken[j].entry.src1.valid) begin
                     write_waken[j].entry.src1.valid = 1'b1;
                     if (i < ISSUE_WIDTH) begin
                         write_waken[j].entry.src1.data = broadcast[i];
                     end
                 end
-                if (write_waken[j].entry.src2.id == wake[i].id && wake[i].valid) begin
+                if (write_waken[j].entry.src2.id == wake[i].id && wake[i].valid && ~write_waken[j].entry.src2.valid) begin
                     write_waken[j].entry.src2.valid = 1'b1;
                     if (i < ISSUE_WIDTH) begin
                         write_waken[j].entry.src2.data = broadcast[i];
@@ -118,7 +118,7 @@ module issue_queue
             end else if (read_num != READ_NUM && write_waken[i].entry.src1.valid && write_waken[i].entry.src2.valid
                         && ~(wait_mem && ENTRY_TYPE == MEM)) begin
                 read[read_num] = write_waken[i].entry; // issue immediately
-            end else if (~full_new) begin
+            end else if (tail_new != '1) begin
                 queue_new[tail_new] = write_waken[i].entry; // push into the queue
                 tail_new = tail_new + 1;
             end else begin

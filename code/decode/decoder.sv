@@ -93,7 +93,7 @@ module decoder
                 ctl.entry_type = BRANCH;
             end   
             OP_BGEZ: begin
-                case (instr[20:16])
+                case (instr_[20:16])
                     B_BGEZ:  begin
                         op = BGEZ;
                         ctl.branch = 1'b1;

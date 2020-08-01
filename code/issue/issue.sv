@@ -9,7 +9,8 @@ module issue
     ereg_intf.issue ereg,
     wake_intf.issue wakes,
     payloadRAM_intf.issue payloadRAM,
-    mem_ctrl_intf.issue mem_ctrl
+    mem_ctrl_intf.issue mem_ctrl,
+    hazard_intf.issue hazard
 );
     renaming_pkg::renaming_data_t[MACHINE_WIDTH-1:0] dataR;
     issue_data_t dataI;
@@ -154,4 +155,5 @@ module issue
         assign payloadRAM.preg2 = dataR[i].src2.id;
     end
     assign mem_ctrl.mem_issued = dataI.mem_issue[0].valid;
+    assign hazard.iq_full = |full;
 endmodule

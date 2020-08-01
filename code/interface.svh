@@ -257,9 +257,9 @@ endinterface
 interface hazard_intf();
     logic stallF, stallD, stallR, stallI, stallE, stallC;
     logic         flushD, flushR, flushI, flushE, flushC;
-    logic branch_taken, exception_valid, is_eret, rob_full;
+    logic branch_taken, exception_valid, is_eret, rob_full, iq_full;
     modport hazard(
-        input branch_taken, exception_valid, is_eret, rob_full,
+        input branch_taken, exception_valid, is_eret, rob_full, iq_full,
         output stallF, stallD, stallR, stallI, stallE, stallC,
                flushD, flushR, flushI, flushE, flushC
     );
@@ -286,6 +286,9 @@ interface hazard_intf();
     );
     modport rob(
         output rob_full, branch_taken
+    );
+    modport issue(
+        output iq_full
     );
 endinterface
 

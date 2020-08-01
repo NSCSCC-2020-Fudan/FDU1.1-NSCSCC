@@ -22,7 +22,7 @@ module bru
             T_BNE: branch_taken = src1 != src2;
             T_BGEZ: branch_taken = ~src1[31];
             T_BLTZ: branch_taken = src1[31];
-            T_BGTZ: branch_taken = (src1 != 0) && src1[31];
+            T_BGTZ: branch_taken = (src1 != 0) && ~src1[31];
             T_BLEZ: branch_taken = (src1 == 0) || src1[31];
             T_J: branch_taken = 1'b1;
             T_JR: branch_taken = 1'b1;

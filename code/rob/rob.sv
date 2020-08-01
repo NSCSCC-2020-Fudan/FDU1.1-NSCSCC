@@ -45,10 +45,10 @@ module rob
     branch_commit_t[BRU_NUM-1:0] branch_commit;
     mult_commit_t[MULT_NUM-1:0] mult_commit;
 
-    assign full = (head_ptr[ROB_ADDR_LEN] ^ tail_ptr[ROB_ADDR_LEN]) && 
-                  (head_ptr[ROB_ADDR_LEN-1:0] == tail_ptr[ROB_ADDR_LEN-1:0]);
-    assign empty = ~(head_ptr[ROB_ADDR_LEN] ^ tail_ptr[ROB_ADDR_LEN]) && 
-                    (head_ptr[ROB_ADDR_LEN-1:0] == tail_ptr[ROB_ADDR_LEN-1:0]);
+    // assign full = (head_ptr[ROB_ADDR_LEN] ^ tail_ptr[ROB_ADDR_LEN]) && 
+    //               (head_ptr[ROB_ADDR_LEN-1:0] == tail_ptr[ROB_ADDR_LEN-1:0]);
+    // assign empty = ~(head_ptr[ROB_ADDR_LEN] ^ tail_ptr[ROB_ADDR_LEN]) && 
+    //                 (head_ptr[ROB_ADDR_LEN-1:0] == tail_ptr[ROB_ADDR_LEN-1:0]);
     
     logic exception_valid;
     assign exception_valid = rob_table[head_addr].exception.valid;
@@ -114,6 +114,7 @@ module rob
         end
         // retire
         retire.retire = '0;
+        retire.wb_pc = '0;
         mwrite_new = '0;
 
         ds_counter = 10'b10_0000_0000;
@@ -181,7 +182,15 @@ module rob
         rob_table_new = rob_table_retire;
         head_ptr_new = head_ptr_retire;
         tail_ptr_new = tail_ptr;
+        full = '0;
         for (int i=0; i<MACHINE_WIDTH; i++) begin
+            if (head_ptr_new[ROB_ADDR_LEN-1:0] == tail_ptr_new[ROB_ADDR_LEN-1:0] && head_ptr_new[ROB_ADDR_LEN] != tail_ptr_new[ROB_ADDR_LEN]) begin
+                rob_table_new = rob_table_retire;
+                head_ptr_new = head_ptr_retire;
+                tail_ptr_new = tail_ptr;
+                full = 1'b1;
+                break;
+            end
             renaming.rob_addr_new[i] = tail_ptr_new[ROB_ADDR_LEN-1:0];
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (renaming.instr[i].valid && j == tail_ptr_new[ROB_ADDR_LEN-1:0]) begin
@@ -224,7 +233,7 @@ module rob
         assign payloadRAM.prf2[i].data = rob_table_new[payloadRAM.preg2[i]].data[31:0];
     end
 
-    assign hazard.rob_full = 1'b0;
+    assign hazard.rob_full = full;
     assign hazard.branch_taken = branch_taken;
     assign pcselect.branch_taken = branch_taken;
     assign pcselect.pcbranch = rob_table_new[head_addr_b].data.branch.pcbranch;

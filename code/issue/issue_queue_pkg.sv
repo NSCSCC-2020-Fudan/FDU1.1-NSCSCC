@@ -4,10 +4,10 @@ package issue_queue_pkg;
     import common::*;
     import decode_pkg::*;
     //  Group: Parameters
-    parameter ALU_QUEUE_LEN = 32;
-    parameter MEM_QUEUE_LEN = 32;
-    parameter BRANCH_QUEUE_LEN = 16;
-    parameter MULT_QUEUE_LEN = 8;
+    parameter ALU_QUEUE_LEN = 16;
+    parameter MEM_QUEUE_LEN = 16;
+    parameter BRANCH_QUEUE_LEN = 2;
+    parameter MULT_QUEUE_LEN = 2;
 
     parameter WRITE_NUM = MACHINE_WIDTH;
     parameter WAKE_NUM = ISSUE_WIDTH + execute_pkg::ALU_NUM;

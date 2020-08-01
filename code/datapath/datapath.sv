@@ -52,7 +52,8 @@ module datapath
                 .ereg(ereg_intf.issue),
                 .wakes(wake_intf.issue),
                 .payloadRAM(payloadRAM_intf.issue),
-                .mem_ctrl(mem_ctrl_intf.issue)
+                .mem_ctrl(mem_ctrl_intf.issue),
+                .hazard(hazard_intf.issue)
                 );
     execute execute(.clk, .resetn, .flush, 
                     .ereg(ereg_intf.execute),
