@@ -136,6 +136,7 @@ module decoder
                 op = BLEZ;
                 ctl.branch = 1'b1;
                 ctl.branch_type = T_BLEZ;
+                ctl.entry_type = BRANCH;
             end  
             OP_J: begin
                 op = J;

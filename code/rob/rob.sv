@@ -51,7 +51,8 @@ module rob
     //                 (head_ptr[ROB_ADDR_LEN-1:0] == tail_ptr[ROB_ADDR_LEN-1:0]);
     
     logic exception_valid;
-    assign exception_valid = rob_table[head_addr].exception.valid;
+    // assign exception_valid = rob_table[head_addr].exception.valid;
+    assign exception_valid = 1'b0;
 
     logic branch_taken;
     assign head_ptr_b = head_ptr_new - 2;
@@ -125,9 +126,9 @@ module rob
                 break;
             end
             // check exception
-            if (exception_valid) begin
-                break;
-            end
+            // if (exception_valid) begin
+            //     break;
+            // end
             
             // write register
             if (~rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].complete) begin
