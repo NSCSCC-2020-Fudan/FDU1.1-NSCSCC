@@ -137,8 +137,8 @@ module DCache #(
     // generate cache BRAM address
     iaddr_t req_iaddr;
     assign req_iaddr.idx    = req_idx;
-    assign req_iaddr.index  = req_paddr.index;
-    assign req_iaddr.offset = req_paddr.offset;
+    assign req_iaddr.index  = req_vaddr.index;
+    assign req_iaddr.offset = req_vaddr.offset;
 
     // assignment later
     logic req_in_miss;
@@ -201,7 +201,8 @@ module DCache #(
      * determine whether the data is ready
      */
     assign req_in_miss = miss_busy &&
-        req_iaddr.idx == miss_pos.idx &&
+        /* req_iaddr.idx == miss_pos.idx && */  // to reduce latency
+        req_paddr.tag == miss_addr.tag &&
         req_iaddr.index == miss_pos.index;
     assign req_miss_ready = miss_ready[req_iaddr.offset];
     assign req_ready      = req_hit && (!req_in_miss || req_miss_ready);
