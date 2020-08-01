@@ -5,7 +5,10 @@ module raw_check
         logic valid;
         preg_addr_t id;
     }[MACHINE_WIDTH-1:0] psrc1_rat, psrc2_rat, pdst_fl,
-    output preg_addr_t[MACHINE_WIDTH-1:0] psrc1, psrc2
+    output struct packed {
+        logic valid;
+        preg_addr_t id;
+    } [MACHINE_WIDTH-1:0] psrc1, psrc2
 );
     assign psrc1[0] = psrc1_rat[0];
     assign psrc2[0] = psrc2_rat[0];

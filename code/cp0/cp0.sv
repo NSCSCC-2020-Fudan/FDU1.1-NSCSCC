@@ -1,5 +1,6 @@
 `include "interface.svh"
 `include "cp0.svh"
+/*
 module cp0
     import common::*;
     import exception_pkg::*;(
@@ -114,3 +115,4 @@ module cp0
     assign pcselect.is_eret = is_eret;
     assign pcselect.epc = cp0.epc;
 endmodule
+*/

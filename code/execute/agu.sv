@@ -1,34 +1,60 @@
 // address generate unit
-module agu 
+module mem 
     import common::*;
-    import mem_pkg::*;
+    import decode_pkg::*;
+    import issue_pkg::*;
+    import commit_pkg::*;
     (
-    input logic clk, resetn, memtoreg, memwrite,
+    input logic clk, resetn, flush, 
     input word_t src1, src2,
     input word_t rd_, wd_,
-    output word_t data,
-    output vaddr_t addr,
-    output logic exception_load, exception_save
+    input issued_instr_t mem_issue,
+    input logic d_data_ok,
+    output mem_commit_t mem_commit,
+    output m_r_t mread
 );
-    read_req_t read;
-    write_req_t write;
-    word_t wd, rd;
-    readdata readdata(._rd(), .rd, .addr(addr[1:0]), .op());
-    writedata writedata(.addr(addr[1:0]), ._wd, .op(), .wd);
-    vaddr_t addr_new;
-    assign addr_new = src1 + src2;
-    
+    vaddr_t addr_1, addr_2;
+    assign addr_1 = src1 + src2;
+    word_t wd_2;
+    issued_instr_t mem_issue_2;
     always_ff @(posedge clk) begin
-        if (~resetn) begin
-            addr <= '0;
-        end else begin
-            addr <= addr_new;
+        if (~resetn | flush) begin
+            addr_2 <= '0; 
+            mem_issue_2 <= '0;
+            wd_2 <= '0;
+        end else if (d_data_ok | ~mem_issue_2.ctl.memtoreg) begin
+            addr_2 <= addr_1;
+            mem_issue_2 <= mem_issue;
+            wd_2 <= wd_;
         end
     end
-    assign data = memtoreg ? wd : rd;
+
+    word_t rd, wd;
+    readdata readdata(._rd(rd_), .rd, .addr(addr_2[1:0]), .op(mem_issue_2.op));
+    writedata writedata(.addr(addr_2[1:0]), ._wd(wd_2), .op(mem_issue_2.op), .wd);
+
+    assign mem_commit.valid = mem_issue_2.valid & (d_data_ok | ~mem_issue_2.ctl.memtoreg);
+    assign mem_commit.data = mem_issue_2.ctl.memtoreg ? rd : wd;
+    assign mem_commit.addr = addr_2;
+    assign mem_commit.rob_addr = mem_issue_2.dst;
+    always_comb begin
+        mem_commit.exception = mem_issue_2.exception;
+        mem_commit.exception.load = ((mem_issue_2.op == LW) && (addr_2[1:0] != '0)) ||
+                            ((mem_issue_2.op == LH || mem_issue_2.op == LHU) && (addr_2[0] != '0));
+        mem_commit.exception.save = ((mem_issue_2.op == SW) && (addr_2[1:0] != '0)) ||
+                            ((mem_issue_2.op == SH) && (addr_2[0] != '0));
+    end
+
+    assign mread.ren = mem_issue_2.ctl.memtoreg & ~mem_commit.exception.load;
+    assign mread.addr = addr_2;
+    assign mread.size = mem_issue_2.op == LW ? 2'b10 : (
+                        mem_issue_2.op == LH ? 2'b01 : 2'b00
+    );
 endmodule
 
-module readdata (
+module readdata 
+    import common::*;
+    import decode_pkg::*;(
     input word_t _rd,
     output word_t rd,
     input logic[1:0] addr,
@@ -79,7 +105,9 @@ module readdata (
     end
 endmodule
 
-module writedata (
+module writedata 
+    import common::*;
+    import decode_pkg::*;(
     input logic[1:0] addr,
     input word_t _wd,
     input decoded_op_t op,
@@ -93,15 +121,12 @@ module writedata (
             SH: begin
                 case (addr[1])
                     1'b0: begin
-                        en = 1'b1;
                         wd = _wd;
                     end 
                     1'b1: begin
-                        en = 1'b1;
                         wd = {_wd[15:0], 16'b0};
                     end
                     default: begin
-                        en = 'b0;
                         wd = 'b0;
                     end
                 endcase

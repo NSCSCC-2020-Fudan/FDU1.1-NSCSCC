@@ -157,6 +157,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b00;
             end
             OP_LBU: begin
                 op = LBU;
@@ -165,6 +166,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b00;
             end   
             OP_LH: begin
                 op = LH;
@@ -173,6 +175,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b01;
             end    
             OP_LHU: begin
                 op = LHU;
@@ -181,6 +184,7 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b01;
             end   
             OP_LW: begin
                 op = LW;
@@ -189,24 +193,28 @@ module decoder
                 ctl.regdst = RT;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b10;
             end    
             OP_SB: begin
                 op = SB;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b00;
             end    
             OP_SH: begin
                 op = SH;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b01;
             end    
             OP_SW: begin
                 op = SW;
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
                 ctl.entry_type = MEM;
+                ctl.msize = 2'b10;
             end    
             OP_ERET: begin
                 case (instr_[25:21])
@@ -284,28 +292,28 @@ module decoder
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
-                        ctl.entry_type = MULT;
+                        ctl.entry_type = MULTI;
                     end    
                     F_DIVU: begin
                         op = DIVU;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
-                        ctl.entry_type = MULT;
+                        ctl.entry_type = MULTI;
                     end   
                     F_MULT: begin
                         op = MULT;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
-                        ctl.entry_type = MULT;
+                        ctl.entry_type = MULTI;
                     end   
 					F_MULTU:begin
                         op = MULTU;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
-                        ctl.entry_type = MULT;
+                        ctl.entry_type = MULTI;
                     end	
 					F_AND:begin
                         op = AND;
@@ -454,7 +462,7 @@ module decoder
     assign rs = instr_[25:21];
     assign rt = instr_[20:16];
     assign rd = instr_[15:11];
-	assign instr.imm = ctl.j ? {pcplus4[31:28], instr[25:0], 2'b0 }: (ctl.shamt_valid ? {27'b0, instr_[10:6]} : 
+	assign instr.imm = ctl.jump ? {pcplus4[31:28], instr_[25:0], 2'b0 }: (ctl.shamt_valid ? {27'b0, instr_[10:6]} : 
     (ctl.zeroext ? {16'b0, instr_[15:0]} : {{16{instr_[15]}}, instr_[15:0]}));
     always_comb begin
         instr.src1 = {2'b0, rs};
@@ -478,17 +486,22 @@ module decoder
         if (ctl.alufunc == ALU_PASSA) begin
             instr.src2 = 7'b0;
         end
-        
+        if (ctl.memwrite | ctl.memtoreg) begin
+            instr.src2 = {2'b0, rt};
+        end
         if (ctl.is_eret) begin
             instr.src2 = 7'b0101110; // epc
         end
         if (ctl.is_bp || ctl.is_sys || exception_ri) begin
-            instr.src1 = '0;
+            instr.src2 = '0;
         end
     end
 
     always_comb begin
         instr.dst = ctl.regdst == RT ? {2'b0, rt} : {2'b0, rd};
+        if (ctl.jump | ctl.branch) begin
+            instr.dst = 7'b0011111;
+        end
         if (~ctl.regwrite) begin
             instr.dst = '0;
         end

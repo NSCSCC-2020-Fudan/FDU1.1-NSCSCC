@@ -3,7 +3,7 @@
 module rat 
     import common::*;
     import rat_pkg::*;(
-    input logic clk, resetn,
+    input logic clk, resetn, flush,
     renaming_intf.rat renaming,
     retire_intf.rat retire
 );
@@ -11,9 +11,9 @@ module rat
     table_t mapping_table, mapping_table_new;
 
     // write
-    logic [WRITE_PORTS-1:0] wen;
+    // logic [WRITE_PORTS-1:0] wen;
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~resetn | flush) begin
             mapping_table <= '0;
         end else begin
             mapping_table <= mapping_table_new;
@@ -44,7 +44,7 @@ module rat
         for (int i=0; i<TABLE_LEN; i++) begin
             for (int j=0; j<RELEASE_PORTS; j++) begin
                 if (retire.retire[j].valid && 
-                    retire.retire[j].id == i && 
+                    retire.retire[j].dst == i && 
                     retire.retire[j].preg == mapping_table_new[i].id) begin
                     mapping_table_new[i].id = '0;
                     mapping_table_new[i].valid = 1'b0;
@@ -52,22 +52,38 @@ module rat
             end
         end
         // write
-        for (int i=0; i<TABLE_LEN; i++) begin
-            for (int j=0; j<MACHINE_WIDTH; j++) begin
-                if (renaming.instr[i].valid && renaming.instr[i].dst != 0 && renaming.instr[i].dst == i) begin
-                    mapping_table_new[i].id = renaming.rob_addr_new[j];
-                    mapping_table_new[i].valid = 1'b1;
+        for (int i=0; i<MACHINE_WIDTH; i++) begin
+            renaming.renaming_info[i].src1.valid = mapping_table_new[renaming.instr[i].src1].valid;
+            renaming.renaming_info[i].src1.id = mapping_table_new[renaming.instr[i].src1].id;
+            renaming.renaming_info[i].src2.valid = mapping_table_new[renaming.instr[i].src2].valid;
+            renaming.renaming_info[i].src2.id = mapping_table_new[renaming.instr[i].src2].id;
+            for (int j=0; j<TABLE_LEN; j++) begin
+                if (renaming.instr[i].valid && renaming.instr[i].dst != 0 && renaming.instr[i].dst == j) begin
+                    mapping_table_new[j].id = renaming.rob_addr_new[i];
+                    mapping_table_new[j].valid = 1'b1;
                 end
             end
         end
+        // for (int i=0; i<TABLE_LEN; i++) begin
+        //     for (int j=0; j<MACHINE_WIDTH; j++) begin
+        //         renaming.renaming_info[j].src1.valid = mapping_table_new[renaming.instr[j].src1].valid;
+        //         renaming.renaming_info[j].src1.id = mapping_table_new[renaming.instr[j].src1].id;
+        //         renaming.renaming_info[j].src2.valid = mapping_table_new[renaming.instr[j].src2].valid;
+        //         renaming.renaming_info[j].src2.id = mapping_table_new[renaming.instr[j].src2].id;
+        //         if (renaming.instr[j].valid && renaming.instr[j].dst != 0 && renaming.instr[j].dst == i) begin
+        //             mapping_table_new[i].id = renaming.rob_addr_new[j];
+        //             mapping_table_new[i].valid = 1'b1;
+        //         end
+        //     end
+        // end
     end
     // read; mode = write first
     for (genvar i=0; i<MACHINE_WIDTH; i++) begin
-        assign renaming.renaming_info[i].src1.valid = mapping_table_new[renaming.instr.src1].valid;
-        assign renaming.renaming_info[i].src1.id = mapping_table_new[renaming.instr.src1].id;
-        assign renaming.renaming_info[i].src2.valid = mapping_table_new[renaming.instr.src2].valid;
-        assign renaming.renaming_info[i].src2.id = mapping_table_new[renaming.instr.src2].id;
-        assign renaming.renaming_info[i].dst = mapping_table_new[renaming.instr.dst];
+        // assign renaming.renaming_info[i].src1.valid = mapping_table[renaming.instr[i].src1].valid;
+        // assign renaming.renaming_info[i].src1.id = mapping_table[renaming.instr[i].src1].id;
+        // assign renaming.renaming_info[i].src2.valid = mapping_table[renaming.instr[i].src2].valid;
+        // assign renaming.renaming_info[i].src2.id = mapping_table[renaming.instr[i].src2].id;
+        assign renaming.renaming_info[i].dst = mapping_table_new[renaming.instr[i].dst];
     end
 
 

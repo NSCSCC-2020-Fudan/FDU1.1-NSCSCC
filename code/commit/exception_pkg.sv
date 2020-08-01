@@ -2,7 +2,7 @@
 //
 package exception_pkg;
     //  Group: Parameters
-    
+    import common::*;
     parameter CODE_INT  = 5'h00;  // Interrupt
     parameter CODE_MOD  = 5'h01;  // TLB modification exception
     parameter CODE_TLBL = 5'h02;  // TLB exception (load or instruction fetch)

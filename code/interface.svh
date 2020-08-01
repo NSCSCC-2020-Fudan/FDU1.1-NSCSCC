@@ -2,6 +2,7 @@
 `define __INTERFACE_SVH
 
 interface freg_intf();
+    import common::*;
     word_t pc, pc_new;
     modport pcselect(output pc_new);
     modport freg(output pc, input pc_new);
@@ -9,6 +10,7 @@ interface freg_intf();
 endinterface
 
 interface dreg_intf();
+    import common::*;
     import fetch_pkg::*;
     fetch_data_t [MACHINE_WIDTH-1:0]dataF, dataF_new;
     modport fetch(output dataF_new);
@@ -17,8 +19,9 @@ interface dreg_intf();
 endinterface // dreg_intf
 
 interface rreg_intf();
+    import common::*;
     import decode_pkg::*;
-
+    
     decode_data_t [MACHINE_WIDTH-1:0]dataD, dataD_new;
     modport decode(output dataD_new);
     modport rreg(input dataD_new, output dataD);
@@ -26,6 +29,7 @@ interface rreg_intf();
 endinterface
 
 interface ireg_intf();
+    import common::*;
     import renaming_pkg::*;
 
     renaming_data_t [MACHINE_WIDTH-1:0]dataR, dataR_new;
@@ -88,6 +92,7 @@ interface forward_intf();
 endinterface
 
 interface payloadRAM_intf();
+    import common::*;
     word_t [MACHINE_WIDTH-1:0] arf1, arf2;
     struct packed {
         logic valid;
@@ -98,8 +103,8 @@ interface payloadRAM_intf();
     preg_addr_t [MACHINE_WIDTH-1:0] preg1, preg2; 
     word_t [MACHINE_WIDTH-1:0] cdata1, cdata2;
     modport issue(
-        input  cdata1, cdata2,
-        output arf1, arf2, prf1, prf2
+        input  cdata1, cdata2, prf1, prf2,
+        output creg1, creg2, preg1, preg2
     );
     // prf
     modport rob(
@@ -130,7 +135,8 @@ endinterface
 
 interface renaming_intf();
     import common::*;
-    rob_pkg::rob_addr_t [MACHINE_WIDTH-1:0]rob_addr_new;
+    import decode_pkg::*;
+    preg_addr_t [MACHINE_WIDTH-1:0]rob_addr_new;
     struct packed {
         logic valid;
         creg_addr_t src1, src2, dst;
@@ -144,7 +150,7 @@ interface renaming_intf();
         } src1, src2, dst;
     } [MACHINE_WIDTH-1:0]renaming_info;
     modport renaming(
-        input renaming_info,
+        input renaming_info, rob_addr_new,
         output instr
     );
     modport rat(
@@ -157,11 +163,13 @@ interface renaming_intf();
     );
 endinterface
 
-interface retire_intf();
+interface retire_intf
+    import common::*;(output word_t[ISSUE_WIDTH-1:0] wb_pc);
+    import decode_pkg::*;
     struct packed {
         logic valid;
         union packed {
-            word_t data;
+            dword_t data;
             struct packed {
                 word_t hi;
                 word_t lo;
@@ -175,7 +183,7 @@ interface retire_intf();
         input retire
     );
     modport rob(
-        output retire
+        output retire, wb_pc
     );
     modport arf(
         input retire
@@ -189,10 +197,13 @@ interface retire_intf();
 endinterface
 
 interface commit_intf();
+    import common::*;
+    import commit_pkg::*;
+    import execute_pkg::*;
     alu_commit_t [ALU_NUM-1:0] alu_commit;
     mem_commit_t [MEM_NUM-1:0] mem_commit;
-    branch_commit_t [ALU_NUM-1:0] branch_commit;
-    mult_commit_t [ALU_NUM-1:0] mult_commit;
+    branch_commit_t [BRU_NUM-1:0] branch_commit;
+    mult_commit_t [MULT_NUM-1:0] mult_commit;
     modport commit(
         output alu_commit, mem_commit, branch_commit, mult_commit
     );
@@ -202,6 +213,9 @@ interface commit_intf();
 endinterface
 
 interface wake_intf();
+    import common::*;
+    import execute_pkg::*;
+    import issue_queue_pkg::*;
     wake_req_t [ISSUE_WIDTH-1:0] dst_commit;
     wake_req_t [ALU_NUM-1:0] dst_execute;
     word_t [ISSUE_WIDTH-1:0] broadcast;
@@ -219,17 +233,25 @@ endinterface
 interface exception_intf();
     import common::*;
     import exception_pkg::*;
-
+    exception_t exception;
+    modport excep(
+        output exception
+    );
+    modport cp0(
+        input exception
+    );
 endinterface
 
 interface pcselect_intf();
     import common::*;
     logic branch_taken, exception_valid;
-    word_t pcplus4, pcbranch, pcexception;
+    word_t pcplus4, pcbranch, pcexception, epc;
+    logic is_eret;
     modport pcselect(input pcplus4, pcbranch, pcexception, exception_valid, branch_taken);
     modport fetch(output pcplus4);
     modport rob(output branch_taken, pcbranch);
     modport exception(output exception_valid, pcexception);
+    modport cp0(output epc, is_eret);
 endinterface
 
 interface hazard_intf();
@@ -259,6 +281,20 @@ interface hazard_intf();
     modport creg(
         input stallC, flushC
     );
+    modport exception(
+        input exception_valid
+    );
+    modport rob(
+        output rob_full, branch_taken
+    );
+endinterface
+
+interface mem_ctrl_intf();
+    logic wait_mem;
+    logic mem_issued;
+    modport mem_ctrl(output wait_mem, input mem_issued);
+    // modport rob(input wait_write);
+    modport issue(input wait_mem, output mem_issued);
 endinterface
 
 `endif

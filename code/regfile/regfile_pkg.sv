@@ -12,13 +12,13 @@ package regfile_pkg;
     typedef struct packed {
         areg_addr_t id;
         mode_t mode;
-    } r_req_t;
+    } read_req_t;
     typedef struct packed {
         logic valid;
         areg_addr_t id;
         word_t data;
-    } w_req_t;
+    } write_req_t;
     typedef struct packed {
         word_t data;
-    } r_resp_t;
+    } read_resp_t;
 endpackage: regfile_pkg

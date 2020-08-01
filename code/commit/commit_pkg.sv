@@ -2,6 +2,7 @@
 //
 package commit_pkg;
     import common::*;
+    import rob_pkg::*;
     //  Group: Parameters
     
 
@@ -21,6 +22,7 @@ package commit_pkg;
     } mem_commit_t;
     typedef struct packed {
         logic valid;
+        logic branch_taken;
         word_t pcbranch;
         word_t data;
         rob_addr_t rob_addr;

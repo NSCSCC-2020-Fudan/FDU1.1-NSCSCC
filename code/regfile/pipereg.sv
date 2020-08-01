@@ -2,13 +2,14 @@
 module freg 
     import common::*;(
     input logic clk, resetn,
-    freg_intf.freg self
+    freg_intf.freg self,
+    hazard_intf.freg hazard
 );
     logic stall;
     word_t pc, pc_new;
     always_ff @(posedge clk) begin
         if (~resetn) begin
-            pc <= '0;
+            pc <= 32'hbfc00000;
         end else if (~stall) begin
             pc <= pc_new;
         end
@@ -16,13 +17,15 @@ module freg
 
     assign pc_new = self.pc_new;
     assign self.pc = pc;
+    assign stall = hazard.stallF;
 endmodule
 
 module dreg 
     import common::*;
     import fetch_pkg::*;(
     input logic clk, resetn,
-    dreg_intf.dreg self
+    dreg_intf.dreg self,
+    hazard_intf.dreg hazard
 );
     logic stall, flush;
     fetch_data_t [MACHINE_WIDTH-1:0]dataF, dataF_new;
@@ -36,13 +39,16 @@ module dreg
 
     assign dataF_new = self.dataF_new;
     assign self.dataF = dataF;
+    assign flush = hazard.flushD;
+    assign stall = hazard.stallD;
 endmodule
 
 module rreg 
     import common::*;
     import decode_pkg::*;(
     input logic clk, resetn,
-    rreg_intf.rreg self
+    rreg_intf.rreg self,
+    hazard_intf.rreg hazard
 );
     logic stall, flush;    
     decode_data_t [MACHINE_WIDTH-1:0]dataD, dataD_new;
@@ -56,13 +62,16 @@ module rreg
 
     assign dataD_new = self.dataD_new;
     assign self.dataD = dataD;
+    assign flush = hazard.flushR;
+    assign stall = hazard.stallR;
 endmodule
 
 module ireg 
     import common::*;
     import renaming_pkg::*;(
     input logic clk, resetn,
-    ireg_intf.ireg self
+    ireg_intf.ireg self,
+    hazard_intf.ireg hazard
 );
     logic stall, flush;    
     renaming_data_t [MACHINE_WIDTH-1:0]dataR, dataR_new;
@@ -76,13 +85,16 @@ module ireg
 
     assign dataR_new = self.dataR_new;
     assign self.dataR = dataR;
+    assign flush = hazard.flushI;
+    assign stall = hazard.stallI;
 endmodule
 
 module ereg 
     import common::*;
     import issue_pkg::*;(
     input logic clk, resetn,
-    ereg_intf.ereg self
+    ereg_intf.ereg self,
+    hazard_intf.ereg hazard
 );
     logic stall, flush;    
     issue_data_t dataI, dataI_new;
@@ -96,13 +108,16 @@ module ereg
 
     assign dataI_new = self.dataI_new;
     assign self.dataI = dataI;
+    assign flush = hazard.flushE;
+    assign stall = hazard.stallE;
 endmodule
 
 module creg 
     import common::*;
     import execute_pkg::*;(
     input logic clk, resetn,
-    creg_intf.creg self
+    creg_intf.creg self,
+    hazard_intf.creg hazard
 );
     logic stall, flush;    
     execute_data_t dataE, dataE_new;
@@ -116,4 +131,6 @@ module creg
 
     assign dataE_new = self.dataE_new;
     assign self.dataE = dataE;
+    assign flush = hazard.flushC;
+    assign stall = hazard.stallC;
 endmodule

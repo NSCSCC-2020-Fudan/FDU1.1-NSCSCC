@@ -7,8 +7,11 @@ package fetch_pkg;
 
     //  Group: Typedefs
     typedef struct packed {
-        word_t instr_;
+        logic valid;
+        word_t pcplus4;
         word_t pcplus8;
+        word_t instr_;
+        exception_pkg::exception_info_t exception;
     } fetch_data_t;
 
     

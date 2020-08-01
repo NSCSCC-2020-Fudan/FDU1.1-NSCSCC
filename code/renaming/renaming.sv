@@ -6,7 +6,7 @@ module renaming
     rreg_intf.renaming rreg,
     ireg_intf.renaming ireg
 );
-    decode_data_t [MACHINE_WIDTH-1:0] dataD;
+    decode_pkg::decode_data_t [MACHINE_WIDTH-1:0] dataD;
     renaming_data_t [MACHINE_WIDTH-1:0] dataR;
 
     areg_addr_t [MACHINE_WIDTH-1:0] src1, src2, dst;
@@ -39,16 +39,18 @@ module renaming
 
     // self                    
     for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
-        assign dataR[i].dst = self.renaming_info[i].dst.id;
+        assign dataR[i].valid = dataD[i].valid;
+        assign dataR[i].dst = self.rob_addr_new[i];
         assign dataR[i].src1 = psrc1[i];
         assign dataR[i].src2 = psrc2[i];
         assign dataR[i].dst_ = dataD[i].instr.dst;
         assign dataR[i].src1_ = dataD[i].instr.src1;
         assign dataR[i].src2_ = dataD[i].instr.src2;
         assign dataR[i].ctl = dataD[i].instr.ctl;
+        assign dataR[i].op = dataD[i].instr.op;
         assign dataR[i].imm = dataD[i].instr.imm;
         assign dataR[i].pcplus8 = dataD[i].pcplus8;
-        assign dataR[o].exception = dataD[i].exception;
+        assign dataR[i].exception = dataD[i].exception;
     end
     
     for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin

@@ -2,7 +2,7 @@
 module divider 
     import common::*;
     import divider_pkg::*;(
-    input logic clk, reset,
+    input logic clk, resetn, flush,
     input logic valid,
     input word_t a, b,
     output dword_t hilo,
@@ -11,7 +11,7 @@ module divider
 );
     dword_t out;
     word_t a_u, b_u;
-    divider_u divider_u(.clk, .reset, .valid, .a(a_u), .b(b_u), .out, .ok);
+    divider_u divider_u(.clk, .resetn, .flush, .valid, .a(a_u), .b(b_u), .out, .ok);
 
     assign a_u = (is_signed & a[31]) ? -a:a;
     assign b_u = (is_signed & b[31]) ? -b:b;
@@ -20,8 +20,10 @@ module divider
     assign hilo[63:32] = (is_signed & (a[31] ^ out[63])) ? -out[63:32] : out[63:32];
 endmodule
 
-module divider_u(
-    input logic clk, reset,
+module divider_u
+    import common::*;
+    import divider_pkg::*;(
+    input logic clk, resetn, flush,
     input logic valid,
     input word_t a, b, // a / b
     output dword_t out, // {hi, lo}
@@ -31,7 +33,7 @@ module divider_u(
     divide_data_t [17:1]div;
     divide_data_t [16:0]div_new;
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~resetn | flush) begin
             div <= '0;
         end else begin
             div[17:1] <= div_new[16:0];
@@ -54,7 +56,9 @@ module divider_u(
 endmodule
 
 
-module divide_process (
+module divide_process 
+    import common::*;
+    import divider_pkg::*;(
     input divide_data_t in,
     output divide_data_t out
 );
@@ -102,7 +106,9 @@ module divide_process (
     assign out.PA[31:0] = {in.PA[29:0], 2'b00};
 endmodule
 
-module divide_table (
+module divide_table 
+    import common::*;
+    import divider_pkg::*;(
     input logic [2:0] b, // b[30:28]
     input logic [5:0] pa,
     output quotient_bit_t q
@@ -444,7 +450,8 @@ module divide_table (
     end
 endmodule
 
-module divide_initial (
+module divide_initial 
+    import common::*;(
     input word_t ina,
     input word_t inb,
     output logic [64:0] outpa,

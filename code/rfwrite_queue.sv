@@ -1,85 +1,67 @@
 module rfwrite_queue
     import common::*;(
-        input logic clk, reset,
-        input rf_w_t [ISSUE_NUM-1: 0] rfw,
-        input word_t [ISSUE_NUM-1: 0] rt_pc,
-        output rf_w_t rfw_out,
-        output word_t rt_pc_out 
+        input logic clk, resetn,
+        input rf_w_t [ISSUE_WIDTH-1: 0] rfw,
+        input word_t [ISSUE_WIDTH-1: 0] rt_pc,
+        output logic[3:0] debug_wb_rf_wen,
+        output logic[4:0] debug_wb_rf_wnum,
+        output word_t debug_wb_pc, debug_wb_rf_wdata
     );
-    
-    logic [5: 0] head, headplus1, headplus2; 
-    logic [5: 0] tail, tailplus1, tailplus2;
-    logic [63: 0] en_queue;
-    rf_w_t [63: 0] rf_queue;
-    word_t [63: 0] pc_queue;
-    
-    assign headplus1 = head + 3'b001;
-    assign tailplus1 = tail + 3'b001;
-    assign headplus2 = head + 3'b010;
-    assign tailplus2 = tail + 3'b010;
-    
-    always_ff @(posedge clk, posedge reset)
-        begin
-            if (reset)
-                begin
-                    head <= '0;
-                    tail <= '0;
-                    rf_queue <= '0;
-                    pc_queue <= '0;       
-                    en_queue <= '0;
-                    rfw_out <= '0;     
-                    rt_pc_out <= '0; 
-                end
-            else
-                begin
-                    case ({rfw[1].wen, rfw[0].wen})
-                        2'b01:
-                            begin
-                                rf_queue[tail] <= rfw[0];
-                                pc_queue[tail] <= rt_pc[0];
-                                en_queue[tail] <= 1'b1;
-                            end
-                        2'b10:
-                            begin
-                                rf_queue[tail] <= rfw[1];
-                                pc_queue[tail] <= rt_pc[1];
-                                en_queue[tail] <= 1'b1;
-                            end
-                        2'b11:
-                            begin
-                                rf_queue[tail] <= rfw[1];
-                                rf_queue[tailplus1] <= rfw[0];
-                                pc_queue[tail] <= rt_pc[1];
-                                pc_queue[tailplus1] <= rt_pc[0];
-                                en_queue[tail] <= 1'b1;
-                                en_queue[tailplus1] <= 1'b1;
-                            end
-                        default: tail <= tail;
-                    endcase
-                    
-                    case ({rfw[1].wen, rfw[0].wen})
-                        2'b01: tail <= tailplus1;
-                        2'b10: tail <= tailplus1;
-                        2'b11: tail <= tailplus2;
-                        default: tail <= tail;
-                    endcase
-                    
-                    if (en_queue[head])
-                        begin
-                            rfw_out <= rf_queue[head];
-                            rt_pc_out <= pc_queue[head];
-                        end
-                    else
-                        begin
-                            rfw_out <= '0;
-                            rt_pc_out <= '0;
-                        end
-                    if (en_queue[head])
-                        begin
-                            en_queue[head] = '0;    
-                            head = headplus1;
-                        end
-                end
+    localparam type entry_t = struct packed{
+        logic valid;
+        logic[4:0] addr;
+        word_t data;
+        word_t pc;
+    };
+    localparam type queue_t = entry_t[255:0];
+    localparam type addr_t = logic[7:0]; 
+
+    addr_t head, tail, head_new, tail_new;
+    queue_t queue, queue_new;
+
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
+            head <= '0;
+            tail <= '0;
+            queue <= '0;
         end
+        else begin
+            head <= head_new;
+            tail <= tail_new;
+            queue <= queue_new;
+        end
+    end
+
+    always_comb begin
+        head_new = head;
+        tail_new = tail;
+        queue_new = queue;
+        // read
+        debug_wb_rf_wen = '0;
+        debug_wb_rf_wnum = '0;
+        debug_wb_pc = '0;
+        debug_wb_rf_wdata = '0;
+        if (head_new != tail_new && queue_new[head_new].valid) begin
+            debug_wb_rf_wen = {4{queue_new[head_new].valid}};
+            debug_wb_rf_wnum = queue_new[head_new].addr;
+            debug_wb_pc = queue_new[head_new].pc;
+            debug_wb_rf_wdata = queue_new[head_new].data;
+            head_new = head_new + 1;
+        end
+
+        // write
+        for (int i=0; i<ISSUE_WIDTH; i++) begin
+            for (int j=0; j<256; j++) begin
+                if (rfw[i].wen && tail_new == j) begin
+                    queue_new[j].valid = rfw[i].wen;
+                    queue_new[j].addr = rfw[i].addr;
+                    queue_new[j].data = rfw[i].wd;
+                    queue_new[j].pc = rt_pc[i] - 8;
+                    tail_new = tail_new + 1;
+                    break;
+                end
+            end
+        end
+    end
     
 endmodule

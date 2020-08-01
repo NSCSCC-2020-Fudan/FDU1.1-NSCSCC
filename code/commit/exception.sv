@@ -4,10 +4,11 @@ module exception
     import exception_pkg::*;(
     input logic reset,
     exception_intf.excep self,
-    pcselect_intf.excep pcselect,
-    hazard_intf.excep hazard
+    pcselect_intf.exception pcselect,
+    hazard_intf.exception hazard
 );
-
+    assign pcselect.exception_valid = 1'b0;
+    /*
     // input logic reset,
     logic exception_instr, exception_ri, exception_of, exception_load, exception_bp, exception_sys;
     interrupt_info_t interrupt_info;
@@ -97,4 +98,5 @@ module exception
     assign self.exception = exception;
     assign interrupt_info = self.interrupt_info;
     assign cp0_status = self.cp0_status;
+    */
 endmodule
