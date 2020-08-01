@@ -11,7 +11,7 @@ req_hit
 req_idx
 req_in_miss
 req_miss_ready
-req_ready
+//req_ready
 req_to_hit
 req_to_miss
 req_victim_idx

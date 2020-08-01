@@ -143,7 +143,6 @@ module DCache #(
     // assignment later
     logic req_in_miss;
     logic req_miss_ready;
-    logic req_ready;
     logic req_to_hit;
     logic req_to_miss;
 
@@ -158,7 +157,8 @@ module DCache #(
     view_t  hit_wdata;
 
     assign hit_pos      = req_iaddr;
-    assign hit_write_en = req_to_hit ? dbus_req.write_en : 0;
+    assign hit_write_en = (dbus_req.valid && req_miss_ready) ?
+        ({DBUS_DATA_BYTES{req_hit}} & dbus_req.write_en) : 0;
     assign hit_wdata    = dbus_req.data;
 
     /**
@@ -204,9 +204,8 @@ module DCache #(
         /* req_iaddr.idx == miss_pos.idx && */  // to reduce latency
         req_paddr.tag == miss_addr.tag &&
         req_iaddr.index == miss_pos.index;
-    assign req_miss_ready = miss_ready[req_iaddr.offset];
-    assign req_ready      = req_hit && (!req_in_miss || req_miss_ready);
-    assign req_to_hit     = dbus_req.valid && req_ready;
+    assign req_miss_ready = !req_in_miss || miss_ready[req_iaddr.offset];
+    assign req_to_hit     = req_hit && (dbus_req.valid && req_miss_ready);
     assign req_to_miss    = dbus_req.valid && miss_avail && !req_hit;
 
     /**
@@ -349,7 +348,7 @@ module DCache #(
     /**
      * DBus driver
      */
-    assign dbus_resp.addr_ok = req_ready;
+    assign dbus_resp.addr_ok = req_hit && req_miss_ready;
     assign dbus_resp.data_ok = hit_data_ok;
     assign dbus_resp.data    = hit_rdata;
 
