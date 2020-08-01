@@ -10,12 +10,21 @@ module hilo
         hi_new = hi;
         lo_new = lo;
         for (int i=0; i<ISSUE_WIDTH; i++) begin
-            if (retire.retire[i].ctl.hiwrite) begin
-                hi_new = retire.retire[i].data.hilo.hi;
-            end
-            if (retire.retire[i].ctl.lowrite) begin
-                lo_new = retire.retire[i].data.hilo.lo;
-            end
+            case ({retire.retire[i].ctl.hiwrite, retire.retire[i].ctl.lowrite})
+                2'b11: begin
+                    hi_new = retire.retire[i].data.hilo.hi;
+                    lo_new = retire.retire[i].data.hilo.lo;
+                end
+                2'b01: begin
+                    lo_new = retire.retire[i].data[31:0];
+                end
+                2'b10: begin
+                    hi_new = retire.retire[i].data[31:0];
+                end
+                default: begin
+                    
+                end
+            endcase
         end
     end
     always_ff @(posedge clk) begin
