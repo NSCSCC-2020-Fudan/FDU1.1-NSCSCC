@@ -1,6 +1,7 @@
 module issue_queue 
     import common::*;
     import issue_queue_pkg::*;
+    import execute_pkg::*;
     #(
     parameter QUEUE_LEN = ALU_QUEUE_LEN,
     parameter entry_type_t ENTRY_TYPE = ALU,
@@ -10,7 +11,7 @@ module issue_queue
     input write_req_t [WRITE_NUM-1:0] write,
     output read_resp_t [READ_NUM-1:0] read,
     input wake_req_t [WAKE_NUM-1:0] wake,
-    input word_t [ISSUE_WIDTH:0] broadcast,
+    input word_t [FU_NUM:0] broadcast,
     output logic full,
     input logic wait_mem, mult_ok
 );
@@ -18,7 +19,7 @@ module issue_queue
     localparam type queue_t = entry_t[QUEUE_LEN-1:0];
     localparam ADDR_WIDTH = $clog2(QUEUE_LEN);
 
-    queue_t queue, queue_new, queue_after_read;
+    queue_t queue, queue_new, queue_after_read, queue_after_wake;
     
     queue_ptr_t tail, tail_new, tail_after_read;
     write_req_t [WRITE_NUM-1:0] write_waken;
@@ -45,22 +46,39 @@ module issue_queue
         // wake up
         for (int i=0; i<WAKE_NUM; i++) begin
             for (int j=0; j<QUEUE_LEN; j++) begin
-                if (queue_new[j].src1.id == wake[i].id && wake[i].valid && ~queue_new[j].src1.valid) begin
-                    queue_new[j].src1.valid = 1'b1;
-                    if (i < ISSUE_WIDTH) begin
+                if (queue_new[j].src1.id == wake[i].id && wake[i].valid && queue_new[j].src1.forward_en) begin
+                    
+                    if (i < FU_NUM - 1) begin
                         queue_new[j].src1.data = broadcast[i];
+                        queue_new[j].src1.valid = 1'b1;
                     end
-                    if (i == ISSUE_WIDTH && queue_new[j].ctl.hitoreg) begin
+                    if (i == FU_NUM - 1 && queue_new[j].ctl.lotoreg) begin
                         queue_new[j].src1.data = broadcast[i];
+                        queue_new[j].src1.valid = 1'b1;
+                    end
+                    if (i == FU_NUM && queue_new[j].ctl.hitoreg) begin
+                        queue_new[j].src1.data = broadcast[i];
+                        queue_new[j].src1.valid = 1'b1;
+                    end
+                    if (i > FU_NUM) begin
+                        queue_new[j].src1.valid = 1'b1;
                     end
                 end
-                if (queue_new[j].src2.id == wake[i].id && wake[i].valid && ~queue_new[j].src2.valid) begin
-                    queue_new[j].src2.valid = 1'b1;
-                    if (i < ISSUE_WIDTH) begin
+                if (queue_new[j].src2.id == wake[i].id && wake[i].valid && queue_new[j].src2.forward_en) begin
+                    if (i < FU_NUM - 1) begin
                         queue_new[j].src2.data = broadcast[i];
+                        queue_new[j].src2.valid = 1'b1;
                     end
-                    if (i == ISSUE_WIDTH && queue_new[j].ctl.hitoreg) begin
+                    if (i == FU_NUM - 1 && queue_new[j].ctl.lotoreg) begin
                         queue_new[j].src2.data = broadcast[i];
+                        queue_new[j].src2.valid = 1'b1;
+                    end
+                    if (i == FU_NUM && queue_new[j].ctl.hitoreg) begin
+                        queue_new[j].src2.data = broadcast[i];
+                        queue_new[j].src2.valid = 1'b1;
+                    end
+                    if (i > FU_NUM) begin
+                        queue_new[j].src2.valid = 1'b1;
                     end
                 end
                 if (j == tail_new) begin
@@ -68,27 +86,45 @@ module issue_queue
                 end
             end
             for (int j=0; j<WRITE_NUM; j++) begin
-                if (write_waken[j].entry.src1.id == wake[i].id && wake[i].valid && ~write_waken[j].entry.src1.valid) begin
-                    write_waken[j].entry.src1.valid = 1'b1;
-                    if (i < ISSUE_WIDTH) begin
+                if (write_waken[j].entry.src1.id == wake[i].id && wake[i].valid && write_waken[j].entry.src1.forward_en) begin
+                    
+                    if (i < FU_NUM - 1) begin
                         write_waken[j].entry.src1.data = broadcast[i];
+                        write_waken[j].entry.src1.valid = 1'b1;
                     end
-                    if (i == ISSUE_WIDTH && write_waken[j].entry.ctl.hitoreg) begin
+                    if (i == FU_NUM - 1 && write_waken[j].entry.ctl.lotoreg) begin
                         write_waken[j].entry.src1.data = broadcast[i];
+                        write_waken[j].entry.src1.valid = 1'b1;
+                    end
+                    if (i == FU_NUM && write_waken[j].entry.ctl.hitoreg) begin
+                        write_waken[j].entry.src1.data = broadcast[i];
+                        write_waken[j].entry.src1.valid = 1'b1;
+                    end
+                    if (i > FU_NUM) begin
+                        write_waken[j].entry.src1.valid = 1'b1;
                     end
                 end
-                if (write_waken[j].entry.src2.id == wake[i].id && wake[i].valid && ~write_waken[j].entry.src2.valid) begin
+                if (write_waken[j].entry.src2.id == wake[i].id && wake[i].valid && write_waken[j].entry.src2.forward_en) begin
                     write_waken[j].entry.src2.valid = 1'b1;
-                    if (i < ISSUE_WIDTH) begin
+                    if (i < FU_NUM - 1) begin
                         write_waken[j].entry.src2.data = broadcast[i];
+                        write_waken[j].entry.src2.valid = 1'b1;
                     end
-                    if (i == ISSUE_WIDTH && write_waken[j].entry.ctl.hitoreg) begin
+                    if (i == FU_NUM - 1 && write_waken[j].entry.ctl.lotoreg) begin
                         write_waken[j].entry.src2.data = broadcast[i];
+                        write_waken[j].entry.src2.valid = 1'b1;
+                    end
+                    if (i == FU_NUM && write_waken[j].entry.ctl.hitoreg) begin
+                        write_waken[j].entry.src2.data = broadcast[i];
+                        write_waken[j].entry.src2.valid = 1'b1;
+                    end
+                    if (i > FU_NUM) begin
+                        write_waken[j].entry.src2.valid = 1'b1;
                     end
                 end
             end
         end
-
+        queue_after_wake = queue_new;
         // read first
         read_num = '0;
         for (int i=0; i<QUEUE_LEN; i++) begin
@@ -107,7 +143,13 @@ module issue_queue
             end
             // ready
             if (queue_new[i].src1.valid && queue_new[i].src2.valid) begin
-                read[read_num] = queue_new[i];
+                for (int j=0; j<QUEUE_LEN; j++) begin
+                    if (j == read_num) begin
+                        read[j] = queue_new[i];
+                        break;
+                    end
+                end
+                
                 // remove from issue queue: queue_new[tail-1:i] = queue_new[tail:i+1];
                 for (int j=0; j<QUEUE_LEN; j++) begin
                     if (j > i) begin
@@ -119,6 +161,7 @@ module issue_queue
                 end
                 read_num = read_num + 1;
                 tail_new = tail_new - 1;
+                i = i - 1;
             end
 
             // reach the last entry

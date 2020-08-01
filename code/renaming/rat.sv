@@ -75,10 +75,10 @@ module rat
                 end
             end
             if (renaming.instr[i].valid && renaming.instr[i].dst == 7'b1000011) begin
-                mapping_table_new[7'b1000001].id = renaming.rob_addr_new[i];
-                mapping_table_new[7'b1000001].valid = 1'b1;
-                mapping_table_new[7'b1000010].id = renaming.rob_addr_new[i];
-                mapping_table_new[7'b1000010].valid = 1'b1;
+                mapping_table_new[66].id = renaming.rob_addr_new[i];
+                mapping_table_new[66].valid = 1'b1;
+                mapping_table_new[65].id = renaming.rob_addr_new[i];
+                mapping_table_new[65].valid = 1'b1;
             end
         end
         // for (int i=0; i<TABLE_LEN; i++) begin

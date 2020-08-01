@@ -10,7 +10,7 @@ package issue_queue_pkg;
     parameter MULT_QUEUE_LEN = 2;
 
     parameter WRITE_NUM = MACHINE_WIDTH;
-    parameter WAKE_NUM = ISSUE_WIDTH + execute_pkg::ALU_NUM + 1;
+    parameter WAKE_NUM = execute_pkg::FU_NUM + execute_pkg::ALU_NUM + 1;
     //  Group: Typedefs
     typedef struct packed {
         logic valid;

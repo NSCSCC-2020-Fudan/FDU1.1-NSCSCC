@@ -5,7 +5,7 @@ package rat_pkg;
     //  Group: Parameters
     // parameter READ_PORTS = MACHINE_WIDTH * 3;
     // parameter WRITE_PORTS = MACHINE_WIDTH;
-    parameter TABLE_LEN = CREG_NUM;
+    parameter TABLE_LEN = 70;
     parameter RELEASE_PORTS = ISSUE_WIDTH;
     //  Group: Typedefs
     typedef struct packed {

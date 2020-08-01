@@ -12,21 +12,24 @@ module mult
     output logic ok
 );
     issued_instr_t mult_issue_2;
+    word_t a_2, b_2;
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
             mult_issue_2 <= '0;
+            {a_2, b_2} <= '0;
         end else if(state == INIT)begin
             mult_issue_2 <= mult_issue;
+            {a_2, b_2} <= {a, b};
         end
     end
     dword_t hilo_m, hilo_d;
     word_t hi, lo;
-    multiplier multiplier(.clk, .a, .b, .hilo(hilo_m), .is_signed(op == MULT));
-    divider divider(.clk, .resetn, .flush, .valid(op == DIV || op == DIVU), .is_signed(op == DIV),
-                    .a, .b, .hilo(hilo_d));
-    assign {hi, lo} = (op==MULT||op == MULTU) ? hilo_m : hilo_d;
-    localparam MULT_DELAY = 1 << 4;
-    localparam DIV_DELAY = 1 << 16;
+    multiplier multiplier(.clk, .a(a_2), .b(b_2), .hilo(hilo_m), .is_signed(mult_issue_2.op == MULT));
+    divider divider(.clk, .resetn, .flush, .valid(mult_issue_2.op == DIV || mult_issue_2.op == DIVU), .is_signed(mult_issue_2.op == DIV),
+                    .a(a_2), .b(b_2), .hilo(hilo_d));
+    assign {hi, lo} = (mult_issue_2.op==MULT||mult_issue_2.op == MULTU) ? hilo_m : hilo_d;
+    localparam MULT_DELAY = 1 << 5;
+    localparam DIV_DELAY = 1 << 17;
     logic [17:0] counter, counter_new;
     localparam type state_t = enum logic {INIT, DOING};
     state_t state, state_new;

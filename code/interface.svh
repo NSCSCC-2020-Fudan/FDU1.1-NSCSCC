@@ -216,9 +216,9 @@ interface wake_intf();
     import common::*;
     import execute_pkg::*;
     import issue_queue_pkg::*;
-    wake_req_t [ISSUE_WIDTH:0] dst_commit;
+    wake_req_t [FU_NUM:0] dst_commit;
     wake_req_t [ALU_NUM-1:0] dst_execute;
-    word_t [ISSUE_WIDTH:0] broadcast;
+    word_t [FU_NUM:0] broadcast;
     modport issue(
         input dst_commit, dst_execute, broadcast
     );
