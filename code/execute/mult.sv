@@ -1,23 +1,36 @@
 module mult 
     import common::*;
-    import decode_pkg::*;(
+    import decode_pkg::*;
+    import issue_pkg::*;
+    import commit_pkg::*;(
     input logic clk, resetn, flush,
     input word_t a, b,
     input decoded_op_t op,
-    output word_t hi, lo,
+    // output word_t hi, lo,
+    input issued_instr_t mult_issue,
+    output mult_commit_t mult_commit,
     output logic ok
 );
+    issued_instr_t mult_issue_2;
+    always_ff @(posedge clk) begin
+        if (~resetn | flush) begin
+            mult_issue_2 <= '0;
+        end else if(state == INIT)begin
+            mult_issue_2 <= mult_issue;
+        end
+    end
     dword_t hilo_m, hilo_d;
+    word_t hi, lo;
     multiplier multiplier(.clk, .a, .b, .hilo(hilo_m), .is_signed(op == MULT));
     divider divider(.clk, .resetn, .flush, .valid(op == DIV || op == DIVU), .is_signed(op == DIV),
                     .a, .b, .hilo(hilo_d));
     assign {hi, lo} = (op==MULT||op == MULTU) ? hilo_m : hilo_d;
     localparam MULT_DELAY = 1 << 4;
-    localparam DIV_DELAY = 1 << 17;
+    localparam DIV_DELAY = 1 << 16;
     logic [17:0] counter, counter_new;
     localparam type state_t = enum logic {INIT, DOING};
     state_t state, state_new;
-    assign ok = state_new == INIT;
+    assign ok = state == INIT;
 
     always_comb begin
         state_new = state;
@@ -66,6 +79,12 @@ module mult
             counter <= counter_new;
         end
     end
+
+    assign mult_commit.valid = mult_issue_2.valid && state_new == INIT && state == DOING;
+    assign mult_commit.hi = hi;
+    assign mult_commit.lo = lo;
+    assign mult_commit.rob_addr = mult_issue_2.dst;
+    assign mult_commit.exception = mult_issue_2.exception;
     // dword_t ans;
     // always_comb begin
     //     case (op)

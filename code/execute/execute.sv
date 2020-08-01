@@ -11,7 +11,8 @@ module execute
     wake_intf.execute wake,
     input logic d_data_ok,
     output m_r_t mread,
-    input word_t rd
+    input word_t rd,
+    output logic mult_ok
 );
     issue_pkg::issue_data_t dataI;
     execute_data_t dataE;
@@ -119,11 +120,13 @@ module execute
                   .a(multsrca[i]),
                   .b(multsrcb[i]),
                   .op(dataI.mult_issue[i].op),
-                  .hi(dataE.mult_commit[i].hi),
-                  .lo(dataE.mult_commit[i].lo));
-        assign dataE.mult_commit[i].valid = dataI.mult_issue[i].valid;
-        assign dataE.mult_commit[i].rob_addr = dataI.mult_issue[i].dst;
-        assign dataE.mult_commit[i].exception = dataI.mult_issue[i].exception;
+                  .mult_issue(dataI.mult_issue[i]),
+                  .mult_commit(dataE.mult_commit[i]),
+                  .ok(mult_ok)
+                  );
+        // assign dataE.mult_commit[i].valid = dataI.mult_issue[i].valid;
+        // assign dataE.mult_commit[i].rob_addr = dataI.mult_issue[i].dst;
+        // assign dataE.mult_commit[i].exception = dataI.mult_issue[i].exception;
     end
 
     // wake

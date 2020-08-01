@@ -21,7 +21,7 @@ module rob
 
     // fifo ptrs
     rob_ptr_t head_ptr, tail_ptr, head_ptr_new, tail_ptr_new, head_ptr_retire, tail_ptr_retire;
-    rob_ptr_t head_ptr_temp, head_ptr_b;
+    rob_ptr_t head_ptr_temp, head_ptr_b, tail_ptr_r;
     rob_addr_t head_addr, tail_addr, head_addr_new, tail_addr_new, head_addr_retire, tail_addr_retire;
     rob_addr_t head_addr_b;
     assign head_addr = head_ptr[ROB_ADDR_LEN-1:0];
@@ -135,9 +135,9 @@ module rob
                 break;
             end
             head_ptr_temp = head_ptr_retire - 2;
-            if (ds_counter == 10'b0 || (rob_table[head_ptr_temp[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
-                          (rob_table[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.branch ||
-                          rob_table[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.jump))) begin
+            if (ds_counter == 10'b0 || (rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
+                          (rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.branch ||
+                          rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.jump))) begin
                 break;
             end
             ds_counter = {1'b0, ds_counter[9:1]};
@@ -192,7 +192,7 @@ module rob
                 full = 1'b1;
                 break;
             end
-            renaming.rob_addr_new[i] = tail_ptr_new[ROB_ADDR_LEN-1:0];
+            // renaming.rob_addr_new[i] = tail_ptr_new[ROB_ADDR_LEN-1:0];
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (renaming.instr[i].valid && j == tail_ptr_new[ROB_ADDR_LEN-1:0]) begin
                     rob_table_new[j].complete = 1'b0;
@@ -209,10 +209,8 @@ module rob
                     tail_ptr_new += 1;
                     break;
                 end
-            end
-            
+            end  
         end
-
     end
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
@@ -226,18 +224,27 @@ module rob
         end
     end
 
+    // renaming
+
+    always_comb begin
+        for (int i=0; i<MACHINE_WIDTH; i++) begin
+            tail_ptr_r = tail_ptr + i;
+            renaming.rob_addr_new[i] = tail_ptr_r[ROB_ADDR_LEN-1:0];
+        end
+    end
+
     // payloadRAM
     for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
-        assign payloadRAM.prf1[i].valid = rob_table_new[payloadRAM.preg1[i]].complete;
-        assign payloadRAM.prf1[i].data = rob_table_new[payloadRAM.preg1[i]].data[31:0];
-        assign payloadRAM.prf2[i].valid = rob_table_new[payloadRAM.preg2[i]].complete;
-        assign payloadRAM.prf2[i].data = rob_table_new[payloadRAM.preg2[i]].data[31:0];
+        assign payloadRAM.prf1[i].valid = rob_table[payloadRAM.preg1[i]].complete;
+        assign payloadRAM.prf1[i].data = rob_table[payloadRAM.preg1[i]].data[31:0];
+        assign payloadRAM.prf2[i].valid = rob_table[payloadRAM.preg2[i]].complete;
+        assign payloadRAM.prf2[i].data = rob_table[payloadRAM.preg2[i]].data[31:0];
     end
 
     assign hazard.rob_full = full;
     assign hazard.branch_taken = branch_taken;
     assign pcselect.branch_taken = branch_taken;
-    assign pcselect.pcbranch = rob_table_new[head_addr_b].data.branch.pcbranch;
+    assign pcselect.pcbranch = rob_table[head_addr_b].data.branch.pcbranch;
     
     // commit
     assign alu_commit = commit.alu_commit;

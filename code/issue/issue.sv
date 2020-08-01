@@ -10,7 +10,8 @@ module issue
     wake_intf.issue wakes,
     payloadRAM_intf.issue payloadRAM,
     mem_ctrl_intf.issue mem_ctrl,
-    hazard_intf.issue hazard
+    hazard_intf.issue hazard,
+    input logic mult_ok
 );
     renaming_pkg::renaming_data_t[MACHINE_WIDTH-1:0] dataR;
     issue_data_t dataI;
@@ -51,7 +52,8 @@ module issue
                         .wake,
                         .full(full[0]),
                         .broadcast,
-                        .wait_mem(mem_ctrl.wait_mem)
+                        .wait_mem(mem_ctrl.wait_mem),
+                        .mult_ok
                         );
     
     issue_queue #(.QUEUE_LEN(MEM_QUEUE_LEN), .ENTRY_TYPE(MEM), .READ_NUM(execute_pkg::MEM_NUM))
@@ -61,7 +63,8 @@ module issue
                         .wake,
                         .full(full[1]),
                         .broadcast,
-                        .wait_mem(mem_ctrl.wait_mem)
+                        .wait_mem(mem_ctrl.wait_mem),
+                        .mult_ok
                         );
     
     issue_queue #(.QUEUE_LEN(BRANCH_QUEUE_LEN), .ENTRY_TYPE(BRANCH), .READ_NUM(execute_pkg::BRU_NUM))
@@ -71,7 +74,8 @@ module issue
                         .wake,
                         .full(full[2]),
                         .broadcast,
-                        .wait_mem(mem_ctrl.wait_mem)
+                        .wait_mem(mem_ctrl.wait_mem),
+                        .mult_ok
                         );
 
     issue_queue #(.QUEUE_LEN(MULT_QUEUE_LEN), .ENTRY_TYPE(MULTI), .READ_NUM(execute_pkg::MULT_NUM))
@@ -81,7 +85,8 @@ module issue
                         .wake,
                         .full(full[3]),
                         .broadcast,
-                        .wait_mem(mem_ctrl.wait_mem)
+                        .wait_mem(mem_ctrl.wait_mem),
+                        .mult_ok
                         );
 
     for (genvar i=0; i<ALU_NUM; i++) begin

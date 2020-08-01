@@ -16,7 +16,7 @@ module datapath
     input i_data_ok, d_data_ok
 );
     logic flush;
-    
+    logic mult_ok;
     freg_intf freg_intf();
     dreg_intf dreg_intf();
     rreg_intf rreg_intf();
@@ -53,14 +53,15 @@ module datapath
                 .wakes(wake_intf.issue),
                 .payloadRAM(payloadRAM_intf.issue),
                 .mem_ctrl(mem_ctrl_intf.issue),
-                .hazard(hazard_intf.issue)
+                .hazard(hazard_intf.issue),
+                .mult_ok
                 );
     execute execute(.clk, .resetn, .flush, 
                     .ereg(ereg_intf.execute),
                     .creg(creg_intf.execute),
                     .forward(forward_intf.execute),
                     .wake(wake_intf.execute),
-                    .mread, .rd, .d_data_ok);
+                    .mread, .rd, .d_data_ok, .mult_ok);
     commit commit(.creg(creg_intf.commit),
                   .self(commit_intf.commit),
                   .forward(forward_intf.commit),
@@ -96,7 +97,7 @@ module datapath
     // cp0 cp0(.clk);
     arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite, .payloadRAM(payloadRAM_intf.arf));
     creg_select creg_select(.self(payloadRAM_intf.creg_select));
-    hilo hilo(.retire(retire_intf.hilo),
+    hilo hilo(.clk, .resetn, .retire(retire_intf.hilo),
               .payloadRAM(payloadRAM_intf.hilo));
     forward forward(.self(forward_intf.forward));
 
