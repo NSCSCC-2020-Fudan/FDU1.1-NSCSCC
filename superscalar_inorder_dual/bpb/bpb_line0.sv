@@ -25,7 +25,7 @@ module bpb_line0(
     assign tag_commit = pc_commit[31: 2 + `BPB_ENTRY_WIDTH0];
     
     
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset)
                 begin

@@ -39,7 +39,7 @@ module exception_checker(
     assign pipe.in_delay_slot = data.in_delay_slot;
     assign pipe.pc = data.pcplus4 - 32'd4;
     assign pipe.vaddr = (data.exception_instr) ? pipe.pc : data.result;
-    assign pipe.interrupt_info = ({ext_int, 2'b00} | data.cp0_cause.IP | {1'b0/*timer_interrupt*/, 7'b0}) & data.cp0_status.IM;
+    assign pipe.interrupt_info = ({ext_int, 2'b00} | data.cp0_cause.IP | {/*1'b0*/timer_interrupt, 7'b0}) & data.cp0_status.IM;
     
     exception exception (reset, ext_int,
                          pipe,

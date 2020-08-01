@@ -9,7 +9,7 @@ module dreg(
         output logic [1: 0] hitD
     );
     
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset)
                 begin
@@ -43,7 +43,7 @@ module creg(
         output logic first_cycleC
     );
     
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset)
                 begin
@@ -79,7 +79,7 @@ module rreg(
         output exec_data_t [1: 0] out
     );
     
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset) 
                 out <= '0;

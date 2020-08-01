@@ -11,11 +11,13 @@ module instrfetch(
         output fetch_data_t [1: 0] fetch_data,
         output logic [1: 0] hitF,
         //to decode
-        output word_t [1: 0] pc_predictF,
-        input bpb_result_t [1: 0] destpc_predictF,
-        //to bpb
         output logic finish_instr,
-        output word_t pc_isf, pcplus4_isf, pcplus8_isf
+        output word_t pc_isf, pcplus4_isf, pcplus8_isf,
+        //to fetchcontrol
+        input bpb_result_t [1: 0] destpc_predictF_in,
+        output bpb_result_t destpc_predict_sel,
+        input bpb_result_t last_predict_in,
+        output bpb_result_t next_predict
     );
     
     logic finish_his_, finish_his;
@@ -23,7 +25,8 @@ module instrfetch(
     logic [63: 0] data_his_, data_his, data;
     word_t pc, pcplus4, pcplus8, pc_, pcplus4_, pcplus8_;
     
-    
+    bpb_result_t last_predict;
+    bpb_result_t [1: 0] destpc_predict_, destpc_predict;
     always_comb 
         begin
             pc_ = pc;
@@ -32,6 +35,7 @@ module instrfetch(
             finish_his_ = finish_his;
             data_his_ = data_his;
             ien_his_ = ien_his;
+            destpc_predict_ = destpc_predict;
             if (inst_ibus_data_ok)
                 begin
                     finish_his_ = 1'b1;
@@ -45,27 +49,32 @@ module instrfetch(
                     pc_ = pc_pcf;
                     pcplus4_ = pcplus4_pcf;
                     pcplus8_ = pcplus8_pcf;
+                    destpc_predict_ = destpc_predictF_in;
                     finish_his_ = 1'b0;
                 end
         end
-    logic [63:0] fuck;
     
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset)
                 begin
                     finish_his <= 1'b0;
                     data_his <= '0;
                     ien_his <= 2'b11;
+                    destpc_predict <= '0;
+                    last_predict <= '0;
                 end
             else
                 begin
+                    last_predict <= last_predict_in;
                     finish_his <= finish_his_;
                     data_his <= data_his_;
                     ien_his <= ien_his_;
                     pc <= pc_;
                     pcplus4 <= pcplus4_;
                     pcplus8 <= pcplus8_;
+                    destpc_predict <= destpc_predict_;
+                    //destpc_predict <= '0;
                 end
         end
                     
@@ -83,21 +92,25 @@ module instrfetch(
     assign fetch_data[0].instr_ = instr[1];
     assign fetch_data[1].pcplus4 = pcplus4;
     assign fetch_data[0].pcplus4 = pcplus8;
-    assign fetch_data[1].en = ien[1];
-    assign fetch_data[0].en = ien[0];
+    assign fetch_data[1].en = hitF[1];
+    assign fetch_data[0].en = hitF[0];
     assign fetch_data[1].exception_instr = exception_instr;
     assign fetch_data[0].exception_instr = exception_instr;
-    //assign fetch_data[1].pred = destpc_predictF[1];
-    //assign fetch_data[0].pred = (ien[0]) ? destpc_predictF[0] : ('0);
-    assign fetch_data[1].pred = '0;
-    assign fetch_data[0].pred = '0;
+    assign fetch_data[1].pred = destpc_predict[1];
+    assign fetch_data[0].pred = (hitF[0]) ? destpc_predict[0] : ('0);
+    //assign fetch_data[1].pred = '0;
+    //assign fetch_data[0].pred = '0;
     
-    assign pc_predictF = {pc, pcplus4};
+    assign destpc_predict_sel = (last_predict.taken)               ? (last_predict)      : (
+                                (destpc_predict[1].taken & ien[0]) ? (destpc_predict[1]) : ('0));
+    assign next_predict = (ien[1] & ~ien[0])                       ? (destpc_predict[1]) : (
+                          (ien[0])                                 ? (destpc_predict[0]) : ('0));
     //to bpb
         
     assign data = (~inst_ibus_data_ok) ? (data_his)                  : (inst_ibus_data);
     assign ien = (~inst_ibus_data_ok)  ? (ien_his)                   : {1'b1, ~inst_ibus_index};           
     assign instr = (ien[0])            ? {data[63: 32], data[31: 0]} : {'0, data[63: 32]};
-    assign hitF = ien;
+    assign hitF = {ien[1], ien[0] & ~last_predict.taken};
+    
     
 endmodule

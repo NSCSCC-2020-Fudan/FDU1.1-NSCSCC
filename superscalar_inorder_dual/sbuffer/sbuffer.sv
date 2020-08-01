@@ -26,7 +26,7 @@ module sbuffer(
     assign sbuffer_of = (valid[tail] && in.en && in.wt);
     assign finishS = (~in.en) || (~valid[head] && ~in.wt && dataOK) || (in.wt && ~sbuffer_of); 
     
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset)
                 begin

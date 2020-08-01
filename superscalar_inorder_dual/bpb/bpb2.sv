@@ -13,7 +13,7 @@ module bpb2(
     logic [`BPB_ENTRY_WIDTH - 1: 0] i;
     logic [`BPB_ENTRY_WIDTH - 1: 0] entry_id [`BPB_ENTRIES - 1: 0];
     logic [`BPB_GLOBAL_WIDTH2 - 1: 0] history;
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset)
                 history <= '0;

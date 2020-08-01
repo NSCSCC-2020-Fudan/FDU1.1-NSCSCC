@@ -7,7 +7,7 @@ module regfile (
         output word_t [3: 0] reg_dataW
     );
     word_t [31:0] R;
-    always_ff @(posedge clk, posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset)
             R <= '0;
         else 

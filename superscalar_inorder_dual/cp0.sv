@@ -33,7 +33,7 @@ module cp0(
 
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin
-            count_switch <= 1'b0;
+            count_switch <= 1'b1;
         end else begin
             count_switch <= ~count_switch;
         end

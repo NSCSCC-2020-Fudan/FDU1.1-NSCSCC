@@ -19,7 +19,7 @@ module rfwrite_queue(
     assign headplus2 = head + 3'b010;
     assign tailplus2 = tail + 3'b010;
     
-    always_ff @(posedge clk, posedge reset)
+    always_ff @(posedge clk)
         begin
             if (reset)
                 begin

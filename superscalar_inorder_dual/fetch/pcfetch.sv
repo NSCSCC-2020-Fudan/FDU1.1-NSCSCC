@@ -6,11 +6,15 @@ module pcfetch(
         output word_t addr,
         output word_t pc, pcplus4, pcplus8,
         input logic inst_ibus_addr_ok,
-        output logic inst_ibus_req, finish_pc
+        output logic inst_ibus_req, finish_pc,
+        //to fetch control
+        output word_t [1: 0] pc_predictF,
+        input bpb_result_t [1: 0] destpc_predictF_in,
+        output bpb_result_t [1: 0] destpc_predictF_out
     );    
                       
-    logic finish_his;                             
-    always_ff @(posedge clk, posedge reset) 
+    logic finish_his;                
+    always_ff @(posedge clk) 
         begin
             if (reset)
                 begin
@@ -43,5 +47,8 @@ module pcfetch(
     assign addr = pc;
     assign pcplus4 = pc + 5'b00100;
     assign pcplus8 = pc + 5'b01000;
+                                      
+    assign pc_predictF = {pc, pcplus4};
+    assign destpc_predictF_out = destpc_predictF_in;
     
 endmodule

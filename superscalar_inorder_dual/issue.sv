@@ -43,8 +43,8 @@ module issue(
     issue_data_t aI, bI;
     decode_data_t aD, bD;
     logic MM, RAW_hl, RAW_reg, BJa, BJb, BJ, enb, RAW;
-    assign aD = issue_queue[head];
-    assign bD = issue_queue[headplus1];
+    assign aD = (valid[head]) ? (issue_queue[head]) : ('0);
+    assign bD = (valid[headplus1]) ? (issue_queue[headplus1]) : ('0);
     assign MM = (aD.instr.ctl.memtoreg || aD.instr.ctl.memwrite) && 
                 (bD.instr.ctl.memtoreg || bD.instr.ctl.memwrite);
     assign RAW_hl = (aD.instr.ctl.hiwrite && bD.instr.ctl.hitoreg) || 
@@ -84,7 +84,7 @@ module issue(
     assign mul_timeok = MULU_TIMER[0];
     assign div_timeok = DIVU_TIMER[0];
     
-    always_ff @(posedge clk, posedge reset) 
+    always_ff @(posedge clk) 
         begin
             if (reset)
                 begin
@@ -93,7 +93,7 @@ module issue(
                     head = '0;
                     tail = '0;
                     valid = {(`ISSUE_QUEUE_SIZE){1'b0}};
-                    issue_queue = '0;
+                    //issue_queue = '0;
                     MULU_TIMER <= {(`MUL_DELAY){1'b1}};
                     DIVU_TIMER <= {(`DIV_DELAY){1'b1}};
                     first_cycpeE <= 1'b1;

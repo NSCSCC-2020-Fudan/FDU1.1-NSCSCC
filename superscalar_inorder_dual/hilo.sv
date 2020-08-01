@@ -7,7 +7,7 @@ module hilo (
     );
     
     word_t hi, lo;
-    always_ff @(posedge clk, posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             hi <= '0;
             lo <= '0;
