@@ -1,13 +1,15 @@
 `include "interface.svh"
-`include "cp0.svh"
-/*
+
 module cp0
     import common::*;
-    import exception_pkg::*;(
-    input logic clk, reset,
+    import exception_pkg::*;
+    import cp0_pkg::*;(
+    input logic clk, resetn,
     cp0_intf.cp0 self,
     exception_intf.cp0 excep,
-    pcselect_intf.cp0 pcselect
+    pcselect_intf.cp0 pcselect,
+    payloadRAM_intf.cp0 payloadRAM,
+    retire_intf.cp0 retire
 );
     logic is_eret;
     cp0_regs_t cp0, cp0_new;
@@ -27,23 +29,44 @@ module cp0
 
     logic count_switch;
 
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
-            count_switch <= 1'b0;
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
+            count_switch <= 1'b1;
         end else begin
             count_switch <= ~count_switch;
         end
     end
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
+            self.timer_interrupt <= 1'b0;
+        end else if (cp0_new.count == cp0_new.compare) begin
+            self.timer_interrupt <= 1'b1;
+        end else if (cwrite.wen & cwrite.addr == 5'd11) begin
+            self.timer_interrupt <= 1'b0;
+        end
+    end
     // read
     always_comb begin
-        case (ra)
-            5'd8:   rd = cp0.badvaddr;
-            5'd9:   rd = cp0.count;
-            5'd12:  rd = cp0.status;
-            5'd13:  rd = cp0.cause;
-            5'd14:  rd = cp0.epc;
-            5'd16:  rd = cp0.config_;
-            default:rd = '0;
+        case (payloadRAM.creg1[4:0])
+            5'd8:   payloadRAM.cp01 = cp0.badvaddr;
+            5'd9:   payloadRAM.cp01 = cp0.count;
+            5'd12:  payloadRAM.cp01 = cp0.status;
+            5'd13:  payloadRAM.cp01 = cp0.cause;
+            5'd14:  payloadRAM.cp01 = cp0.epc;
+            5'd16:  payloadRAM.cp01 = cp0.config_;
+            default:payloadRAM.cp01 = '0;
+        endcase
+    end
+
+    always_comb begin
+        case (payloadRAM.creg2[4:0])
+            5'd8:   payloadRAM.cp02 = cp0.badvaddr;
+            5'd9:   payloadRAM.cp02 = cp0.count;
+            5'd12:  payloadRAM.cp02 = cp0.status;
+            5'd13:  payloadRAM.cp02 = cp0.cause;
+            5'd14:  payloadRAM.cp02 = cp0.epc;
+            5'd16:  payloadRAM.cp02 = cp0.config_;
+            default:payloadRAM.cp02 = '0;
         endcase
     end
     
@@ -52,29 +75,26 @@ module cp0
         cp0_new = cp0;
         
         cp0_new.count = cp0_new.count + count_switch;
-        if (reset) begin
-            self.timer_interrupt = 1'b0;
-        end else if (cp0_new.count == cp0_new.compare) begin
-            self.timer_interrupt = 1'b1;
-        end else if (cwrite.wen & cwrite.addr == 5'd11) begin
-            self.timer_interrupt = 1'b0;
-        end
+
         // write
-        if (cwrite.wen) begin
-            case (cwrite.addr)
-                5'd9:   cp0_new.count   = cwrite.wd;
-                5'd11:  cp0_new.compare = cwrite.wd;
-                5'd12:  
-                begin
-                        cp0_new.status.IM = cwrite.wd[15:8];
-                        cp0_new.status.EXL = cwrite.wd[1];
-                        cp0_new.status.IE = cwrite.wd[0];
-                end
-                5'd13:  cp0_new.cause.IP[1:0] = cwrite.wd[9:8];
-                5'd14:  cp0_new.epc = cwrite.wd;
-                default: ;
-            endcase
+        for (int i=0; i<ISSUE_WIDTH; i++) begin
+            if (retire.retire[i].ctl.cp0write) begin
+                case (retire.retire[i].dst[4:0])
+                    5'd9:   cp0_new.count   = retire.retire[i].data[31:0];
+                    5'd11:  cp0_new.compare = retire.retire[i].data[31:0];
+                    5'd12:  
+                    begin
+                            cp0_new.status.IM = retire.retire[i].data[15:8];
+                            cp0_new.status.EXL = retire.retire[i].data[1];
+                            cp0_new.status.IE = retire.retire[i].data[0];
+                    end
+                    5'd13:  cp0_new.cause.IP[1:0] = retire.retire[i].data[9:8];
+                    5'd14:  cp0_new.epc = retire.retire[i].data[31:0];
+                    default: ;
+                endcase
+            end
         end
+        
 
         // exception
         if (exception.valid) begin
@@ -115,4 +135,3 @@ module cp0
     assign pcselect.is_eret = is_eret;
     assign pcselect.epc = cp0.epc;
 endmodule
-*/

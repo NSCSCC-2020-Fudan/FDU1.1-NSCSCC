@@ -37,7 +37,7 @@ module arf
 	end
 
 	// self
-	for (genvar i = 0; i < AREG_READ_PORTS ; i++) begin
+	for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
 		assign payloadRAM.arf1[i] = regfile_new[payloadRAM.creg1[i][4:0]];
 		assign payloadRAM.arf2[i] = regfile_new[payloadRAM.creg2[i][4:0]];
 	end

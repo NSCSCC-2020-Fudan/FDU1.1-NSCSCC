@@ -41,13 +41,24 @@ module rat
     always_comb begin
         mapping_table_new = mapping_table;
         // retire
-        for (int i=0; i<TABLE_LEN; i++) begin
-            for (int j=0; j<RELEASE_PORTS; j++) begin
-                if (retire.retire[j].valid && 
-                    retire.retire[j].dst == i && 
-                    retire.retire[j].preg == mapping_table_new[i].id) begin
-                    mapping_table_new[i].id = '0;
-                    mapping_table_new[i].valid = 1'b0;
+        for (int i=0; i<RELEASE_PORTS; i++) begin
+            for (int j=0; j<TABLE_LEN; j++) begin
+                if (retire.retire[i].valid && 
+                    retire.retire[i].dst == j && 
+                    retire.retire[i].preg == mapping_table_new[j].id) begin
+                    mapping_table_new[j].id = '0;
+                    mapping_table_new[j].valid = 1'b0;
+                end
+            end
+            if (retire.retire[i].valid && 
+                retire.retire[i].dst == 7'b1000011) begin
+                if (retire.retire[i].preg == mapping_table_new[7'b1000001].id) begin
+                    mapping_table_new[7'b1000001].id = '0;
+                    mapping_table_new[7'b1000001].valid = 1'b0;
+                end
+                if (retire.retire[i].preg == mapping_table_new[7'b1000010].id) begin
+                    mapping_table_new[7'b1000010].id = '0;
+                    mapping_table_new[7'b1000010].valid = 1'b0;
                 end
             end
         end
@@ -62,6 +73,12 @@ module rat
                     mapping_table_new[j].id = renaming.rob_addr_new[i];
                     mapping_table_new[j].valid = 1'b1;
                 end
+            end
+            if (renaming.instr[i].valid && renaming.instr[i].dst == 7'b1000011) begin
+                mapping_table_new[7'b1000001].id = renaming.rob_addr_new[i];
+                mapping_table_new[7'b1000001].valid = 1'b1;
+                mapping_table_new[7'b1000010].id = renaming.rob_addr_new[i];
+                mapping_table_new[7'b1000010].valid = 1'b1;
             end
         end
         // for (int i=0; i<TABLE_LEN; i++) begin

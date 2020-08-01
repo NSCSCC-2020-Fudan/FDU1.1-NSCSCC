@@ -39,9 +39,12 @@ module commit
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM].valid = dataE.branch_commit[i].valid;
         assign wake.broadcast[i + ALU_NUM + MEM_NUM] = dataE.branch_commit[i].data;
     end
-    for (genvar i = 0; i < MULT_NUM ; i++) begin
+    for (genvar i = 0; i < MULT_NUM; i++) begin
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM + BRU_NUM].id = dataE.mult_commit[i].rob_addr;
         assign wake.dst_commit[i + ALU_NUM + MEM_NUM + BRU_NUM].valid = dataE.mult_commit[i].valid;
         assign wake.broadcast[i + ALU_NUM + MEM_NUM + BRU_NUM] = dataE.mult_commit[i].lo;
+        assign wake.dst_commit[i + ALU_NUM + MEM_NUM + BRU_NUM + 1].id = dataE.mult_commit[i].rob_addr;
+        assign wake.dst_commit[i + ALU_NUM + MEM_NUM + BRU_NUM + 1].valid = dataE.mult_commit[i].valid;
+        assign wake.broadcast[i + ALU_NUM + MEM_NUM + BRU_NUM + 1] = dataE.mult_commit[i].hi;
     end
 endmodule

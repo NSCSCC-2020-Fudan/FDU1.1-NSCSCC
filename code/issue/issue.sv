@@ -44,7 +44,7 @@ module issue
     end
 
     logic [3:0] full;
-    word_t [ISSUE_WIDTH-1:0] broadcast;
+    word_t [ISSUE_WIDTH:0] broadcast;
     issue_queue #(.QUEUE_LEN(ALU_QUEUE_LEN), .ENTRY_TYPE(ALU), .READ_NUM(execute_pkg::ALU_NUM))
         alu_issue_queue(.clk, .resetn, .flush,
                         .write,

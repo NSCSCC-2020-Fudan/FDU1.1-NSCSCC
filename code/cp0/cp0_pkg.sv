@@ -1,5 +1,6 @@
-`ifndef __CP0_SVH
-`define __CP0_SVH
+//  Package: cp0_pkg
+//
+package cp0_pkg;
 import common::*;
 typedef logic [4:0] cp0_addr_t;
 
@@ -117,4 +118,4 @@ word_t
     32'b0                                               \
 }
 
-`endif
+endpackage: cp0_pkg

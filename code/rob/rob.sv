@@ -109,6 +109,8 @@ module rob
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (mult_commit[i].valid && mult_commit[i].rob_addr == j) begin
                     rob_table_retire[j].complete = 1'b1;
+                    rob_table_retire[j].data.mult.hi = mult_commit[i].hi;
+                    rob_table_retire[j].data.mult.lo = mult_commit[i].lo;
                     rob_table_retire[j].exception = mult_commit[i].exception;
                 end
             end
@@ -236,11 +238,23 @@ module rob
     // payloadRAM
     for (genvar i = 0; i < MACHINE_WIDTH ; i++) begin
         assign payloadRAM.prf1[i].valid = rob_table[payloadRAM.preg1[i]].complete;
-        assign payloadRAM.prf1[i].data = rob_table[payloadRAM.preg1[i]].data[31:0];
+        // assign payloadRAM.prf1[i].data = rob_table[payloadRAM.preg1[i]].data[31:0];
         assign payloadRAM.prf2[i].valid = rob_table[payloadRAM.preg2[i]].complete;
-        assign payloadRAM.prf2[i].data = rob_table[payloadRAM.preg2[i]].data[31:0];
+        // assign payloadRAM.prf2[i].data = rob_table[payloadRAM.preg2[i]].data[31:0];
     end
 
+    always_comb begin
+        for (int i=0; i<MACHINE_WIDTH; i++) begin
+            payloadRAM.prf1[i].data = rob_table[payloadRAM.preg1[i]].data[31:0];
+            if (rob_table[payloadRAM.preg1[i]].ctl.hiwrite && rob_table[payloadRAM.preg1[i]].ctl.lowrite && payloadRAM.creg1[i] == 7'b100001) begin
+                payloadRAM.prf1[i].data = rob_table[payloadRAM.preg1[i]].data[63:32];
+            end
+            payloadRAM.prf2[i].data = rob_table[payloadRAM.preg2[i]].data[31:0];
+            if (rob_table[payloadRAM.preg2[i]].ctl.hiwrite && rob_table[payloadRAM.preg2[i]].ctl.lowrite && payloadRAM.creg2[i] == 7'b100001) begin
+                payloadRAM.prf2[i].data = rob_table[payloadRAM.preg2[i]].data[63:32];
+            end
+        end
+    end
     assign hazard.rob_full = full;
     assign hazard.branch_taken = branch_taken;
     assign pcselect.branch_taken = branch_taken;

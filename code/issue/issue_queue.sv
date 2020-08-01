@@ -10,7 +10,7 @@ module issue_queue
     input write_req_t [WRITE_NUM-1:0] write,
     output read_resp_t [READ_NUM-1:0] read,
     input wake_req_t [WAKE_NUM-1:0] wake,
-    input word_t [ISSUE_WIDTH-1:0] broadcast,
+    input word_t [ISSUE_WIDTH:0] broadcast,
     output logic full,
     input logic wait_mem, mult_ok
 );
@@ -50,10 +50,16 @@ module issue_queue
                     if (i < ISSUE_WIDTH) begin
                         queue_new[j].src1.data = broadcast[i];
                     end
+                    if (i == ISSUE_WIDTH && queue_new[j].ctl.hitoreg) begin
+                        queue_new[j].src1.data = broadcast[i];
+                    end
                 end
                 if (queue_new[j].src2.id == wake[i].id && wake[i].valid && ~queue_new[j].src2.valid) begin
                     queue_new[j].src2.valid = 1'b1;
                     if (i < ISSUE_WIDTH) begin
+                        queue_new[j].src2.data = broadcast[i];
+                    end
+                    if (i == ISSUE_WIDTH && queue_new[j].ctl.hitoreg) begin
                         queue_new[j].src2.data = broadcast[i];
                     end
                 end
@@ -67,10 +73,16 @@ module issue_queue
                     if (i < ISSUE_WIDTH) begin
                         write_waken[j].entry.src1.data = broadcast[i];
                     end
+                    if (i == ISSUE_WIDTH && write_waken[j].entry.ctl.hitoreg) begin
+                        write_waken[j].entry.src1.data = broadcast[i];
+                    end
                 end
                 if (write_waken[j].entry.src2.id == wake[i].id && wake[i].valid && ~write_waken[j].entry.src2.valid) begin
                     write_waken[j].entry.src2.valid = 1'b1;
                     if (i < ISSUE_WIDTH) begin
+                        write_waken[j].entry.src2.data = broadcast[i];
+                    end
+                    if (i == ISSUE_WIDTH && write_waken[j].entry.ctl.hitoreg) begin
                         write_waken[j].entry.src2.data = broadcast[i];
                     end
                 end

@@ -108,7 +108,7 @@ interface payloadRAM_intf();
     );
     // prf
     modport rob(
-        input preg1, preg2,
+        input preg1, preg2, creg1, creg2,
         output prf1, prf2
     );
     // arf
@@ -216,9 +216,9 @@ interface wake_intf();
     import common::*;
     import execute_pkg::*;
     import issue_queue_pkg::*;
-    wake_req_t [ISSUE_WIDTH-1:0] dst_commit;
+    wake_req_t [ISSUE_WIDTH:0] dst_commit;
     wake_req_t [ALU_NUM-1:0] dst_execute;
-    word_t [ISSUE_WIDTH-1:0] broadcast;
+    word_t [ISSUE_WIDTH:0] broadcast;
     modport issue(
         input dst_commit, dst_execute, broadcast
     );
@@ -298,6 +298,10 @@ interface mem_ctrl_intf();
     modport mem_ctrl(output wait_mem, input mem_issued);
     // modport rob(input wait_write);
     modport issue(input wait_mem, output mem_issued);
+endinterface
+
+interface cp0_intf();
+    logic timer_interrupt;
 endinterface
 
 `endif
