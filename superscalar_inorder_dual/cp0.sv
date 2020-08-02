@@ -6,7 +6,7 @@ module cp0(
         input creg_addr_t [1: 0] ra,
         output word_t [1: 0] rd,
         //read or write
-        input logic is_eret, 
+        input logic is_eret,
         //commit or fetch, updata pc
         output logic timer_interrupt,
         //commit
@@ -17,7 +17,7 @@ module cp0(
         output word_t cp0_epc
         //bypass
     );
-    
+
     cp0_regs_t cp0, cp0_new;
     word_t wd;
     always_ff @(posedge clk, posedge reset) begin
@@ -61,15 +61,15 @@ module cp0(
             default:rd[0] = '0;
         endcase
     end
-    
+
     // update cp0 registers
     always_comb begin
         cp0_new = cp0;
-        
+
         cp0_new.count = cp0_new.count + count_switch;
         if (reset) begin
             timer_interrupt = 1'b0;
-        end else if (cp0_new.count == cp0_new.compare) begin
+        end else if (cp0_new.count == cp0_new.compare - 1) begin
             timer_interrupt = 1'b1;
         end else if ((cwrite[1].wen & cwrite[1].addr == 5'd11) | (cwrite[0].wen & cwrite[0].addr == 5'd11)) begin
             timer_interrupt = 1'b0;
@@ -79,7 +79,7 @@ module cp0(
             case (cwrite[1].addr)
                 5'd9:   cp0_new.count   = cwrite[1].wd;
                 5'd11:  cp0_new.compare = cwrite[1].wd;
-                5'd12:  
+                5'd12:
                 begin
                         cp0_new.status.IM = cwrite[1].wd[15:8];
                         cp0_new.status.EXL = cwrite[1].wd[1];
@@ -94,7 +94,7 @@ module cp0(
             case (cwrite[0].addr)
                 5'd9:   cp0_new.count   = cwrite[0].wd;
                 5'd11:  cp0_new.compare = cwrite[0].wd;
-                5'd12:  
+                5'd12:
                 begin
                         cp0_new.status.IM = cwrite[0].wd[15:8];
                         cp0_new.status.EXL = cwrite[0].wd[1];
@@ -134,11 +134,11 @@ module cp0(
             end
             // llbit = 1'b0;
         end
-    end 
-    
+    end
+
     assign cp0_data = cp0;
     assign cp0_status = cp0.status;
     assign cp0_cause = cp0.cause;
     assign cp0_epc = cp0.epc;
-    
+
 endmodule
