@@ -24,6 +24,7 @@ module hazard (
     logic is_multM, is_multW;
     logic is_eret;
     creg_addr_t cp0_addrE, cp0_addrM, cp0_addrW;
+    logic mult_ok;
     always_comb begin
         if (rsD != 0) begin
             if (rsD == writeregE && regwriteE && (alufuncE == ALU_PASSA)) begin
@@ -104,13 +105,13 @@ module hazard (
     // end
     
 
-    assign stallF = ~i_data_ok | ~d_data_ok | ((lwstall | branchstall) & ~flush_ex); // meet eret?
-    assign stallD = ~d_data_ok | ~i_data_ok | ((lwstall | branchstall) & ~flush_ex);
-    assign stallE = ~d_data_ok | (~i_data_ok & flush_ex);
+    assign stallF = ~i_data_ok | ~d_data_ok | ((lwstall | branchstall) & ~flush_ex)|~mult_ok; // meet eret?
+    assign stallD = ~d_data_ok | ~i_data_ok | ((lwstall | branchstall) & ~flush_ex)|~mult_ok;
+    assign stallE = ~d_data_ok | (~i_data_ok & flush_ex) | ~mult_ok;
     assign stallM = ~d_data_ok | (~i_data_ok & flush_ex);
     assign flushD = flush_ex;
     assign flushE = lwstall | branchstall | flush_ex | ~i_data_ok;
-    assign flushM = flush_ex;
+    assign flushM = flush_ex | ~mult_ok;
     assign flushW = flush_ex | ~d_data_ok;
 
     assign rtD = ports.dataD.instr.rt;
@@ -147,6 +148,7 @@ module hazard (
     assign is_multM = hiwriteM & lowriteM;
     assign is_multW = hiwriteW & lowriteW;
     assign is_eret = ports.is_eret;
+    assign mult_ok = ports.mult_ok;
     assign cp0_addrE = ports.dataE.instr.rd;
     assign cp0_addrM = ports.dataM.instr.rd;
     assign cp0_addrW = ports.dataW.instr.rd;
