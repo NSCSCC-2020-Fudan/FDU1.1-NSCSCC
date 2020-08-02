@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module exception_checker(
-        input logic flush, reset,
+        input logic reset, flush,
         input exec_data_t in, 
         input logic [5: 0] ext_int,
         input logic timer_interrupt,
@@ -11,9 +11,14 @@ module exception_checker(
         output exec_data_t _out
     );
     
+    logic exception_valid_;
+    word_t pcexception_;
+    exception_t exception_data_;
+    exec_data_t _out_; 
+    
     exec_data_t data;
-    assign data = (reset | flush) ? ('0) : (in);
-    assign _out = (exception_valid) ? ('0) : (data);
+    assign data = (reset) ? ('0) : (in);
+    assign _out_ = (exception_valid_) ? ('0) : (data);
     
     decoded_op_t op;
     assign op = data.instr.op;
@@ -43,8 +48,13 @@ module exception_checker(
     
     exception exception (reset, ext_int,
                          pipe,
-                         exception_valid, pcexception, 
-                         exception_data, 
-                         data.cp0_status);                            
+                         exception_valid_, pcexception_, 
+                         exception_data_, 
+                         data.cp0_status);  
+                         
+    assign exception_valid = (~flush) ? (exception_valid_) : (1'b0);
+    assign pcexception = (~flush) ? (pcexception_) : ('0);
+    assign exception_data = (~flush) ? (exception_data_) : ('0);
+    assign _out = (~flush) ? (_out_) : ('0);                                                   
     
 endmodule

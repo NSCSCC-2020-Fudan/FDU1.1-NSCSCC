@@ -25,7 +25,7 @@ module issue(
         output logic first_cycpeE
     );
 
-    logic [`ISSUE_QUEUE_SIZE - 1: 0] free, valid;
+    logic [`ISSUE_QUEUE_SIZE - 1: 0] valid;
     decode_data_t [`ISSUE_QUEUE_SIZE - 1: 0] issue_queue;
 
     logic [`ISSUE_QUEUE_WIDTH - 1: 0] head, headplus1, headplus2;
@@ -79,106 +79,159 @@ module issue(
     //assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
     //assign issue_en[0] = (BJa) && (valid[headplus1]);
     
-    logic [`MUL_DELAY - 1: 0] MULU_TIMER;
-    logic [`DIV_DELAY - 1: 0] DIVU_TIMER;
-    assign mul_timeok = MULU_TIMER[0];
-    assign div_timeok = DIVU_TIMER[0];
+    
+    issue_data_t [1: 0] out_;
+    assign out_[1] = (issue_en[1]) ? (aI) : ('0);
+    assign out_[0] = (issue_en[0]) ? (bI) : ('0);
+    logic [`ISSUE_QUEUE_WIDTH - 1: 0] head_, tail_;
+
+	
+	logic [`ISSUE_QUEUE_SIZE - 1: 0] valid_;
+    decode_data_t [`ISSUE_QUEUE_SIZE - 1: 0] issue_queue_;
+	always_comb
+		begin
+			issue_queue_ = issue_queue;
+			valid_ = valid;
+			case (issue_en)
+                2'b11: 
+                    begin
+                        issue_queue_[head] = '0;
+                        issue_queue_[headplus1] = '0;
+                        valid_[head] = '0;
+                        valid_[headplus1] = '0;
+                    end
+                2'b10: 
+                    begin
+                        issue_queue_[head] = '0;
+                        valid_[head] = '0;
+                    end
+                default: valid_ = valid;
+            endcase
+            case (issue_en)
+                2'b11: head_ = headplus2;
+                2'b10: head_ = headplus1;
+                default: head_ = head;
+            endcase
+		end        
+	
+	logic [`ISSUE_QUEUE_SIZE - 1: 0] valid__;
+    decode_data_t [`ISSUE_QUEUE_SIZE - 1: 0] issue_queue__;
+	always_comb
+		begin
+			issue_queue__ = issue_queue;
+			valid__ = valid;
+			if (hitD[1]) 
+                begin
+                    issue_queue__[tail] = in[1];
+                    valid__[tail] = 1'b1;
+                end
+            if (hitD[0])
+            	begin
+                	issue_queue__[((hitD[1]) ? (tailplus1) : (tail))] = in[0];
+					valid__[((hitD[1]) ? (tailplus1) : (tail))] = 1'b1;
+                end              
+            case ({hitD[1], hitD[0]})
+            	2'b11: tail_ = tailplus2;
+				2'b10: tail_ = tailplus1;
+                2'b01: tail_ = tailplus1;
+                default: tail_ = tail;
+            endcase
+		end
+	
+	logic [`ISSUE_QUEUE_SIZE - 1: 0] valid___;
+    decode_data_t [`ISSUE_QUEUE_SIZE - 1: 0] issue_queue___;
+	always_comb
+		begin
+			issue_queue___ = issue_queue;
+			valid___ = valid;
+			case (issue_en)
+                2'b11: 
+                    begin
+                        issue_queue___[head] = '0;
+                        issue_queue___[headplus1] = '0;
+                        valid___[head] = '0;
+                        valid___[headplus1] = '0;
+                    end
+                2'b10: 
+                    begin
+                        issue_queue___[head] = '0;
+                        valid___[head] = '0;
+                    end
+                default: valid___ = valid;
+            endcase
+			if (hitD[1]) 
+                begin
+                    issue_queue___[tail] = in[1];
+                    valid___[tail] = 1'b1;
+                end
+            if (hitD[0])
+            	begin
+                	issue_queue___[((hitD[1]) ? (tailplus1) : (tail))] = in[0];
+					valid___[((hitD[1]) ? (tailplus1) : (tail))] = 1'b1;
+                end;
+		end		                
     
     always_ff @(posedge clk) 
         begin
             if (reset)
                 begin
-                    out[1] <= '0;
-                    out[0] <= '0;
-                    head = '0;
-                    tail = '0;
-                    valid = {(`ISSUE_QUEUE_SIZE){1'b0}};
-                    //issue_queue = '0;
-                    MULU_TIMER <= {(`MUL_DELAY){1'b1}};
-                    DIVU_TIMER <= {(`DIV_DELAY){1'b1}};
+                    out <= '0;
+                    head <= '0;
+                    tail <= '0;
+                    valid <= '0;
                     first_cycpeE <= 1'b1;
                 end
             else
                 begin
-                    if (flushE)
-                        begin
-                            out <= '0;
-                            MULU_TIMER <= {(`MUL_DELAY){1'b1}};
-                            DIVU_TIMER <= {(`DIV_DELAY){1'b1}};
-                            first_cycpeE <= 1'b1;
-                        end
+                	if (flushE) 
+                		begin
+                			out <= '0;
+                			first_cycpeE <= 1'b1;
+                		end
                     else
-                        if (~stallE)
-                            begin
-                                out[1] <= (issue_en[1]) ? (aI) : ('0);
-                                out[0] <= (issue_en[0]) ? (bI) : ('0);
-                                MULU_TIMER <= {1'b1, {(`MUL_DELAY - 1){1'b0}}};
-                                DIVU_TIMER <= {1'b1, {(`DIV_DELAY - 1){1'b0}}};
-                                first_cycpeE <= 1'b1; 
-                            end
-                        else
-                            begin
-                                MULU_TIMER <= {1'b1, MULU_TIMER[`MUL_DELAY - 1: 1]};
-                                DIVU_TIMER <= {1'b1, DIVU_TIMER[`DIV_DELAY - 1: 1]};
-                                first_cycpeE <= 1'b0;
-                            end
-                            
-                    if (~stallI)
-                        begin
-                            case (issue_en)
-                                2'b11: 
-                                    begin
-                                        issue_queue[head] = '0;
-                                        issue_queue[headplus1] = '0;
-                                        //free =  {free[5: 0], 2'b11};
-                                        valid[head] = '0;
-                                        valid[headplus1] = '0;
-                                    end
-                                2'b10: 
-                                    begin
-                                        issue_queue[head] = '0;
-                                        //free =  {free[6: 0], 1'b1};
-                                        valid[head] = '0;
-                                    end
-                                default: valid = valid;
-                            endcase
-                            
-                            case (issue_en)
-                                2'b11: head = headplus2;
-                                2'b10: head = headplus1;
-                                default: head = head;
-                            endcase
-                        end
-                                                
+                    	begin
+							if (~stallE)
+								begin
+									out <= out_;
+									first_cycpeE <= 1'b1;
+								end 
+							else 
+								first_cycpeE <= 1'b0;
+						end
+                	
                     if (flushI)
-                        begin
-                            head = '0;
-                            tail = '0;
-                            valid = {(`ISSUE_QUEUE_SIZE){1'b0}};
-                            issue_queue = '0;
-                        end
-                    else
-                        if (~queue_overflow) 
-                            begin
-                                if (hitD[1]) 
-                                    begin
-                                        issue_queue[tail] = in[1];
-                                        valid[tail] = 1'b1;
-                                        //free = {1'b0, free[7: 1]};
-                                    end
-                                if (hitD[0])
-                                    begin
-                                        issue_queue[((hitD[1]) ? (tailplus1) : (tail))] = in[0];
-                                        valid[((hitD[1]) ? (tailplus1) : (tail))] = 1'b1;
-                                        //free = {1'b0, free[7: 1]};
-                                    end              
-                                case ({hitD[1], hitD[0]})
-                                    2'b11: tail = tailplus2;
-                                    2'b10: tail = tailplus1;
-                                    2'b01: tail = tailplus1;
-                                    default: tail = tail;
-                                endcase
-                            end
+                    	begin
+                    		head <= '0;
+                    		tail <= '0;
+                    		issue_queue <= '0;
+                    		valid <= '0;
+                    	end
+                	else
+                		begin
+                			case ({~queue_overflow, ~stallI})
+                				2'b11:
+                					begin
+                						head <= head_;
+                						tail <= tail_;
+                						issue_queue <= issue_queue___;
+                						valid <= valid___;
+                					end
+                				2'b01:
+                					begin
+                						head <= head_;
+                						issue_queue <= issue_queue_;
+                						valid <= valid_;
+                					end
+                				2'b10:
+                					begin
+                						tail <= tail_;
+                						issue_queue <= issue_queue__;
+                						valid <= valid__;
+                					end
+                				default:
+                					valid <= valid;
+                			endcase
+                		end
                 end                
         end
 

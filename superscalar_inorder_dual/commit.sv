@@ -41,7 +41,7 @@ module commit(
                                           ext_int, timer_interrupt,
                                           _exception_valid[1], _pcexception[1], _exception_data[1],
                                           _out[1]);
-    exception_checker exception_checker0 (reset, (_exception_valid[1]) | (in[1].instr.op == ERET),
+    exception_checker exception_checker0 (reset, 1'b0,//(_exception_valid[1]) | (in[1].instr.op == ERET),
                                           in[0],
                                           ext_int, timer_interrupt,
                                           _exception_valid[0], _pcexception[0], _exception_data[0],
@@ -49,7 +49,9 @@ module commit(
     assign exception_valid = _exception_valid[1] | _exception_valid[0];
     assign exception_data = (_exception_valid[1]) ? (_exception_data[1]) : (_exception_data[0]);    
     assign pcexception = (_exception_valid[1]) ? (_pcexception[1]) : (_pcexception[0]);
-                                              
+ 	
+ 	logic mask;
+ 	assign mask = (_exception_valid[1]) | (in[1].instr.op == ERET);                                              
                                           
     m_q_t mem, __mem;
     m_q_t [1: 0] _mem;                                      
@@ -63,11 +65,12 @@ module commit(
     assign __mem = (ctl[1].memtoreg | ctl[1].memwrite) ? (_mem[1]) : (_mem[0]);
     assign __op = (ctl[1].memtoreg | ctl[1].memwrite) ? (_out[1].instr.op) : (_out[0].instr.op);
     
-    assign mem.wt = __mem.wt;
+    assign mem.wt = (in[1].instr.ctl.memwrite | in[0].instr.ctl.memwrite);
     assign mem.size = __mem.size;
-    assign mem.addr = __mem.addr;
+    assign mem.addr = (in[1].instr.ctl.memtoreg | in[1].instr.ctl.memwrite) ? (in[1].result) : (in[0].result);
     assign mem.en = __mem.en;
     assign mem.wd = __mem.wd;
+    
     assign dmem_wt = mem.wt;
     assign dmem_addr = mem.addr;
     assign dmem_wd = mem.wd;
