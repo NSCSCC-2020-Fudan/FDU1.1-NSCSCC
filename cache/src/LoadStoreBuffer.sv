@@ -8,13 +8,14 @@ module LoadStoreBuffer #(
     parameter int BUFFER_LENGTH = 16,
 `endif
 
+    parameter type req_t = sramx_req_t,
+
     localparam int INDEX_BITS = $clog2(BUFFER_LENGTH),
 
     localparam type record_t = struct packed {
         logic avail;
     },
 
-    localparam type req_t   = sramx_req_t,
     localparam type index_t = logic    [INDEX_BITS    - 1:0],
     localparam type meta_t  = record_t [BUFFER_LENGTH - 1:0],
     localparam type fifo_t  = req_t    [BUFFER_LENGTH - 1:0]

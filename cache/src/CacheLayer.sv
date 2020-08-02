@@ -160,12 +160,36 @@ module CacheLayer #(
     end
 
     if (USE_DCACHE == 1) begin: use_dcache
+        sramx_req_t  mux_dcache_req;
+        sramx_resp_t mux_dcache_resp;
+
+        if (USE_BUFFER == 1) begin: with_lsbuf
+            sramx_req_t  buf_dcache_req;
+            sramx_resp_t buf_dcache_resp;
+
+            LoadStoreBuffer #(
+                .BUFFER_LENGTH(LSBUF_LENGTH)
+            ) ls_buffer_inst(
+                .clk(aclk), .resetn(aresetn),
+                .m_req(dcache_req),
+                .m_resp(dcache_resp),
+                .s_req(buf_dcache_req),
+                .s_resp(buf_dcache_resp)
+            );
+
+            assign mux_dcache_req  = buf_dcache_req;
+            assign buf_dcache_resp = mux_dcache_resp;
+        end else begin: without_lsbuf
+            assign mux_dcache_req = dcache_req;
+            assign dcache_resp    = mux_dcache_resp;
+        end
+
         dbus_req_t  dbus_req;
         dbus_resp_t dbus_resp;
 
         SRAMxToDataBus sramx_dbus_inst(
-            .sramx_req(dcache_req),
-            .sramx_resp(dcache_resp),
+            .sramx_req(mux_dcache_req),
+            .sramx_resp(mux_dcache_resp),
             .dbus_req, .dbus_resp
         );
 
@@ -175,7 +199,7 @@ module CacheLayer #(
             .OFFSET_BITS(DCACHE_OFFSET_BITS)
         ) dcache_inst(
             .clk(aclk), .resetn(aresetn),
-            .dbus_req_vaddr(data_addr),
+            .dbus_req_vaddr(dbus_req.addr),
             .dbus_req, .dbus_resp,
             .cbus_req(dcbus_req),
             .cbus_resp(dcbus_resp)
