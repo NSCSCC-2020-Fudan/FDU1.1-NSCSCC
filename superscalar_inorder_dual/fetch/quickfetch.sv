@@ -52,7 +52,7 @@ module quickfetch (
                            
     logic finish_pc, no_addr_ok;
     logic [1: 0] ien_predict_pcf;  
-    bpb_result_t [1: 0] destpc_predict_pcf, destpc_predict_isf;                          
+    bpb_result_t [1: 0] destpc_predict_pcf;                          
     pcfetch pcfetch(.clk, .reset, .stall, .flush(1'b0),
                     .pc_new, .addr,
                     .pc(pc_pcf), .pcplus4(pcplus4_pcf), .pcplus8(pcplus8_pcf),
@@ -108,7 +108,7 @@ module quickfetch (
                     mask_ = 2'b11;
                     stop_h_ = 1'b1;
                 end     
-            if (destpc_predict_sel_isf.taken && finishF && ~(stop || stop_h) && ~(pc_upd || pc_upd_h))
+            if (destpc_predict_sel_isf.taken && finishF)
                 begin
                     mask_ = mask_ | 2'b10;
                     last_predict_h_ = '0;
@@ -123,7 +123,8 @@ module quickfetch (
                     //pc_stop_h = '0;
                     pc_stop_ = (~finishF)                     ? (pc_stop_)                      : (
                                (destpc_predict_sel_isf.taken) ? (destpc_predict_sel_isf.destpc) : (pc_pcf));
-                    last_predict_h_ = (finishF)               ? (next_predict)                  : (last_predict_h_);
+                    last_predict_h_ = (~finishF)                      ? (last_predict_h_)               : (
+                                      (~destpc_predict_sel_isf.taken) ? (next_predict)                  : ('0));
                     destpc_predict_sel_h_ = (finishF)         ? (destpc_predict_sel_isf)        : (destpc_predict_sel_h_);
                 end                  
         end
@@ -158,7 +159,8 @@ module quickfetch (
                           (destpc_predict_sel.taken)  ? ('0)             : (
                           (mask[0])                   ? (last_predict_h) : (next_predict))));
     */
-    assign last_predict = (finishF) ? (next_predict) : (last_predict_h);   
+    assign last_predict = (~finishF)                      ? (last_predict_h)               : (
+                          (~destpc_predict_sel_isf.taken) ? (next_predict)                 : ('0));   
     assign destpc_predict_sel = (finishF) ? (destpc_predict_sel_isf) : ('0);                           
     
     
