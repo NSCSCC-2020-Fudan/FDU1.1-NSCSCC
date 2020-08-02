@@ -5,3 +5,5 @@ benchtest/*
 vivado/*
 .vscode/
 .Xil/
+6-stage/execute/mult_gen_0/*
+!6-stage/execute/mult_gen_0/*.xci
