@@ -281,6 +281,6 @@ module rob
     assign exception.in_delay_slot = rob_table[head_addr].in_delay_slot;
     rob_ptr_t head_ptr_e;
     assign head_ptr_e = head_ptr - 1;
-    assign exception.pcplus8 = rob_table[head_ptr_e[ROB_ADDR_LEN-1:0]].pcplus8 + 4;
+    assign exception.pcplus8 = exception.interrupt_valid ? (rob_table[head_ptr_e[ROB_ADDR_LEN-1:0]].pcplus8 + 4) : rob_table[head_addr].pcplus8;
     assign exception.is_eret = rob_table[head_addr].ctl.is_eret;
 endmodule
