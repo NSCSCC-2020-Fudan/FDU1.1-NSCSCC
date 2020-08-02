@@ -1,8 +1,10 @@
 `include "interface.svh"
 module exception
     import common::*;
-    import exception_pkg::*;(
-    input logic resetn,
+    import exception_pkg::*;
+    import cp0_pkg::*;(
+    input logic clk, resetn, flush,
+    input logic[5:0] ext_int,
     exception_intf.excep self,
     pcselect_intf.exception pcselect,
     hazard_intf.exception hazard
@@ -11,7 +13,7 @@ module exception
     
     // input logic reset,
     // logic exception_instr, exception_ri, exception_of, exception_load, exception_bp, exception_sys;
-    // interrupt_info_t interrupt_info;
+    interrupt_info_t interrupt_info;
     logic exception_valid;
     exception_info_t exc_info;
     exc_code_t exccode;
@@ -22,16 +24,29 @@ module exception
     cp0_status_t cp0_status;
     // interrupt
     logic interrupt_valid;
-    assign interrupt_valid = 1'b0;
-    // assign interrupt_valid = (interrupt_info != 0) // request
-    //                        & (cp0_status.IE)
-    //                     //    & (~cp0.debug.DM)
-    //                        & (~cp0_status.EXL)
-    //                        & (~cp0_status.ERL);
+    logic interrupt_valid_new;
+    // assign interrupt_valid = 1'b0;
+    assign interrupt_info = ({ext_int, 2'b00} | self.cp0_cause.IP | {self.timer_interrupt, 7'b0}) & self.cp0_status.IM;
+    assign interrupt_valid_new = (interrupt_info != 0) // request
+                           & (self.cp0_status.IE)
+                        //    & (~cp0.debug.DM)
+                           & (~self.cp0_status.EXL)
+                           & (~self.cp0_status.ERL);
 //    assign interrupt_valid = '0;
 
+    always_ff @(posedge clk) begin
+        if (~resetn | flush) begin
+            interrupt_valid <= 1'b0;
+        end else if (~interrupt_valid) begin
+            interrupt_valid <= interrupt_valid_new;
+        end
+    end
     always_comb begin
         priority case (1'b1)
+            interrupt_valid: begin
+                exception_valid = 1'b1;
+                exccode = CODE_INT;
+            end
             exc_info.instr : begin
                 exception_valid = 1'b1;
                 exccode = CODE_ADEL;
@@ -125,6 +140,7 @@ module exception
     assign pcselect.pcexception = EXC_ENTRY;
     assign hazard.exception_valid = exception_valid;
     assign self.exception = exception;
+    assign self.interrupt_valid = interrupt_valid;
     // assign interrupt_info = self.interrupt_info;
     // assign cp0_status = self.cp0_status;
     

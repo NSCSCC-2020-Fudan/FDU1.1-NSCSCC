@@ -124,6 +124,9 @@ module rob
         
         head_ptr_temp = '0;
         for (int i=0; i<ISSUE_WIDTH; i++) begin
+            if (exception.interrupt_valid) begin
+                break;
+            end
             if (head_ptr_retire == tail_ptr) begin
                 break;
             end
@@ -137,6 +140,9 @@ module rob
                 break;
             end
             if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.is_eret) begin
+                break;
+            end
+            if (i > 0 && retire.retire[i].ctl.cp0write) begin
                 break;
             end
             head_ptr_temp = head_ptr_retire - 2;
@@ -206,9 +212,9 @@ module rob
                     rob_table_new[j].pcplus8 = renaming.instr[i].pcplus8;
                     rob_table_new[j].ctl = renaming.instr[i].ctl;
                     if (j == ROB_TABLE_LEN - 1) begin
-                        rob_table_new[0].in_delay_slot = rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump;
+                        rob_table_new[0].in_delay_slot = (rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump) & ~rob_table_new[j].ctl.is_eret;
                     end else begin
-                        rob_table_new[j + 1].in_delay_slot = rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump;
+                        rob_table_new[j + 1].in_delay_slot = (rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump) & ~rob_table_new[j].ctl.is_eret;
                     end
                     // renaming.rob_addr_new[i] = rob_addr_t'(j);
                     tail_ptr_new += 1;
@@ -273,6 +279,8 @@ module rob
     assign exception.badvaddr = rob_table[head_addr].exception.instr ? (rob_table[head_addr].pcplus8 - 32'd8) : (rob_table[head_addr].data.mem.addr);
     assign exception.exc_info = rob_table[head_addr].exception;
     assign exception.in_delay_slot = rob_table[head_addr].in_delay_slot;
-    assign exception.pcplus8 = rob_table[head_addr].pcplus8;
+    rob_ptr_t head_ptr_e;
+    assign head_ptr_e = head_ptr - 1;
+    assign exception.pcplus8 = rob_table[head_ptr_e[ROB_ADDR_LEN-1:0]].pcplus8 + 4;
     assign exception.is_eret = rob_table[head_addr].ctl.is_eret;
 endmodule

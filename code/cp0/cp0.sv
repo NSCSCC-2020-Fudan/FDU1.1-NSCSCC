@@ -5,7 +5,6 @@ module cp0
     import exception_pkg::*;
     import cp0_pkg::*;(
     input logic clk, resetn,
-    cp0_intf.cp0 self,
     exception_intf.cp0 excep,
     pcselect_intf.cp0 pcselect,
     payloadRAM_intf.cp0 payloadRAM,
@@ -38,11 +37,11 @@ module cp0
     end
     always_ff @(posedge clk) begin
         if (~resetn) begin
-            self.timer_interrupt <= 1'b0;
-        end else if (cp0_new.count == cp0_new.compare) begin
-            self.timer_interrupt <= 1'b1;
+            excep.timer_interrupt <= 1'b0;
+        end else if (cp0.count == cp0.compare - 1) begin
+            excep.timer_interrupt <= 1'b1;
         end else if (cwrite.wen & cwrite.addr == 5'd11) begin
-            self.timer_interrupt <= 1'b0;
+            excep.timer_interrupt <= 1'b0;
         end
     end
     // read
@@ -133,6 +132,8 @@ module cp0
     end
     assign is_eret = excep.is_eret;
     assign exception = excep.exception;
+    assign excep.cp0_status = cp0.status;
+    assign excep.cp0_cause = cp0.cause;
     // assign excep.cp0_data = cp0;
     assign pcselect.is_eret = is_eret;
     assign pcselect.epc = cp0.epc;

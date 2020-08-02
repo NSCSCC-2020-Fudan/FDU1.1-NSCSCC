@@ -34,7 +34,6 @@ module datapath
     retire_intf retire_intf(.wb_pc);
     payloadRAM_intf payloadRAM_intf();
     hazard_intf hazard_intf();
-    cp0_intf cp0_intf();
     pcselect pcselect(.freg(freg_intf.pcselect),
                       .self(pcselect_intf.pcselect));
     fetch fetch(.instr_, .pc,
@@ -93,10 +92,10 @@ module datapath
 
     hazard hazard(.i_data_ok, .d_data_ok, .flush, 
                   .self(hazard_intf.hazard));
-    exception exception(.resetn,.self(exception_intf.excep),
+    exception exception(.clk, .resetn, .flush, .self(exception_intf.excep),
                         .pcselect(pcselect_intf.exception),
-                        .hazard(hazard_intf.exception));
-    cp0 cp0(.clk, .resetn, .self(cp0_intf.cp0),
+                        .hazard(hazard_intf.exception), .ext_int);
+    cp0 cp0(.clk, .resetn,
             .excep(exception_intf.cp0 ),
             .pcselect(pcselect_intf.cp0),
             .payloadRAM(payloadRAM_intf.cp0),
