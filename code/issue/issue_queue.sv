@@ -146,7 +146,7 @@ module issue_queue
             end
             // ready
             if (queue_new[i].src1.valid && queue_new[i].src2.valid) begin
-                for (int j=0; j<QUEUE_LEN; j++) begin
+                for (int j=0; j<READ_NUM; j++) begin
                     if (j == read_num) begin
                         read[j] = queue_new[i];
                         break;
@@ -154,7 +154,7 @@ module issue_queue
                 end
                 
                 // remove from issue queue: queue_new[tail-1:i] = queue_new[tail:i+1];
-                for (int j=0; j<QUEUE_LEN; j++) begin
+                for (int j=1; j<QUEUE_LEN; j++) begin
                     if (j > i) begin
                         queue_new[j - 1] = queue_new[j];
                         if (j == tail_new) begin
