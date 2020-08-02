@@ -1,13 +1,13 @@
 `include "mips.svh"
 
 module exception(
-    input logic reset,
+    input logic resetn,
     exception_intf.excep ports,
     pcselect_intf.excep pcselect,
     hazard_intf.excep hazard
 );
 
-    // input logic reset,
+    // input logic resetn,
     logic exception_instr, exception_ri, exception_of, exception_load, exception_bp, exception_sys;
     interrupt_info_t interrupt_info;
     logic exception_valid;
@@ -74,7 +74,7 @@ module exception(
     // end
     // assign exception.location = `EXC_BASE + offset;
     assign exception.location = `EXC_ENTRY;
-    assign exception.valid = (interrupt_valid | exception_valid) & ~reset;
+    assign exception.valid = (interrupt_valid | exception_valid) & ~resetn;
     assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exccode);
     assign exception.pc = pc;
     assign exception.in_delay_slot = in_delay_slot;

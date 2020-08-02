@@ -1,6 +1,6 @@
 `include "mips.svh"
 module execute (
-    input logic clk, reset,
+    input logic clk, resetn,
     decode_ereg_exec.exec in,
     exec_mreg_memory.exec out,
     hazard_intf.exec hazard,
@@ -36,7 +36,7 @@ module execute (
     wdmux wdmux(.e(srcbE),.m(aluoutM),.w(resultW),.forward(forwardBE),.wd(writedataE));
     alusrcbmux alusrcbmux(.wd(writedataE), .imm(imm),.sel(alusrcE),.alusrcb(alusrcbE));
     alu alu(alusrcaE, alusrcbE, alufuncE, aluoutE0, exception_of);
-    mult multdiv(.clk, .reset, .a(alusrcaE), .b(alusrcbE), .op(op), .hi(hi), .lo(lo), .ok(mult_ok));
+    mult multdiv(.clk, .resetn, .a(alusrcaE), .b(alusrcbE), .op(op), .hi(hi), .lo(lo), .ok(mult_ok));
     aluoutmux aluoutmux(.aluout(aluoutE0), .pcplus8(pcplus4E + 32'd4), .jump(jumpE), .out(aluoutE));
 
     assign srcaE = dataD.srca;

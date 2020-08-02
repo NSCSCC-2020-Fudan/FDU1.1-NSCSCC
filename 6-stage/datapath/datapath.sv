@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module datapath (
-    input logic clk, reset,
+    input logic clk, resetn,
     input logic[5:0] ext_int,
     
     output word_t pc,
@@ -16,8 +16,8 @@ module datapath (
     output stallF, flush_ex,
     input i_data_ok, d_data_ok
 );
-    // always_ff @(posedge clk, posedge reset) begin
-    //     if (reset) begin
+    // always_ff @(posedge clk) begin
+    //     if (~resetn) begin
     //         i_data_ok <= '0;
     //     end else begin
     //         i_data_ok <= 1'b1;
@@ -37,15 +37,15 @@ module datapath (
     pcselect_intf pcselect_intf();
     
     Freg freg(.ports(pcselect_freg_fetch.freg), 
-               .clk, .reset, .hazard(hazard_intf.freg));
+               .clk, .resetn, .hazard(hazard_intf.freg));
     fetch fetch(.in(pcselect_freg_fetch.fetch), 
                  .out(fetch_dreg_decode.fetch), 
                  .pcselect(pcselect_intf.fetch),
-                 .clk, .reset);
+                 .clk, .resetn);
     pcselect pcselect(.out(pcselect_freg_fetch.pcselect),
-                       .in(pcselect_intf.pcselect), .clk, .reset);
+                       .in(pcselect_intf.pcselect), .clk, .resetn);
     
-    Dreg dreg(.clk, .reset, 
+    Dreg dreg(.clk, .resetn, 
                .ports(fetch_dreg_decode.dreg),
                .hazard(hazard_intf.dreg));
     decode decode(.in(fetch_dreg_decode.decode),
@@ -56,16 +56,16 @@ module datapath (
                    .hazard(hazard_intf.decode),
                    .pcselect(pcselect_intf.decode));
     
-    Ereg ereg(.clk, .reset, 
+    Ereg ereg(.clk, .resetn, 
                .ports(decode_ereg_exec.ereg),
                .hazard(hazard_intf.ereg));
-    execute execute(.clk, .reset,
+    execute execute(.clk, .resetn,
                     .in(decode_ereg_exec.exec),
                      .out(exec_mreg_memory.exec),
                      .hazard(hazard_intf.exec),
                      .cp0(cp0_intf.exec));
     
-    Mreg mreg0(.clk, .reset,
+    Mreg mreg0(.clk, .resetn,
                .ports(exec_mreg_memory.mreg),
                .hazard(hazard_intf.mreg));
     memory memory0(.in(exec_mreg_memory.memory),
@@ -75,7 +75,7 @@ module datapath (
                    .dram(memory_dram.memory),
                    .cp0(cp0_intf.memory));
     
-    Wreg wreg0(.clk, .reset,
+    Wreg wreg0(.clk, .resetn,
                .ports(memory_wreg_writeback.wreg),
                .hazard(hazard_intf.wreg));
     writeback writeback0(.pc(wb_pc),
@@ -86,23 +86,23 @@ module datapath (
                          .hazard(hazard_intf.writeback));
 
     // regfile interacts with Decode, Writeback
-    regfile regfile0(.ports(regfile_intf.regfile), .clk, .reset);
+    regfile regfile0(.ports(regfile_intf.regfile), .clk, .resetn);
 
     // hilo interacts with Decode, Writeback
-    hilo hilo0(.ports(hilo_intf.hilo),.clk, .reset);
+    hilo hilo0(.ports(hilo_intf.hilo),.clk, .resetn);
 
     // cp0 interacts with memory, exception
     cp0 cp0(.ports(cp0_intf.cp0),
              .excep(exception_intf.cp0),
-             .clk, .reset,
+             .clk, .resetn,
              .pcselect(pcselect_intf.cp0));
 
     // hazard interacts with Freg, Dreg, Ereg, Mreg, Wreg, Decode, Execute, Memory
-    hazard hazard0(.ports(hazard_intf.hazard),.pcselect(pcselect_intf.hazard), .clk, .reset);
+    hazard hazard0(.ports(hazard_intf.hazard),.pcselect(pcselect_intf.hazard), .clk, .resetn);
 
     // exception interacts with cp0, pcselect, memory
     exception exception(.ports(exception_intf.excep),
                         .pcselect(pcselect_intf.excep),
                         .hazard(hazard_intf.excep),
-                        .reset);
+                        .resetn);
 endmodule

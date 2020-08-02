@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module mult (
-    input logic clk, reset,
+    input logic clk, resetn,
     input word_t a, b,
     input decoded_op_t op,
     output word_t hi, lo,
@@ -9,7 +9,7 @@ module mult (
 );
     dword_t hilo_m, hilo_d;
     multiplier multiplier(.clk, .a, .b, .hilo(hilo_m), .is_signed(op == MULT));
-    divider divider(.clk, .reset, .valid(op == DIV || op == DIVU), .is_signed(op == DIV),
+    divider divider(.clk, .resetn, .valid(op == DIV || op == DIVU), .is_signed(op == DIV),
                     .a, .b, .hilo(hilo_d));
     assign {hi, lo} = (op==MULT||op == MULTU) ? hilo_m : hilo_d;
     localparam MULT_DELAY = 1 << 4;
@@ -58,7 +58,7 @@ module mult (
         endcase
     end
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~resetn) begin
             state <= INIT;
             counter <= '0;
         end else begin

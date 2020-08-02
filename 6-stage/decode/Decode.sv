@@ -14,7 +14,7 @@ module decode (
 	cp0_intf.decode cp0,
 	hazard_intf.decode hazard,
 	pcselect_intf.decode pcselect,
-	input clk, reset
+	input clk, resetn
 );
 	op_t op;
 	func_t func;

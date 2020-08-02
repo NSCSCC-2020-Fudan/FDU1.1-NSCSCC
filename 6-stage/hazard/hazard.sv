@@ -3,7 +3,7 @@
 module hazard (
     hazard_intf.hazard ports,
     pcselect_intf.hazard pcselect,
-    input logic clk, reset
+    input logic clk, resetn
 );
     // logic CP0E, HILOE, RegE;
     // logic CP0M, HILOM, RegM;
@@ -95,7 +95,7 @@ module hazard (
     assign flush_ex = exception_validM | is_eret;
     // logic flush_ex1;
     // always_ff @(posedge clk) begin
-    //     if (reset) begin
+    //     if (~resetn) begin
     //         flush_ex1 <= 1'b0;
     //     end else if (~flush_ex) begin
     //         flush_ex1 <= flush_ex;

@@ -32,7 +32,7 @@ module mycpu(
     assign clk_ = clk;
     word_t vaddr;
     logic i_data_ok, d_data_ok;
-    datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
+    datapath datapath(.clk(clk_), .resetn, .ext_int, 
                       .pc(inst_addr), .instr_(inst_rdata),
                       .mread, .mwrite, .rfwrite, .rd(data_rdata), .wb_pc(debug_wb_pc),
                       .stallF, .flush_ex,.i_data_ok, .d_data_ok);
@@ -43,7 +43,7 @@ module mycpu(
     assign inst_wdata = '0;
     logic inst_req_;
     // assign inst_req = inst_req_ & d_data_ok;
-    handshake i_handshake(.clk, .reset(~resetn), .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req));
+    handshake i_handshake(.clk, .resetn, .cpu_req(1'b1), .addr_ok(inst_addr_ok), .data_ok(inst_data_ok), .cpu_data_ok(i_data_ok), .req(inst_req));
     // assign data_req = (|mread.ren) | (|mwrite.wen);
     assign data_wr = mwrite.wen;
     assign vaddr = (mwrite.wen) ? mwrite.addr : mread.addr;
@@ -65,7 +65,7 @@ module mycpu(
     assign data_addr = vaddr;
     assign data_wdata = mwrite.wd;
     assign data_size = mwrite.wen ? mwrite.size : mread.size;
-    handshake d_handshake(.clk, .reset(~resetn), .cpu_req(mread.ren|mwrite.wen), .addr_ok(data_addr_ok), .data_ok(data_data_ok), .cpu_data_ok(d_data_ok), .req(data_req));
+    handshake d_handshake(.clk, .resetn, .cpu_req(mread.ren|mwrite.wen), .addr_ok(data_addr_ok), .data_ok(data_data_ok), .cpu_data_ok(d_data_ok), .req(data_req));
 
     assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
     assign debug_wb_rf_wnum = rfwrite.addr;

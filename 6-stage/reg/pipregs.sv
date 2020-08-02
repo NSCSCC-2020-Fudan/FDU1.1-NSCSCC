@@ -1,14 +1,14 @@
 `include "mips.svh"
 
 module Freg (
-    input logic clk, reset,
+    input logic clk, resetn,
     pcselect_freg_fetch.freg ports,
     hazard_intf.freg hazard
 );
     logic en;
     word_t pc, pc_new;
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             pc <= 32'hbfc00000;
         end
         else if(en) begin
@@ -21,14 +21,14 @@ module Freg (
 endmodule
 
 module Dreg (
-    input logic clk, reset,
+    input logic clk, resetn,
     fetch_dreg_decode.dreg ports,
     hazard_intf.dreg hazard
 );
     fetch_data_t dataF_new, dataF;
     logic en, clear;
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             dataF <= '0;
         end
         else if(en & clear) begin
@@ -45,14 +45,14 @@ module Dreg (
 endmodule
 
 module Ereg (
-    input logic clk, reset, 
+    input logic clk, resetn, 
     decode_ereg_exec.ereg ports,
     hazard_intf.ereg hazard
 );
     decode_data_t dataD, dataD_new;
     logic en, clear;
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             dataD <= '0;
         end
         else if(en & clear) begin
@@ -69,14 +69,14 @@ module Ereg (
 endmodule
 
 module Mreg (
-    input logic clk, reset,
+    input logic clk, resetn,
     exec_mreg_memory.mreg ports,
     hazard_intf.mreg hazard
 );
     exec_data_t dataE, dataE_new;
     logic en, clear;
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             dataE <= '0;
         end
         else if(en & clear) begin
@@ -93,14 +93,14 @@ module Mreg (
 endmodule
 
 module Wreg (
-    input logic clk, reset,
+    input logic clk, resetn,
     memory_wreg_writeback.wreg ports,
     hazard_intf.wreg hazard
 );
     mem_data_t dataM, dataM_new;
     logic clear;
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             dataM <= '0;
         end
         else if(clear) begin

@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module hilo (
-    input logic clk, reset,
+    input logic clk, resetn,
     hilo_intf.hilo ports
 );
     word_t hi, lo, hi_new, lo_new;
@@ -16,7 +16,7 @@ module hilo (
         end
     end
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~resetn) begin
             hi <= '0;
             lo <= '0;
         end else begin

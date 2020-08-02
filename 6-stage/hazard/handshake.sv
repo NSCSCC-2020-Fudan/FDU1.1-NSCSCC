@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module handshake (
-    input logic clk, reset,
+    input logic clk, resetn,
     input logic cpu_req,
     input logic addr_ok, data_ok,
     output logic cpu_data_ok, req
@@ -11,7 +11,7 @@ module handshake (
     handshake_state_t state, state_new;
     assign cpu_data_ok = state_new == INIT;
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~resetn) begin
             state <= INIT;
         end else begin
             state <= state_new;
@@ -21,7 +21,7 @@ module handshake (
         state_new = state;
         case (state)
                 INIT: begin
-                    if (cpu_req) begin
+                    if (cpu_req & resetn) begin
                         state_new = WAIT_ADDR;
                     end
                 end

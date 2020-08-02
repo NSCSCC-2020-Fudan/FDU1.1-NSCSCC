@@ -4,7 +4,7 @@ module fetch (
     pcselect_freg_fetch.fetch in,
     fetch_dreg_decode.fetch out,
     pcselect_intf.fetch pcselect,
-    input logic clk, reset
+    input logic clk, resetn
 );
     word_t pcplus4, pcplus4_reg;
     fetch_data_t dataF;
@@ -12,8 +12,8 @@ module fetch (
     adder#(32) pcadder(in.pc, 32'b100, pcplus4);
     assign exception_instr = (pcplus4[1:0] != '0);
     
-    // always_ff @(posedge clk, posedge reset) begin
-    //     if (reset) begin
+    // always_ff @(posedge clk) begin
+    //     if (~resetn) begin
     //         pcplus4_reg <= 0;
     //     end else begin
     //         pcplus4_reg <= pcplus4;

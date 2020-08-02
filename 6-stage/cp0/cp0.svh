@@ -31,8 +31,8 @@ typedef struct packed {
     logic zero_0;       // 23
     logic BEV;          // 22, location of exception vectors. Always 1 in this work.
     logic TS;           // 21, mutiple TLB entries. Always 0 in this work.
-    logic SR;           // 20, Soft Reset. Always 0 in this work.
-    logic NMI;          // 19, reset due to NMI exception. Always 0 in this work.
+    logic SR;           // 20, Soft resetn. Always 0 in this work.
+    logic NMI;          // 19, resetn due to NMI exception. Always 0 in this work.
     logic ASE;          // 18, reserved for ASE. Always 0 in this work.
     logic [1:0] IMPL;   // [17:16], implementation dependent. Always 0 in this work.
     logic [7:0] IM;     // [15:8], Interrupt Mask. R/W

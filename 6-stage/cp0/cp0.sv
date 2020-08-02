@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module cp0(
-    input logic clk, reset,
+    input logic clk, resetn,
     cp0_intf.cp0 ports,
     exception_intf.cp0 excep,
     pcselect_intf.cp0 pcselect
@@ -13,8 +13,8 @@ module cp0(
     exception_t exception;
     creg_addr_t ra;
     word_t rd;
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             cp0 <= `CP0_INIT;
         end
         else begin
@@ -24,8 +24,8 @@ module cp0(
 
     logic count_switch;
 
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             count_switch <= 1'b0;
         end else begin
             count_switch <= ~count_switch;
@@ -49,7 +49,7 @@ module cp0(
         cp0_new = cp0;
         
         cp0_new.count = cp0_new.count + count_switch;
-        if (reset) begin
+        if (~resetn) begin
             ports.timer_interrupt = 1'b0;
         end else if (cp0_new.count == cp0_new.compare) begin
             ports.timer_interrupt = 1'b1;

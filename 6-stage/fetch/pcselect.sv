@@ -3,11 +3,11 @@
 module pcselect (
     pcselect_freg_fetch.pcselect out,
     pcselect_intf.pcselect in,
-    input logic clk, reset
+    input logic clk, resetn
 );
     // logic exception_valid, is_eret;
     // always_ff @(posedge clk) begin
-    //     if (reset) begin
+    //     if (~resetn) begin
     //         exception_valid <= '0;
     //         is_eret <= '0;
     //     end
