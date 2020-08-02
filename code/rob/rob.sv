@@ -71,47 +71,48 @@ module rob
         end
     end
     always_comb begin
-        rob_table_retire = rob_table;
-        head_ptr_retire = head_ptr;
+        rob_table_new = rob_table_retire;
+        head_ptr_new = head_ptr_retire;
+        tail_ptr_new = tail_ptr_retire;
         // commit first
         for (int i=0; i<ALU_NUM; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (alu_commit[i].valid && alu_commit[i].rob_addr == j) begin
-                    rob_table_retire[j].data.alu.zeros = '0;
-                    rob_table_retire[j].data.alu.data = alu_commit[i].data;
-                    rob_table_retire[j].complete = 1'b1;
-                    rob_table_retire[j].exception = alu_commit[i].exception;
+                    rob_table_new[j].data.alu.zeros = '0;
+                    rob_table_new[j].data.alu.data = alu_commit[i].data;
+                    rob_table_new[j].complete = 1'b1;
+                    rob_table_new[j].exception = alu_commit[i].exception;
                 end
             end
         end
         for (int i=0; i<MEM_NUM; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (mem_commit[i].valid && mem_commit[i].rob_addr == j) begin
-                    rob_table_retire[j].data.mem.data = mem_commit[i].data;
-                    rob_table_retire[j].data.mem.addr = mem_commit[i].addr;
-                    rob_table_retire[j].complete = 1'b1;
-                    rob_table_retire[j].exception = mem_commit[i].exception;
+                    rob_table_new[j].data.mem.data = mem_commit[i].data;
+                    rob_table_new[j].data.mem.addr = mem_commit[i].addr;
+                    rob_table_new[j].complete = 1'b1;
+                    rob_table_new[j].exception = mem_commit[i].exception;
                 end
             end
         end
         for (int i=0; i<BRU_NUM; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (branch_commit[i].valid && branch_commit[i].rob_addr == j) begin
-                    rob_table_retire[j].complete = 1'b1;
-                    rob_table_retire[j].exception = branch_commit[i].exception;
-                    rob_table_retire[j].data.branch.zeros = '0;
-                    rob_table_retire[j].data.branch.pcbranch = branch_commit[i].pcbranch;
-                    rob_table_retire[j].data.branch.branch_taken = branch_commit[i].branch_taken;
+                    rob_table_new[j].complete = 1'b1;
+                    rob_table_new[j].exception = branch_commit[i].exception;
+                    rob_table_new[j].data.branch.zeros = '0;
+                    rob_table_new[j].data.branch.pcbranch = branch_commit[i].pcbranch;
+                    rob_table_new[j].data.branch.branch_taken = branch_commit[i].branch_taken;
                 end
             end
         end
         for (int i=0; i<MULT_NUM; i++) begin
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
                 if (mult_commit[i].valid && mult_commit[i].rob_addr == j) begin
-                    rob_table_retire[j].complete = 1'b1;
-                    rob_table_retire[j].data.mult.hi = mult_commit[i].hi;
-                    rob_table_retire[j].data.mult.lo = mult_commit[i].lo;
-                    rob_table_retire[j].exception = mult_commit[i].exception;
+                    rob_table_new[j].complete = 1'b1;
+                    rob_table_new[j].data.mult.hi = mult_commit[i].hi;
+                    rob_table_new[j].data.mult.lo = mult_commit[i].lo;
+                    rob_table_new[j].exception = mult_commit[i].exception;
                 end
             end
         end
@@ -127,97 +128,97 @@ module rob
             if (exception.interrupt_valid) begin
                 break;
             end
-            if (head_ptr_retire == tail_ptr) begin
+            if (head_ptr_new == tail_ptr) begin
                 break;
             end
             // check exception
-            if (|rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].exception) begin
+            if (|rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].exception) begin
                 break;
             end
             
             // write register
-            if (~rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].complete) begin
+            if (~rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].complete) begin
                 break;
             end
-            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.is_eret) begin
+            if (rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl.is_eret) begin
                 break;
             end
             if (i > 0 && retire.retire[i].ctl.cp0write) begin
                 break;
             end
-            head_ptr_temp = head_ptr_retire - 2;
-            if (ds_counter == 10'b0 || (rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
-                          (rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.branch ||
-                          rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.jump))) begin
+            head_ptr_temp = head_ptr_new - 2;
+            if (ds_counter == 10'b0 || (rob_table_new[head_ptr_temp[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
+                          (rob_table_new[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.branch ||
+                          rob_table_new[head_ptr_temp[ROB_ADDR_LEN-1:0]].ctl.jump))) begin
                 break;
             end
             ds_counter = {1'b0, ds_counter[9:1]};
-            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
-                (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
-                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.jump)) begin
+            if (rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].data.branch.branch_taken &&
+                (rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl.branch || 
+                rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl.jump)) begin
                 if (i == ISSUE_WIDTH - 1) begin
                     break;
                 end
-                head_ptr_temp = head_ptr_retire + 1;
-                if (head_ptr_temp == tail_ptr || ~rob_table_retire[head_ptr_temp[ROB_ADDR_LEN-1:0]].complete) begin
+                head_ptr_temp = head_ptr_new + 1;
+                if (head_ptr_temp == tail_ptr || ~rob_table_new[head_ptr_temp[ROB_ADDR_LEN-1:0]].complete) begin
                     break;
                 end
                 ds_counter = 10'b1;
                 // branch_taken = 1'b1;
             end
             retire.retire[i].valid = 1'b1;
-            retire.retire[i].ctl = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl;
-            retire.retire[i].data = (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.branch || 
-                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.jump)? 
-                {32'b0, rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].pcplus8} : 
-                rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data[63:0];
-            retire.retire[i].dst = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].creg;
-            retire.retire[i].preg = head_ptr_retire[ROB_ADDR_LEN-1:0];
-            rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].creg = '0;
-            retire.wb_pc[i] = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].pcplus8;
-            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.memwrite) begin
+            retire.retire[i].ctl = rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl;
+            retire.retire[i].data = (rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl.branch || 
+                rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl.jump)? 
+                {32'b0, rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].pcplus8} : 
+                rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].data[63:0];
+            retire.retire[i].dst = rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].creg;
+            retire.retire[i].preg = head_ptr_new[ROB_ADDR_LEN-1:0];
+            rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].creg = '0;
+            retire.wb_pc[i] = rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].pcplus8;
+            if (rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl.memwrite) begin
                 mwrite_new.wen = 1'b1;
-                mwrite_new.addr = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.mem.addr;
-                mwrite_new.size = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.msize;
-                mwrite_new.wd = rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].data.mem.data;
+                mwrite_new.addr = rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].data.mem.addr;
+                mwrite_new.size = rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].ctl.msize;
+                mwrite_new.wd = rob_table_new[head_ptr_new[ROB_ADDR_LEN-1:0]].data.mem.data;
             end
-            // rob_table_retire[head_addr_retire] = '0;
+            // rob_table_new[head_addr_new] = '0;
             // update head_ptr
             // check branch
             
 
-            head_ptr_retire = head_ptr_retire + 1;
-            
+            head_ptr_new = head_ptr_new + 1;
         end
+    end
 
-        // write
-        rob_table_new = rob_table_retire;
-        head_ptr_new = head_ptr_retire;
-        tail_ptr_new = tail_ptr;
+    always_comb begin
+        rob_table_retire = rob_table;
+        head_ptr_retire = head_ptr;
+        tail_ptr_retire = tail_ptr;
         full = '0;
         for (int i=0; i<MACHINE_WIDTH; i++) begin
-            if (head_ptr_new[ROB_ADDR_LEN-1:0] == tail_ptr_new[ROB_ADDR_LEN-1:0] && head_ptr_new[ROB_ADDR_LEN] != tail_ptr_new[ROB_ADDR_LEN]) begin
-                rob_table_new = rob_table_retire;
-                head_ptr_new = head_ptr_retire;
-                tail_ptr_new = tail_ptr;
+            if (head_ptr_retire[ROB_ADDR_LEN-1:0] == tail_ptr_retire[ROB_ADDR_LEN-1:0] && head_ptr_retire[ROB_ADDR_LEN] != tail_ptr_retire[ROB_ADDR_LEN]) begin
+                rob_table_retire = rob_table;
+                head_ptr_retire = head_ptr;
+                tail_ptr_retire = tail_ptr;
                 full = 1'b1;
                 break;
             end
-            // renaming.rob_addr_new[i] = tail_ptr_new[ROB_ADDR_LEN-1:0];
+            // renaming.rob_addr_retire[i] = tail_ptr_retire[ROB_ADDR_LEN-1:0];
             for (int j=0; j<ROB_TABLE_LEN; j++) begin
-                if (renaming.instr[i].valid && j == tail_ptr_new[ROB_ADDR_LEN-1:0]) begin
-                    rob_table_new[j].complete = 1'b0;
-                    rob_table_new[j].preg = tail_ptr_new[ROB_ADDR_LEN-1:0];
-                    rob_table_new[j].creg = renaming.instr[i].dst;
-                    rob_table_new[j].pcplus8 = renaming.instr[i].pcplus8;
-                    rob_table_new[j].ctl = renaming.instr[i].ctl;
+                if (renaming.instr[i].valid && j == tail_ptr_retire[ROB_ADDR_LEN-1:0]) begin
+                    rob_table_retire[j].complete = 1'b0;
+                    rob_table_retire[j].preg = tail_ptr_retire[ROB_ADDR_LEN-1:0];
+                    rob_table_retire[j].creg = renaming.instr[i].dst;
+                    rob_table_retire[j].pcplus8 = renaming.instr[i].pcplus8;
+                    rob_table_retire[j].ctl = renaming.instr[i].ctl;
                     if (j == ROB_TABLE_LEN - 1) begin
-                        rob_table_new[0].in_delay_slot = (rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump) & ~rob_table_new[j].ctl.is_eret;
+                        rob_table_retire[0].in_delay_slot = (rob_table_retire[j].ctl.branch | rob_table_retire[j].ctl.jump) & ~rob_table_retire[j].ctl.is_eret;
                     end else begin
-                        rob_table_new[j + 1].in_delay_slot = (rob_table_new[j].ctl.branch | rob_table_new[j].ctl.jump) & ~rob_table_new[j].ctl.is_eret;
+                        rob_table_retire[j + 1].in_delay_slot = (rob_table_retire[j].ctl.branch | rob_table_retire[j].ctl.jump) & ~rob_table_retire[j].ctl.is_eret;
                     end
-                    // renaming.rob_addr_new[i] = rob_addr_t'(j);
-                    tail_ptr_new += 1;
+                    // renaming.rob_addr_retire[i] = rob_addr_t'(j);
+                    tail_ptr_retire += 1;
                     break;
                 end
             end  

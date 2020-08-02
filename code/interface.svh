@@ -298,7 +298,7 @@ interface hazard_intf();
         input stallC, flushC
     );
     modport exception(
-        input exception_valid
+        output exception_valid
     );
     modport rob(
         output rob_full, branch_taken

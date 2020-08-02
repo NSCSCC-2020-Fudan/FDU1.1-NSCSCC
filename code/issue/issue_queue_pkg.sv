@@ -4,8 +4,8 @@ package issue_queue_pkg;
     import common::*;
     import decode_pkg::*;
     //  Group: Parameters
-    parameter ALU_QUEUE_LEN = 16;
-    parameter MEM_QUEUE_LEN = 16;
+    parameter ALU_QUEUE_LEN = 8;
+    parameter MEM_QUEUE_LEN = 8;
     parameter BRANCH_QUEUE_LEN = 2;
     parameter MULT_QUEUE_LEN = 2;
 
