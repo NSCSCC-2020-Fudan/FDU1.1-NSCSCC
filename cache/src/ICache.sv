@@ -156,8 +156,8 @@ module ICache #(
     // generate cache BRAM address
     iaddr_t req_iaddr;
     assign req_iaddr.idx    = req_idx;
-    assign req_iaddr.index  = req_paddr.index;
-    assign req_iaddr.offset = req_paddr.offset;
+    assign req_iaddr.index  = req_vaddr.index;
+    assign req_iaddr.offset = req_vaddr.offset;
 
     /**
      * hit stage
@@ -241,17 +241,17 @@ module ICache #(
     assign req_count.offset = req_iaddr.offset;
     assign req_count.shamt  = req_paddr.aligned.shamt;
 
-    logic req_in_miss, req_miss_ready, req_ready;
+    logic req_in_miss, req_miss_ready;
     assign req_in_miss = miss_busy &&
-        req_iaddr.idx == miss_pos.idx && req_iaddr.index == miss_pos.index;
+        /* req_iaddr.idx == miss_pos.idx && */  // to reduce latency
+        req_paddr.tag == miss_addr.tag &&
+        req_iaddr.index == miss_pos.index;
 
-    // TODO: "miss_ready" has a one cycle delay
-    assign req_miss_ready = miss_ready[req_count];
-    assign req_ready      = req_hit && (!req_in_miss || req_miss_ready);
+    assign req_miss_ready = !req_in_miss || miss_ready[req_count];
 
     logic req_to_hit, req_to_miss;
-    assign req_to_hit  = ibus_req.req && req_ready;
-    assign req_to_miss = ibus_req.req && miss_avail && !req_hit;
+    assign req_to_hit  = req_hit && ibus_req.req && req_miss_ready;
+    assign req_to_miss = !req_hit && ibus_req.req && miss_avail;
 
     /**
      * the BRAM
@@ -295,33 +295,22 @@ module ICache #(
      * pipelining & state transitions
      */
     // LUTRAM updates
-    always_comb
-    if (resetn) begin
-        unique if (req_to_hit) begin
-            ram_new_meta   = ram_meta;
-            ram_new_tags   = ram_tags;
-            ram_new_select = req_new_select;
-        end else if (req_to_miss) begin
-            for (int i = 0; i < NUM_WAYS; i++) begin
-                if (req_victim_idx == idx_t'(i)) begin
-                    ram_new_meta[i] = 1;
-                    ram_new_tags[i] = req_paddr.tag;
-                end else begin
-                    ram_new_meta[i] = ram_meta[i];
-                    ram_new_tags[i] = ram_tags[i];
-                end
-            end
+    assign ram_new_select = req_to_hit ? req_new_select : ram_select;
 
-            ram_new_select = ram_select;
-        end else begin
-            ram_new_meta   = ram_meta;
-            ram_new_tags   = ram_tags;
-            ram_new_select = ram_select;
+    always_comb
+    if (req_to_miss) begin
+        for (int i = 0; i < NUM_WAYS; i++) begin
+            if (req_victim_idx == idx_t'(i)) begin
+                ram_new_meta[i] = 1;
+                ram_new_tags[i] = req_paddr.tag;
+            end else begin
+                ram_new_meta[i] = ram_meta[i];
+                ram_new_tags[i] = ram_tags[i];
+            end
         end
     end else begin
         ram_new_meta   = ram_meta;
         ram_new_tags   = ram_tags;
-        ram_new_select = ram_select;
     end
 
     // FSM updates
@@ -363,7 +352,7 @@ module ICache #(
     /**
      * instr bus driver
      */
-    assign ibus_resp.addr_ok = req_ready;
+    assign ibus_resp.addr_ok = req_hit && req_miss_ready;
     assign ibus_resp.data_ok = hit_data_ok;
     assign ibus_resp.data    = hit_data;
     assign ibus_resp.index   = hit_resp_index;

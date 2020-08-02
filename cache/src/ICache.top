@@ -1,7 +1,7 @@
 # ports
 //bram_inst.mem
 //sets
-req_ready
+//req_ready
 req_hit
 miss_busy
 miss_avail
