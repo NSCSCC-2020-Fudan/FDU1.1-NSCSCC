@@ -138,6 +138,9 @@ module issue_queue
             if (wait_mem && ENTRY_TYPE == MEM) begin
                 break;
             end
+            if (i != 0 && ENTRY_TYPE == MEM) begin
+                break;
+            end
             if (~mult_ok && ENTRY_TYPE == MULTI) begin
                 break;
             end
@@ -174,7 +177,7 @@ module issue_queue
             if (write_waken[i].entry_type != ENTRY_TYPE || ~write_waken[i].valid) begin
                 continue; // not this type
             end else if (read_num != READ_NUM && write_waken[i].entry.src1.valid && write_waken[i].entry.src2.valid
-                        && ~(wait_mem && ENTRY_TYPE == MEM) && ~(~mult_ok && ENTRY_TYPE == MULTI)) begin
+                        && ~(wait_mem && ENTRY_TYPE == MEM) && ~(~mult_ok && ENTRY_TYPE == MULTI) && (ENTRY_TYPE == MEM && tail_new == 0)) begin
                 read[read_num] = write_waken[i].entry; // issue immediately
             end else if (tail_new != '1) begin
                 queue_new[tail_new] = write_waken[i].entry; // push into the queue

@@ -32,34 +32,34 @@ module execute
         assign forward.src2[i] = dataI.alu_issue[i].r2;
     end
     for (genvar i = 0; i < MEM_NUM ; i++) begin
-        assign memsrca[i] = forward.forwards[i].valid1 & dataI.mem_issue[i].forward_en1 ? 
-                            forward.data[forward.forwards[i].fw1] :
+        assign memsrca[i] = forward.forwards[i + ALU_NUM].valid1 & dataI.mem_issue[i].forward_en1 ? 
+                            forward.data[forward.forwards[i + ALU_NUM].fw1] :
                             dataI.mem_issue[i].src1;
-        assign memsrcb[i] = forward.forwards[i].valid2 & dataI.mem_issue[i].forward_en2 ? 
-                            forward.data[forward.forwards[i].fw2] :
+        assign memsrcb[i] = forward.forwards[i + ALU_NUM].valid2 & dataI.mem_issue[i].forward_en2 ? 
+                            forward.data[forward.forwards[i + ALU_NUM].fw2] :
                             dataI.mem_issue[i].src2;
-        assign forward.src1[i] = dataI.mem_issue[i].r1;
-        assign forward.src2[i] = dataI.mem_issue[i].r2;
+        assign forward.src1[i + ALU_NUM] = dataI.mem_issue[i].r1;
+        assign forward.src2[i + ALU_NUM] = dataI.mem_issue[i].r2;
     end
     for (genvar i = 0; i < BRU_NUM ; i++) begin
-        assign brusrca[i] = forward.forwards[i].valid1 & dataI.branch_issue[i].forward_en1 ? 
-                            forward.data[forward.forwards[i].fw1] :
+        assign brusrca[i] = forward.forwards[i + ALU_NUM + MEM_NUM].valid1 & dataI.branch_issue[i].forward_en1 ? 
+                            forward.data[forward.forwards[i + ALU_NUM + MEM_NUM].fw1] :
                             dataI.branch_issue[i].src1;
-        assign brusrcb[i] = forward.forwards[i].valid2 & dataI.branch_issue[i].forward_en2 ? 
-                            forward.data[forward.forwards[i].fw2] :
+        assign brusrcb[i] = forward.forwards[i + ALU_NUM + MEM_NUM].valid2 & dataI.branch_issue[i].forward_en2 ? 
+                            forward.data[forward.forwards[i + ALU_NUM + MEM_NUM].fw2] :
                             dataI.branch_issue[i].src2;
-        assign forward.src1[i] = dataI.branch_issue[i].r1;
-        assign forward.src2[i] = dataI.branch_issue[i].r2;
+        assign forward.src1[i + ALU_NUM + MEM_NUM] = dataI.branch_issue[i].r1;
+        assign forward.src2[i + ALU_NUM + MEM_NUM] = dataI.branch_issue[i].r2;
     end
     for (genvar i = 0; i < MULT_NUM ; i++) begin
-        assign multsrca[i] = forward.forwards[i].valid1 & dataI.mult_issue[i].forward_en1 ? 
-                            forward.data[forward.forwards[i].fw1] :
+        assign multsrca[i] = forward.forwards[i + ALU_NUM + MEM_NUM + BRU_NUM].valid1 & dataI.mult_issue[i].forward_en1 ? 
+                            forward.data[forward.forwards[i + ALU_NUM + MEM_NUM + BRU_NUM].fw1] :
                             dataI.mult_issue[i].src1;
-        assign multsrcb[i] = forward.forwards[i].valid2 & dataI.mult_issue[i].forward_en2 ? 
-                            forward.data[forward.forwards[i].fw2] :
+        assign multsrcb[i] = forward.forwards[i + ALU_NUM + MEM_NUM + BRU_NUM].valid2 & dataI.mult_issue[i].forward_en2 ? 
+                            forward.data[forward.forwards[i + ALU_NUM + MEM_NUM + BRU_NUM].fw2] :
                             dataI.mult_issue[i].src2;
-        assign forward.src1[i] = dataI.mult_issue[i].r1;
-        assign forward.src2[i] = dataI.mult_issue[i].r2;
+        assign forward.src1[i + ALU_NUM + MEM_NUM + BRU_NUM] = dataI.mult_issue[i].r1;
+        assign forward.src2[i + ALU_NUM + MEM_NUM + BRU_NUM] = dataI.mult_issue[i].r2;
     end
     // ALU
     

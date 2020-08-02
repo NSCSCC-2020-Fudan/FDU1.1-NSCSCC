@@ -31,11 +31,11 @@ module issue
         assign write[i].entry.src1.valid = dataR[i].src1.valid ? payloadRAM.prf1[i].valid : 1'b1;
         assign write[i].entry.src1.id = dataR[i].src1.id;
         assign write[i].entry.src1.data = ~dataR[i].src1.valid ? payloadRAM.cdata1[i] : payloadRAM.prf1[i].data;
-        assign write[i].entry.src1.forward_en = dataR[i].src1_ != '0;
+        assign write[i].entry.src1.forward_en = dataR[i].src1_ != '0 && dataR[i].src1.valid;
         assign write[i].entry.src2.valid = dataR[i].src2.valid ? payloadRAM.prf2[i].valid : 1'b1;
         assign write[i].entry.src2.id = dataR[i].src2.id;
         assign write[i].entry.src2.data = ~dataR[i].src2.valid ? payloadRAM.cdata2[i] : payloadRAM.prf2[i].data;
-        assign write[i].entry.src2.forward_en = dataR[i].src2_ != '0;
+        assign write[i].entry.src2.forward_en = dataR[i].src2_ != '0 && dataR[i].src2.valid;
         assign write[i].entry.ctl = dataR[i].ctl;
         assign write[i].entry.op = dataR[i].op;
         assign write[i].entry.imm = dataR[i].imm;
