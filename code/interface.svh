@@ -233,12 +233,21 @@ endinterface
 interface exception_intf();
     import common::*;
     import exception_pkg::*;
+    exception_info_t exc_info;
+    vaddr_t badvaddr;
     exception_t exception;
+    logic in_delay_slot;
+    word_t pcplus8;
+    logic is_eret;
+    modport rob(
+        output exc_info, badvaddr, in_delay_slot, pcplus8, is_eret
+    );
     modport excep(
+        input exc_info, badvaddr, in_delay_slot, pcplus8,
         output exception
     );
     modport cp0(
-        input exception
+        input exception, is_eret
     );
 endinterface
 
@@ -302,6 +311,7 @@ endinterface
 
 interface cp0_intf();
     logic timer_interrupt;
+    modport cp0(output timer_interrupt);
 endinterface
 
 `endif

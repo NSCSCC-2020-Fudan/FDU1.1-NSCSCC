@@ -222,6 +222,8 @@ module decoder
                     C_ERET:begin
                         op = ERET;
                         ctl.is_eret = 1'b1;
+                        ctl.jump = 1'b1;
+                        ctl.jr = 1'b1;
                         ctl.alufunc = ALU_PASSB;
                         ctl.entry_type = BRANCH;
                         ctl.branch_type = T_JR;
@@ -476,6 +478,9 @@ module decoder
         if (ctl.lotoreg) begin
             instr.src1 = 7'b1000010;
         end
+        if (ctl.is_eret) begin
+            instr.src1 = 7'b0101110;
+        end
         if (ctl.is_bp || ctl.is_sys || exception_ri) begin
             instr.src1 = '0;
         end
@@ -489,6 +494,9 @@ module decoder
         end
         if (ctl.memwrite | ctl.memtoreg) begin
             instr.src2 = {2'b0, rt};
+        end
+        if (ctl.cp0toreg) begin
+            instr.src2 = {2'b01, rd};
         end
         if (ctl.is_eret) begin
             instr.src2 = 7'b0101110; // epc

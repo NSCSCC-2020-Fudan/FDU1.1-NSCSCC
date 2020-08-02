@@ -18,8 +18,8 @@ module cp0
     exception_t exception;
     creg_addr_t ra;
     word_t rd;
-    always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
             cp0 <= `CP0_INIT;
         end
         else begin
@@ -47,27 +47,33 @@ module cp0
     end
     // read
     always_comb begin
-        case (payloadRAM.creg1[4:0])
-            5'd8:   payloadRAM.cp01 = cp0.badvaddr;
-            5'd9:   payloadRAM.cp01 = cp0.count;
-            5'd12:  payloadRAM.cp01 = cp0.status;
-            5'd13:  payloadRAM.cp01 = cp0.cause;
-            5'd14:  payloadRAM.cp01 = cp0.epc;
-            5'd16:  payloadRAM.cp01 = cp0.config_;
-            default:payloadRAM.cp01 = '0;
-        endcase
+        for (int i=0; i<MACHINE_WIDTH; i++) begin
+            case (payloadRAM.creg1[i][4:0])
+                5'd8:   payloadRAM.cp01[i] = cp0.badvaddr;
+                5'd9:   payloadRAM.cp01[i] = cp0.count;
+                5'd12:  payloadRAM.cp01[i] = cp0.status;
+                5'd13:  payloadRAM.cp01[i] = cp0.cause;
+                5'd14:  payloadRAM.cp01[i] = cp0.epc;
+                5'd16:  payloadRAM.cp01[i] = cp0.config_;
+                default:payloadRAM.cp01[i] = '0;
+            endcase    
+        end
+        
     end
 
     always_comb begin
-        case (payloadRAM.creg2[4:0])
-            5'd8:   payloadRAM.cp02 = cp0.badvaddr;
-            5'd9:   payloadRAM.cp02 = cp0.count;
-            5'd12:  payloadRAM.cp02 = cp0.status;
-            5'd13:  payloadRAM.cp02 = cp0.cause;
-            5'd14:  payloadRAM.cp02 = cp0.epc;
-            5'd16:  payloadRAM.cp02 = cp0.config_;
-            default:payloadRAM.cp02 = '0;
-        endcase
+        for (int i=0; i<MACHINE_WIDTH; i++) begin
+            case (payloadRAM.creg2[i][4:0])
+                5'd8:   payloadRAM.cp02[i] = cp0.badvaddr;
+                5'd9:   payloadRAM.cp02[i] = cp0.count;
+                5'd12:  payloadRAM.cp02[i] = cp0.status;
+                5'd13:  payloadRAM.cp02[i] = cp0.cause;
+                5'd14:  payloadRAM.cp02[i] = cp0.epc;
+                5'd16:  payloadRAM.cp02[i] = cp0.config_;
+                default:payloadRAM.cp02[i] = '0;
+            endcase
+        end
+        
     end
     
     // update cp0 registers
@@ -101,10 +107,10 @@ module cp0
             if (~cp0.status.EXL) begin
                 if (exception.in_delay_slot) begin
                     cp0_new.cause.BD = 1'b1;
-                    cp0_new.epc = exception.pc - 32'd4;
+                    cp0_new.epc = exception.pcplus8 - 32'd12;
                 end else begin
                     cp0_new.cause.BD = 1'b0;
-                    cp0_new.epc = exception.pc;
+                    cp0_new.epc = exception.pcplus8 - 32'd8;
                 end
             end
 
@@ -125,12 +131,8 @@ module cp0
             // llbit = 1'b0;
         end
     end
-    assign cwrite = self.cwrite;
-    assign self.cp0_data = cp0;
-    assign is_eret = self.is_eret;
+    assign is_eret = excep.is_eret;
     assign exception = excep.exception;
-    assign ra = self.ra;
-    assign self.rd = rd;
     // assign excep.cp0_data = cp0;
     assign pcselect.is_eret = is_eret;
     assign pcselect.epc = cp0.epc;

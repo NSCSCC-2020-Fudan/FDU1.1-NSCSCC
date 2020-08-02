@@ -34,6 +34,7 @@ module datapath
     retire_intf retire_intf(.wb_pc);
     payloadRAM_intf payloadRAM_intf();
     hazard_intf hazard_intf();
+    cp0_intf cp0_intf();
     pcselect pcselect(.freg(freg_intf.pcselect),
                       .self(pcselect_intf.pcselect));
     fetch fetch(.instr_, .pc,
@@ -79,7 +80,8 @@ module datapath
             .payloadRAM(payloadRAM_intf.rob),
             .hazard(hazard_intf.rob),
             .pcselect(pcselect_intf.rob),
-            .d_data_ok, .mwrite
+            .d_data_ok, .mwrite,
+            .exception(exception_intf.rob)
             );
 
     freg freg(.clk, .resetn, .self(freg_intf.freg), .hazard(hazard_intf.freg));
@@ -91,10 +93,14 @@ module datapath
 
     hazard hazard(.i_data_ok, .d_data_ok, .flush, 
                   .self(hazard_intf.hazard));
-    exception exception(.reset(resetn),.self(exception_intf.excep),
+    exception exception(.resetn,.self(exception_intf.excep),
                         .pcselect(pcselect_intf.exception),
                         .hazard(hazard_intf.exception));
-    // cp0 cp0(.clk);
+    cp0 cp0(.clk, .resetn, .self(cp0_intf.cp0),
+            .excep(exception_intf.cp0 ),
+            .pcselect(pcselect_intf.cp0),
+            .payloadRAM(payloadRAM_intf.cp0),
+            .retire(retire_intf.cp0));
     arf arf(.clk, .resetn, .retire(retire_intf.arf), .rfwrite, .payloadRAM(payloadRAM_intf.arf));
     creg_select creg_select(.self(payloadRAM_intf.creg_select));
     hilo hilo(.clk, .resetn, .retire(retire_intf.hilo),

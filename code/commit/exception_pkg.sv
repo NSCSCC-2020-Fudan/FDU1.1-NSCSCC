@@ -35,7 +35,7 @@ package exception_pkg;
     typedef struct packed {
         logic valid;
         word_t location;
-        word_t pc;
+        word_t pcplus8;
         logic in_delay_slot;
         exc_code_t code;
         word_t badvaddr;

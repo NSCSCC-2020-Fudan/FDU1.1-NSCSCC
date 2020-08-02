@@ -10,7 +10,7 @@ module hazard
     logic branch_taken, exception_valid, is_eret;
     logic rob_full, iq_full;
 
-    assign stallF = (~i_data_ok | rob_full | iq_full);
+    assign stallF = (~i_data_ok) || ((rob_full | iq_full) && ~exception_valid);
     assign stallD = rob_full | iq_full;
     assign stallR = rob_full | iq_full;
     assign stallI = iq_full;
@@ -37,7 +37,7 @@ module hazard
     assign self.flushE = flushE;
     assign self.flushC = flushC;
     assign branch_taken = self.branch_taken;
-    assign exception_valid = 1'b0;
+    assign exception_valid = self.exception_valid;
     assign is_eret = 1'b0;
     assign rob_full = self.rob_full;
     assign iq_full = self.iq_full;

@@ -11,6 +11,7 @@ module rob
     payloadRAM_intf.rob payloadRAM,
     hazard_intf.rob hazard,
     pcselect_intf.rob pcselect,
+    exception_intf.rob exception,
     output m_w_t mwrite,
     input logic d_data_ok
     // mem_ctrl_intf.rob mem_ctrl
@@ -59,8 +60,7 @@ module rob
     assign head_addr_b = head_ptr_b[ROB_ADDR_LEN-1:0];
     assign branch_taken = rob_table[head_addr_b].data.branch.branch_taken &&
                           (rob_table[head_addr_b].ctl.branch ||
-                          rob_table[head_addr_b].ctl.jump
-                          );
+                          rob_table[head_addr_b].ctl.jump);
     m_w_t mwrite_new;
     logic[9:0] ds_counter;
     always_ff @(posedge clk) begin
@@ -128,12 +128,15 @@ module rob
                 break;
             end
             // check exception
-            // if (exception_valid) begin
-            //     break;
-            // end
+            if (|rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].exception) begin
+                break;
+            end
             
             // write register
             if (~rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].complete) begin
+                break;
+            end
+            if (rob_table_retire[head_ptr_retire[ROB_ADDR_LEN-1:0]].ctl.is_eret) begin
                 break;
             end
             head_ptr_temp = head_ptr_retire - 2;
@@ -256,9 +259,9 @@ module rob
         end
     end
     assign hazard.rob_full = full;
-    assign hazard.branch_taken = branch_taken;
-    assign pcselect.branch_taken = branch_taken;
-    assign pcselect.pcbranch = rob_table[head_addr_b].data.branch.pcbranch;
+    assign hazard.branch_taken = branch_taken || (rob_table[head_addr].ctl.is_eret && rob_table[head_addr].complete);
+    assign pcselect.branch_taken = branch_taken || (rob_table[head_addr].ctl.is_eret && rob_table[head_addr].complete);
+    assign pcselect.pcbranch = branch_taken ? (rob_table[head_addr_b].data.branch.pcbranch) : rob_table[head_addr].data.branch.pcbranch;
     
     // commit
     assign alu_commit = commit.alu_commit;
@@ -266,4 +269,10 @@ module rob
     assign branch_commit = commit.branch_commit;
     assign mult_commit = commit.mult_commit;
     
+    // exception
+    assign exception.badvaddr = rob_table[head_addr].exception.instr ? (rob_table[head_addr].pcplus8 - 32'd8) : (rob_table[head_addr].data.mem.addr);
+    assign exception.exc_info = rob_table[head_addr].exception;
+    assign exception.in_delay_slot = rob_table[head_addr].in_delay_slot;
+    assign exception.pcplus8 = rob_table[head_addr].pcplus8;
+    assign exception.is_eret = rob_table[head_addr].ctl.is_eret;
 endmodule

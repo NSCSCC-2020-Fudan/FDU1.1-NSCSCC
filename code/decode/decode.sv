@@ -18,6 +18,8 @@ module decode
             dataD[i].pcplus8 = dataF[i].pcplus8;
             dataD[i].exception = dataF[i].exception;
             dataD[i].exception.ri = exception_ri[i];
+            dataD[i].exception.sys = dataD[i].instr.ctl.is_sys;
+            dataD[i].exception.bp = dataD[i].instr.ctl.is_bp;
         end
     end
 
