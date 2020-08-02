@@ -233,44 +233,36 @@ module DCache #(
      * pipelining & state transitions
      */
     // LUTRAM updates
+    assign ram_new_select = req_to_hit ? req_new_select : ram_select;
+
     always_comb
-    if (resetn) begin
-        unique if (req_to_hit) begin
-            if (dbus_req.is_write) begin
-                for (int i = 0; i < NUM_WAYS; i++) begin
-                    if (req_iaddr.idx == idx_t'(i)) begin
-                        ram_new_meta[i].dirty = 1;
-                        ram_new_meta[i].valid = ram_meta[i].valid;
-                    end else
-                        ram_new_meta[i] = ram_meta[i];
-                end
-            end else
-                ram_new_meta = ram_meta;
-
-            ram_new_tags   = ram_tags;
-            ram_new_select = req_new_select;
-        end else if (req_to_miss) begin
+    unique if (req_to_hit) begin
+        if (dbus_req.is_write) begin
             for (int i = 0; i < NUM_WAYS; i++) begin
-                if (req_victim_idx == idx_t'(i)) begin
-                    ram_new_meta[i].valid = 1;
-                    ram_new_meta[i].dirty = 0;
-                    ram_new_tags[i]       = req_paddr.tag;
-                end else begin
+                if (req_iaddr.idx == idx_t'(i)) begin
+                    ram_new_meta[i].dirty = 1;
+                    ram_new_meta[i].valid = ram_meta[i].valid;
+                end else
                     ram_new_meta[i] = ram_meta[i];
-                    ram_new_tags[i] = ram_tags[i];
-                end
             end
+        end else
+            ram_new_meta = ram_meta;
 
-            ram_new_select = ram_select;
-        end else begin
-            ram_new_meta   = ram_meta;
-            ram_new_tags   = ram_tags;
-            ram_new_select = ram_select;
+        ram_new_tags   = ram_tags;
+    end else if (req_to_miss) begin
+        for (int i = 0; i < NUM_WAYS; i++) begin
+            if (req_victim_idx == idx_t'(i)) begin
+                ram_new_meta[i].valid = 1;
+                ram_new_meta[i].dirty = 0;
+                ram_new_tags[i]       = req_paddr.tag;
+            end else begin
+                ram_new_meta[i] = ram_meta[i];
+                ram_new_tags[i] = ram_tags[i];
+            end
         end
     end else begin
         ram_new_meta   = ram_meta;
         ram_new_tags   = ram_tags;
-        ram_new_select = ram_select;
     end
 
     // FSM updates
