@@ -123,7 +123,20 @@ module creg
     execute_data_t dataE, dataE_new;
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
-            dataE <= '0;
+            // dataE <= '0;
+            for (int i=0; i<ALU_NUM; i++) begin
+                dataE.alu_commit[i].valid <= 1'b0;
+                dataE.alu_commit[i].rob_addr <= '0;
+            end
+            for (int i=0; i<MEM_NUM; i++) begin
+                dataE.mem_commit[i].valid <= 1'b0;
+            end
+            for (int i=0; i<BRU_NUM; i++) begin
+                dataE.branch_commit[i].valid <= 1'b0;
+            end
+            for (int i=0; i<MULT_NUM; i++) begin
+                dataE.mult_commit[i].valid <= 1'b0;
+            end
         end else if (~stall) begin
             dataE <= dataE_new;
         end

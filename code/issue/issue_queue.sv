@@ -29,7 +29,10 @@ module issue_queue
     // write
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
-            queue <= '0;
+            // queue <= '0;
+            for (int i=0; i<QUEUE_LEN; i++) begin
+                queue[i].valid <= 1'b0;
+            end
             tail <= '0;
         end else begin
             queue <= queue_new;
