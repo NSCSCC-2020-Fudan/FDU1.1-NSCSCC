@@ -27,7 +27,7 @@ module bpb_line2(
     
     always_ff @(posedge clk)
         begin
-            if (reset)
+            if (~reset)
                 begin
                     valid <= 1'b0;
                     /*

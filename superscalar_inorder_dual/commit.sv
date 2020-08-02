@@ -55,20 +55,21 @@ module commit(
                                           
     m_q_t mem, __mem;
     m_q_t [1: 0] _mem;                                      
-    writedata_format writedata_format1 (_out[1], _mem[1]);
-    writedata_format writedata_format0 (_out[0], _mem[0]);                                                                                    
+    writedata_format writedata_format1 (in[1], _mem[1]);
+    writedata_format writedata_format0 (in[0], _mem[0]);                                                                                    
                     
     decoded_op_t __op;
     control_t [1: 0] ctl;
-    assign ctl[1] = _out[1].instr.ctl;
-    assign ctl[0] = _out[0].instr.ctl;
+    assign ctl[1] = in[1].instr.ctl;
+    assign ctl[0] = in[0].instr.ctl;
     assign __mem = (ctl[1].memtoreg | ctl[1].memwrite) ? (_mem[1]) : (_mem[0]);
     assign __op = (ctl[1].memtoreg | ctl[1].memwrite) ? (_out[1].instr.op) : (_out[0].instr.op);
     
     assign mem.wt = (in[1].instr.ctl.memwrite | in[0].instr.ctl.memwrite);
     assign mem.size = __mem.size;
     assign mem.addr = (in[1].instr.ctl.memtoreg | in[1].instr.ctl.memwrite) ? (in[1].result) : (in[0].result);
-    assign mem.en = __mem.en;
+    assign mem.en = (_out[1].instr.ctl.memtoreg | _out[1].instr.ctl.memwrite) || 
+    				(~mask && (_out[0].instr.ctl.memtoreg | _out[0].instr.ctl.memwrite));
     assign mem.wd = __mem.wd;
     
     assign dmem_wt = mem.wt;
@@ -99,20 +100,20 @@ module commit(
     mem_to_reg mem_to_reg1(_out[1], mem, __out[1]);
     mem_to_reg mem_to_reg0(_out[0], mem, __out[0]);
     assign out[1] = __out[1];
-    assign out[0] = __out[0];
+    assign out[0] = (mask) ? ('0) : (__out[0]);
     //assign out = _out;
     
 
-    assign bypass.destreg = {out[1].destreg, out[0].destreg};
+    assign bypass.destreg = {in[1].destreg, in[0].destreg};
     assign bypass.result = {out[1].result, out[0].result};
-    assign bypass.hiwrite = {out[1].instr.ctl.hiwrite, out[0].instr.ctl.hiwrite};
-    assign bypass.lowrite = {out[1].instr.ctl.lowrite, out[0].instr.ctl.lowrite};
-    assign bypass.hidata = {out[1].hiresult, out[0].hiresult};
-    assign bypass.lodata = {out[1].loresult, out[0].loresult};
-    assign bypass.memtoreg = {out[1].instr.ctl.memtoreg, out[0].instr.ctl.memtoreg};
-    assign bypass.cp0_addr = {out[1].cp0_addr, out[0].cp0_addr};
-    assign bypass.wen = {out[1].instr.ctl.regwrite, out[0].instr.ctl.regwrite};
-    assign bypass.cp0_wen = {out[1].instr.ctl.cp0write, out[0].instr.ctl.cp0write};
+    assign bypass.hiwrite = {in[1].instr.ctl.hiwrite, in[0].instr.ctl.hiwrite};
+    assign bypass.lowrite = {in[1].instr.ctl.lowrite, in[0].instr.ctl.lowrite};
+    assign bypass.hidata = {in[1].hiresult, in[0].hiresult};
+    assign bypass.lodata = {in[1].loresult, in[0].loresult};
+    assign bypass.memtoreg = {in[1].instr.ctl.memtoreg, in[0].instr.ctl.memtoreg};
+    assign bypass.cp0_addr = {in[1].cp0_addr, in[0].cp0_addr};
+    assign bypass.wen = {in[1].instr.ctl.regwrite, in[0].instr.ctl.regwrite};
+    assign bypass.cp0_wen = {in[1].instr.ctl.cp0write, in[0].instr.ctl.cp0write};
     // to bypass net
     
     assign fetch.exception_valid = exception_valid;

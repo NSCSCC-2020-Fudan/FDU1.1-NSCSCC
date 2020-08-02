@@ -56,7 +56,7 @@ module instrfetch(
     
     always_ff @(posedge clk)
         begin
-            if (reset)
+            if (~reset)
                 begin
                     finish_his <= 1'b0;
                     data_his <= '0;

@@ -15,7 +15,7 @@ module bpb2(
     logic [`BPB_GLOBAL_WIDTH2 - 1: 0] history;
     always_ff @(posedge clk)
         begin
-            if (reset)
+            if (~reset)
                 history <= '0;
             else
                 if (wen)

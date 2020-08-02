@@ -11,7 +11,7 @@ module dreg(
     
     always_ff @(posedge clk)
         begin
-            if (reset)
+            if (~reset)
                 begin
                     out <= '0;
                     hitD <= '0;
@@ -45,7 +45,7 @@ module creg(
     
     always_ff @(posedge clk)
         begin
-            if (reset)
+            if (~reset)
                 begin
                     out <= '0;
                     first_cycleC <= '1;
@@ -81,7 +81,7 @@ module rreg(
     
     always_ff @(posedge clk)
         begin
-            if (reset) 
+            if (~reset) 
                 out <= '0;
             else
                 if (flushR)

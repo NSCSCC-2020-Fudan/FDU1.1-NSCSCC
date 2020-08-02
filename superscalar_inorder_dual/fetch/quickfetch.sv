@@ -130,7 +130,7 @@ module quickfetch (
         end
     always_ff @(posedge clk)
         begin
-            if (reset)
+            if (~reset)
                 begin
                     mask <= 2'b00;
                     no_addr_ok <= 1'b1;

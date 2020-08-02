@@ -38,7 +38,7 @@ module fetch (
     logic fetch_commit_conflict;                             
     always_ff @(posedge clk, posedge reset)
         begin
-            if (reset)
+            if (~reset)
                 begin
                     pc <= 32'Hbfc00000;
                     last_predict <= '0;

@@ -16,7 +16,7 @@ module pcfetch(
     logic finish_his;                
     always_ff @(posedge clk) 
         begin
-            if (reset)
+            if (~reset)
                 begin
                     pc <= 32'Hbfc00000;
                     finish_his <= 1'b0;

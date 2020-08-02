@@ -46,11 +46,11 @@ module mycpu #(
     word_t dwd, daddr, iaddr;
     logic dwt;
     
-    datapath datapath(.clk(clk_), .reset(~resetn), .ext_int, 
+    datapath datapath(.clk(clk_), .reset(resetn), .ext_int, 
                       .iaddr(iaddr), .idata({32'b0, inst_rdata}), .ihit(1'b0), 
-                      .idataOK(i_data_ok), .ddataOK(d_data_ok),
+                      .idataOK(i_data_ok), .ddataOK(data_data_ok),
                       // .iaddrOK(inst_addr_ok),
-                      .dwd(dwd), .den(den), .dwt(dwt), .daddr(daddr), .dsize(dsize),
+                      .dwd(dwd), .den(den), .dwt(dwt), .daddr(vaddr_d), .dsize(dsize),
                       .rfw_out(rfw_out), .drd(data_rdata), .rt_pc_out(rt_pc_out),
                       .stallF_out(stallF), .flush_ex(flushE),
                       .inst_ibus_req, .inst_ibus_addr_ok, 
@@ -71,7 +71,7 @@ module mycpu #(
     // assign data_req = (mread.ren) | (mwrite.wen);
 //    assign data_req = den;
     assign data_wr = dwt;
-    assign vaddr_d = daddr;
+    //assign vaddr_d = daddr;
     assign vaddr_i = iaddr;
 
     if (DO_ADDR_TRANSLATION == 1) begin
@@ -109,11 +109,11 @@ module mycpu #(
 
     assign data_wdata = dwd;
     assign data_size = dsize;
-    handshake d_handshake(.clk, .reset(~resetn), 
+    handshake d_handshake(.clk, .reset(resetn), 
                           .cpu_req(den), .addr_ok(data_addr_ok), .data_ok(data_data_ok), 
                           .cpu_data_ok(d_data_ok), .req(data_req));
         
-    rfwrite_queue rfwrite_queue(.clk, .reset(~resetn),
+    rfwrite_queue rfwrite_queue(.clk, .reset(resetn),
                                 .rfw(rfw_out), .rt_pc(rt_pc_out),
                                 .rfw_out(rfwrite), .rt_pc_out(debug_wb_pc));
     

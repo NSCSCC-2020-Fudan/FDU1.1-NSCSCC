@@ -8,7 +8,7 @@ module regfile (
     );
     word_t [31:0] R;
     always_ff @(posedge clk) begin
-        if (reset)
+        if (~reset)
             R <= '0;
         else 
             begin

@@ -12,7 +12,7 @@ module handshake (
     handshake_state_t state, state_new;
     assign cpu_data_ok = state_new == INIT;
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (~reset) begin
             state <= INIT;
         end else begin
             state <= state_new;

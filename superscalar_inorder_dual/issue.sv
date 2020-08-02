@@ -173,7 +173,7 @@ module issue(
     
     always_ff @(posedge clk) 
         begin
-            if (reset)
+            if (~reset)
                 begin
                     out <= '0;
                     head <= '0;

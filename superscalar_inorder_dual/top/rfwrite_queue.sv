@@ -21,7 +21,7 @@ module rfwrite_queue(
     
     always_ff @(posedge clk)
         begin
-            if (reset)
+            if (~reset)
                 begin
                     head = '0;
                     tail = '0;
