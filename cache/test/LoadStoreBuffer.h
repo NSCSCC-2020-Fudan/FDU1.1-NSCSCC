@@ -50,6 +50,8 @@ public:
             if (inst->s_resp_x_data_ok) {
                 inst->s_resp_x_rdata = _fifo.front();
                 _fifo.pop();
+            } else {
+                inst->s_resp_x_rdata = 0xdeadbeef;
             }
         } else
             inst->s_resp_x_data_ok = 0;

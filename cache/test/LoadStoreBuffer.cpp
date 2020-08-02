@@ -7,6 +7,18 @@ PRETEST_HOOK [] {
     top->reset();
 };
 
+WITH {
+    for (int i = 0; i < 32; i++) {
+        top->issue_load(0x12345678);
+        top->tick();
+    }
+    top->reset();
+    for (int i = 0; i < 256; i++) {
+        assert(top->inst->s_req_x_req == 0);
+        top->tick();
+    }
+} AS("nop");
+
 WITH LOG {
     p.write(0x12345678, 0x87654321);
     p.inspect(0x11223344);

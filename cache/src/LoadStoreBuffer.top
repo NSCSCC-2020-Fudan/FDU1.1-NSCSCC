@@ -4,8 +4,8 @@ fifo_avail
 fifo_empty
 fifo_pop
 fifo_push
-req_is_wr
-req_ff_ok
+//req_is_wr
+//req_ff_ok
 head
 meta
 tail

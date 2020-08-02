@@ -38,26 +38,28 @@ module LoadStoreBuffer #(
      * FIFO signals
      */
     req_t tail_elem;
-    logic req_is_wr;
-    logic req_ff_ok;  // fast-forward
     logic fifo_avail;
     logic fifo_empty;
+    logic fifo_ready;
     logic fifo_push;
     logic fifo_pop;
 
     assign tail_elem  = fifo[tail];
-    assign req_is_wr  = m_req.req && m_req.wr;
-    assign req_ff_ok  = fifo_empty && s_resp.data_ok;
     assign fifo_avail = meta[head].avail;
     assign fifo_empty = meta[tail].avail;
-    assign fifo_push  = m_req.req && fifo_avail && (fifo_empty || req_is_wr == tail_elem.wr) && !req_ff_ok;
-    assign fifo_pop   = !fifo_empty && s_resp.data_ok;
+    assign fifo_ready = fifo_avail && (fifo_empty || m_req.wr == tail_elem.wr);
+    assign fifo_push  = m_req.req && fifo_ready;
+    assign fifo_pop   = s_resp.data_ok;
 
     /**
      * state updates
      */
+    logic last_data_ok;
+
     always_ff @(posedge clk)
     if (resetn) begin
+        last_data_ok <= fifo_push && m_req.wr;
+
         for (int i = 0; i < BUFFER_LENGTH; i++) begin
             /*unique*/ if (fifo_push && head == index_t'(i))
                 meta[i].avail <= 0;
@@ -68,10 +70,9 @@ module LoadStoreBuffer #(
         end
 
         for (int i = 0; i < BUFFER_LENGTH; i++) begin
-            /*unique*/ if (fifo_push && head == index_t'(i)) begin
+            /*unique*/ if (fifo_push && head == index_t'(i))
                 fifo[i]     <= m_req;
-                fifo[i].req <= fifo_empty ? ~s_resp.addr_ok : 1;
-            end else if (tail == index_t'(i) && s_resp.addr_ok) begin
+            else if (tail == index_t'(i) && s_resp.addr_ok) begin
                 fifo[i]     <= fifo[i];
                 fifo[i].req <= 0;
             end else
@@ -83,6 +84,7 @@ module LoadStoreBuffer #(
         if (fifo_pop)
             tail <= index_t'(tail + 1);
     end else begin
+        last_data_ok <= 0;
         {head, tail} <= 0;
         meta <= '1;  // fill all ones
     end
@@ -91,8 +93,8 @@ module LoadStoreBuffer #(
      * driver for master
      */
     assign m_resp.rdata   = s_resp.rdata;
-    assign m_resp.addr_ok = fifo_push || req_ff_ok;
-    assign m_resp.data_ok = req_ff_ok || (fifo_push && req_is_wr) || (!tail_elem.wr && s_resp.data_ok);
+    assign m_resp.addr_ok = fifo_ready;
+    assign m_resp.data_ok = tail_elem.wr ? last_data_ok : s_resp.data_ok;
 
-    assign s_req = fifo_empty ? m_req : tail_elem;
+    assign s_req = fifo_empty ? 0 : tail_elem;
 endmodule
