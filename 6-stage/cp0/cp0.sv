@@ -43,12 +43,7 @@ module cp0(
             default:rd = '0;
         endcase
     end
-    
-    // update cp0 registers
-    always_comb begin
-        cp0_new = cp0;
-        
-        cp0_new.count = cp0_new.count + count_switch;
+    always_ff @(posedge clk) begin
         if (~resetn) begin
             ports.timer_interrupt = 1'b0;
         end else if (cp0_new.count == cp0_new.compare) begin
@@ -56,6 +51,13 @@ module cp0(
         end else if (cwrite.wen & cwrite.addr == 5'd11) begin
             ports.timer_interrupt = 1'b0;
         end
+    end
+    
+    // update cp0 registers
+    always_comb begin
+        cp0_new = cp0;
+        
+        cp0_new.count = cp0_new.count + count_switch;
         // write
         if (cwrite.wen) begin
             case (cwrite.addr)
