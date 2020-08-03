@@ -15,6 +15,7 @@ module bpb_line0(
         output bpb_result_t [1: 0] destpc_predict,
         input word_t pc_commit,
         input logic wen,
+        //input logic taken_commit
         input bpb_result_t destpc_commit                       
     );
     
@@ -42,10 +43,18 @@ module bpb_line0(
                                 destpc = destpc_commit.destpc;
                             end
                         case (state)
+                        	/*
+                        	2'b00: state = (taken_commit) ? (2'b01) : (2'b00);
+                            2'b01: state = (taken_commit) ? (2'b11) : (2'b00);
+                            2'b10: state = (taken_commit) ? (2'b11) : (2'b00);
+                            2'b11: state = (taken_commit) ? (2'b11) : (2'b10);
+                            */
+                        	
                             2'b00: state = (destpc_commit.taken) ? (2'b01) : (2'b00);
                             2'b01: state = (destpc_commit.taken) ? (2'b11) : (2'b00);
                             2'b10: state = (destpc_commit.taken) ? (2'b11) : (2'b00);
-                            2'b11: state = (destpc_commit.taken) ? (2'b11) : (2'b10);                        
+                            2'b11: state = (destpc_commit.taken) ? (2'b11) : (2'b10);
+                                                    
                         endcase
                     end              
         end
@@ -54,9 +63,9 @@ module bpb_line0(
     assign pc_predict1 = pc_predict[1];
     assign pc_predict0 = pc_predict[0];
     assign destpc_predict[1].taken = ((tag == pc_predict1[31: 2 + `BPB_ENTRY_WIDTH0]) ? (state[1]) : (1'b0)) & valid;
-    assign destpc_predict[1].destpc = destpc;  
+    assign destpc_predict[1].destpc = destpc;//'0;  
     assign destpc_predict[0].taken = ((tag == pc_predict0[31: 2 + `BPB_ENTRY_WIDTH0]) ? (state[1]) : (1'b0)) & valid;
-    assign destpc_predict[0].destpc = destpc;
+    assign destpc_predict[0].destpc = destpc;//'0;
     assign hit_predict[1] = (tag == pc_predict1[31: 2 + `BPB_ENTRY_WIDTH0]) & valid;
     assign hit_predict[0] = (tag == pc_predict0[31: 2 + `BPB_ENTRY_WIDTH0]) & valid;
     

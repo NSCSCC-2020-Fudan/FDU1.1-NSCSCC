@@ -27,7 +27,7 @@ module regbypass(
 */            
     logic exec_hazard1, exec_hazard0, exec_hazard;
     assign cmt_hazard1 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] != reg_addr) & (commitex.destreg[0] != reg_addr) & (commitex.destreg[1] == reg_addr) & (commitex.memtoreg[1]);
-    assign cmt_hazard0 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] != reg_addr) & (commitex.destreg[1] == reg_addr) & (commitex.memtoreg[1]);
+    assign cmt_hazard0 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] != reg_addr) & (commitex.destreg[0] == reg_addr) & (commitex.memtoreg[0]);
     assign exec_hazard1 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] == reg_addr) & (execute.memtoreg[1]);
     assign exec_hazard0 = (execute.destreg[0] == reg_addr) & (execute.memtoreg[0]);
     assign hazard = exec_hazard1 | exec_hazard0 | cmt_hazard1 | cmt_hazard0;

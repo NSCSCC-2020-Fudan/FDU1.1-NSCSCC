@@ -431,7 +431,6 @@ typedef struct packed {
     word_t pcplus4;
     creg_addr_t srcrega, srcregb, destreg, cp0_addr;
     logic exception_instr, exception_ri;
-    word_t srca, srcb;
     logic in_delay_slot;
     bpb_result_t pred;
     cp0_cause_t cp0_cause;

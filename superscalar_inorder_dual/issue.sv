@@ -1,3 +1,4 @@
+/*
 `include "mips.svh"
 
 module issue(
@@ -193,7 +194,8 @@ module issue(
     decode_to_issue_t decode_to_issue_t0(bD, hi, lo, reg_dataI[1], reg_dataI[0], cp0_dataI[0], cp0_statusI, cp0_causeI, cp0_epcI, bI, BJa, aD.instr.ctl.is_link);
 
 endmodule 
-/*
+*/
+
 `include "mips.svh"
 
 module issue(
@@ -449,4 +451,4 @@ module issue(
     decode_to_issue_t decode_to_issue_t0(bD, hi, lo, reg_dataI[1], reg_dataI[0], cp0_dataI[0], cp0_statusI, cp0_causeI, cp0_epcI, bI, BJa, aD.instr.ctl.is_link);
 
 endmodule
-*/ 
+ 

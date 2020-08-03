@@ -33,6 +33,7 @@ module bpb0(
                                hit_set[j], destpc_predict_set[j],
                                pc_commit,
                                wen && (entry_commit == j),
+                               //destpc_commit.taken
                                destpc_commit);
         end
     endgenerate        

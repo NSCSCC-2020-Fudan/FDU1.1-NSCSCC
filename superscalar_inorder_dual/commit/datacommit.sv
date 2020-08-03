@@ -19,11 +19,15 @@ module datacommit(
         //to bypass
         input logic dmem_en,
         input logic [1: 0] dmem_size,
+        input word_t dmem_addr,
         input word_t dmem_rd,
         input logic dmem_data_ok,
         output logic finish_cdata
     );
 
+    
+    assign exception_data_out = exception_data_in;
+    //to exception
     
     assign fetch.exception_valid = exception_valid;
     assign fetch.is_eret = (in[1].instr.op == ERET) | (in[0].instr.op == ERET); 
@@ -61,6 +65,7 @@ module datacommit(
 	decoded_op_t op;
 	assign op = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (in[1].instr.op) : (in[0].instr.op);
 	assign mem.size = dmem_size;
+	assign mem.addr = dmem_addr;
 	readdata_format readdata_format (._rd(rd), .rd(mem.rd), .addr(mem.addr[1: 0]), .op(op));
 	mem_to_reg mem_to_reg1(in[1], mem, out[1]);
     mem_to_reg mem_to_reg0(in[0], mem, out[0]);

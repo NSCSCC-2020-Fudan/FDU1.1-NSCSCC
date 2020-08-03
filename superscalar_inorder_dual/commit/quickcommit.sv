@@ -35,7 +35,7 @@ module quickcommit(
     exception_t exception_data_ex;
     logic exception_valid_ex, exception_valid_dt, finish_exception;
     exceptioncommit exceptioncommit(.clk, .reset, .flush(flushC), .stall(~finishC),
-    								.mask(exception_valid_dt),
+    								.mask(pc_mC),
 									.in, .out(exception_out),
 									.dmem_addr_ok, .dmem_req, 
 									.dmem_en,
@@ -47,6 +47,7 @@ module quickcommit(
         							.bypass(bypass0),
         							.finish_exception);
 	
+	word_t dmem_addr_dt;
 	logic [1: 0] dmem_size_dt;
 	exec_data_t [1: 0] cdata_in;
     exception_t exception_data_dt;
@@ -61,6 +62,7 @@ module quickcommit(
 					exception_valid_dt <= 1'b0;
 					dmem_en_dt <= 1'b0;
 					dmem_size_dt <= '0;
+					dmem_addr_dt <= '0;
 				end
 			else				
 				if (finishC) 
@@ -70,6 +72,7 @@ module quickcommit(
 						exception_valid_dt <= exception_valid_ex;
 						dmem_en_dt <= dmem_en;
 						dmem_size_dt <= dmem_size;
+						dmem_addr_dt <= dmem_addr;
 					end
 		end        							
 	     
@@ -83,7 +86,7 @@ module quickcommit(
         			      .exception_data_out(exception_data),
         				  .bypass(bypass1),
         				  .dmem_en(dmem_en_dt),
-        				  .dmem_size(dmem_size_dt),
+        				  .dmem_size(dmem_size_dt), .dmem_addr(dmem_addr_dt),
         				  .dmem_rd,
         				  .dmem_data_ok,
         				  .finish_cdata);
