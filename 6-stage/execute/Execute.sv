@@ -81,6 +81,7 @@ module execute (
     assign dataE.pcplus4 = dataD.pcplus4;
     // assign dataE.in_delay_slot = dataD.in_delay_slot;
     assign dataE.in_delay_slot = dataD.in_delay_slot;
+    assign dataE.branch_taken = dataD.branch_taken;
     always_comb begin
         dataE.cp0_cause = dataD.cp0_cause;
         dataE.cp0_status = dataD.cp0_status;

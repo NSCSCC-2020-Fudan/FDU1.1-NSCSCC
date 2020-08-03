@@ -23,6 +23,12 @@ module handshake (
                 INIT: begin
                     if (cpu_req) begin
                         state_new = WAIT_ADDR;
+                        // if (addr_ok) begin
+                        //     state_new = WAIT_DATA;
+                        //     if (data_ok) begin
+                        //         state_new = INIT;
+                        //     end
+                        // end
                     end
                 end
                 WAIT_ADDR: begin
@@ -43,5 +49,5 @@ module handshake (
                 end
             endcase
     end
-    assign req = state == WAIT_ADDR;
+    assign req = state != INIT;
 endmodule

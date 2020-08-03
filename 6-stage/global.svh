@@ -101,6 +101,7 @@ typedef struct packed {
     logic in_delay_slot;
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
+    logic branch_taken;
 } decode_data_t;
 typedef struct packed {
     decoded_instr_t instr;
@@ -122,6 +123,7 @@ typedef struct packed {
     logic in_delay_slot;
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
+    logic branch_taken;
 } exec_data_t;
 
 typedef struct packed {

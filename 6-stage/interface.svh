@@ -3,8 +3,8 @@
 
 `include "mips.svh"
 
-interface pcselect_freg_fetch(output word_t pc);
-    word_t pc_new;
+interface pcselect_freg_fetch();
+    word_t pc_new, pc;
     modport pcselect(output pc_new);
     modport freg(input pc_new, output pc);
     modport fetch(input pc);
@@ -76,7 +76,7 @@ interface cp0_intf();
 
 endinterface
 
-interface hazard_intf(input logic i_data_ok, d_data_ok, output logic stallF, flush_ex);
+interface hazard_intf(input logic i_data_ok, d_data_ok, i_addr_ok, output logic stallF, flush_ex);
     decode_data_t dataD;
     exec_data_t dataE;
     mem_data_t dataM;
@@ -92,11 +92,15 @@ interface hazard_intf(input logic i_data_ok, d_data_ok, output logic stallF, flu
     logic mult_ok;
     // exception_t exception;
     logic exception_valid;
-    modport hazard(input dataD, dataE, dataM, dataW, exception_valid, i_data_ok, d_data_ok, is_eret, mult_ok,
+    logic valid1;
+    logic branchstall;
+    modport hazard(input dataD, dataE, dataM, dataW, exception_valid, 
+                        i_data_ok, d_data_ok, is_eret, mult_ok, i_addr_ok,
+                        valid1,
                    output flushD, flushE, flushM, flushW,
                           stallF, stallD, stallE, stallM,
                           forwardAE, forwardBE, forwardAD, forwardBD,
-                          aluoutM, resultW, hiM, loM, hiW, loW, flush_ex);
+                          aluoutM, resultW, hiM, loM, hiW, loW, flush_ex, branchstall);
     modport freg(input stallF);
     modport dreg(input stallD, flushD);
     modport ereg(input stallE, flushE);
@@ -107,6 +111,8 @@ interface hazard_intf(input logic i_data_ok, d_data_ok, output logic stallF, flu
     modport memory(output dataM, is_eret, input exception_valid);
     modport writeback(output dataW);
     modport excep(output exception_valid);
+    modport fetch(input stallD, flushD, dataD, dataE, flush_ex, branchstall,
+                  output valid1);
 endinterface
 
 interface exception_intf(input logic[5:0]ext_int);

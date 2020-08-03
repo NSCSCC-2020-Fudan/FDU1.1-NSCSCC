@@ -53,6 +53,7 @@ module decode (
 					  .forward(hazard.forwardBD), .srcb(dataD.srcb));
 
 	assign dataD.in_delay_slot = dataF.in_delay_slot;
+	assign dataD.branch_taken = pcselect.branch_taken | pcselect.jump;
     always_comb begin
         dataD.cp0_cause = cp0.cp0_data.cause;
 		dataD.cp0_status = cp0.cp0_data.status;

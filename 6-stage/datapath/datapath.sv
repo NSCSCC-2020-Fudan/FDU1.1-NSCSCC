@@ -14,7 +14,7 @@ module datapath (
     output word_t wb_pc,
     // output logic inst_en,
     output stallF, flush_ex,
-    input i_data_ok, d_data_ok
+    input i_data_ok, d_data_ok, i_addr_ok, d_addr_ok
 );
     // always_ff @(posedge clk) begin
     //     if (~resetn) begin
@@ -23,7 +23,7 @@ module datapath (
     //         i_data_ok <= 1'b1;
     //     end
     // end
-    pcselect_freg_fetch pcselect_freg_fetch(.pc(pc));
+    pcselect_freg_fetch pcselect_freg_fetch();
     fetch_dreg_decode fetch_dreg_decode(.instr_);
     decode_ereg_exec decode_ereg_exec();
     exec_mreg_memory exec_mreg_memory();
@@ -32,16 +32,19 @@ module datapath (
     regfile_intf regfile_intf(.rfwrite);
     hilo_intf hilo_intf();
     cp0_intf cp0_intf();
-    hazard_intf hazard_intf(.i_data_ok, .stallF, .d_data_ok, .flush_ex);
+    hazard_intf hazard_intf(.i_data_ok, .stallF, .d_data_ok, .flush_ex, .i_addr_ok);
     exception_intf exception_intf(.ext_int);
     pcselect_intf pcselect_intf();
     
     Freg freg(.ports(pcselect_freg_fetch.freg), 
-               .clk, .resetn, .hazard(hazard_intf.freg));
+               .clk, .resetn,
+               .hazard(hazard_intf.freg));
     fetch fetch(.in(pcselect_freg_fetch.fetch), 
                  .out(fetch_dreg_decode.fetch), 
                  .pcselect(pcselect_intf.fetch),
-                 .clk, .resetn);
+                 .pc,
+                 .clk, .resetn, .i_data_ok, .d_data_ok, .i_addr_ok, .d_addr_ok,
+                 .hazard(hazard_intf.fetch));
     pcselect pcselect(.out(pcselect_freg_fetch.pcselect),
                        .in(pcselect_intf.pcselect), .clk, .resetn);
     

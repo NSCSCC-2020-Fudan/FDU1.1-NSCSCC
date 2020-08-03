@@ -17,7 +17,7 @@ module hazard (
     decoded_op_t opD, opE, opM, opW;
     logic branchD, jrD;
     logic exception_validM;
-    logic i_data_ok, d_data_ok;
+    logic i_data_ok, d_data_ok, i_addr_ok;
     logic hiwriteM, lowriteM, cp0writeM, hiwriteW, lowriteW, cp0writeW;
     logic hitoregE, lotoregE, cp0toregE;
     alufunc_t alufuncE;
@@ -25,6 +25,8 @@ module hazard (
     logic is_eret;
     creg_addr_t cp0_addrE, cp0_addrM, cp0_addrW;
     logic mult_ok;
+    logic in_delay_slotD, branch_takenE;
+    logic valid1;
     always_comb begin
         if (rsD != 0) begin
             if (rsD == writeregE && regwriteE && (alufuncE == ALU_PASSA)) begin
@@ -105,14 +107,38 @@ module hazard (
     // end
     
 
-    assign stallF = ~i_data_ok | ~d_data_ok | ((lwstall | branchstall) & ~flush_ex)|~mult_ok; // meet eret?
-    assign stallD = ~d_data_ok | ~i_data_ok | ((lwstall | branchstall) & ~flush_ex)|~mult_ok;
-    assign stallE = ~d_data_ok | (~i_data_ok & flush_ex) | ~mult_ok;
-    assign stallM = ~d_data_ok | (~i_data_ok & flush_ex);
-    assign flushD = flush_ex;
-    assign flushE = lwstall | branchstall | flush_ex | ~i_data_ok;
-    assign flushM = flush_ex | ~mult_ok;
-    assign flushW = flush_ex | ~d_data_ok;
+    // assign stallF = (~i_addr_ok & ~ports.dataD.branch_taken) | ~d_data_ok | ((lwstall | branchstall) & ~flush_ex) | ~mult_ok; // meet eret?
+    // assign stallD = ~d_data_ok | ~i_data_ok | ((lwstall | branchstall) & ~flush_ex) | ~mult_ok | (~i_addr_ok & ports.dataD.branch_taken);
+    // assign stallE = ~d_data_ok | (~i_data_ok & (flush_ex)) | ~mult_ok;
+    // assign stallM = ~d_data_ok | (~i_data_ok & flush_ex);
+    // assign flushD = flush_ex | (in_delay_slotD & branch_takenE);
+    // assign flushE = lwstall | branchstall | flush_ex | ~i_data_ok;
+    // assign flushM = flush_ex | ~mult_ok;
+    // assign flushW = flush_ex | ~d_data_ok;
+
+    assign stallF = //(~i_addr_ok & valid1) | 
+                    lwstall | branchstall |
+                    ~d_data_ok 
+                    ;
+
+    assign stallD = ~i_data_ok | 
+                    lwstall | branchstall |
+                    ~d_data_ok 
+                    ;
+    assign stallE = ~d_data_ok | ~mult_ok
+                    ;
+    assign stallM = ~d_data_ok
+                    ;
+    assign flushD = 1'b0;
+    assign flushE = ~i_data_ok |
+                    lwstall | branchstall
+                    ;
+    assign flushM = flush_ex |
+                    ~mult_ok
+                    ;
+    assign flushW = ~d_data_ok | 
+                    flush_ex
+                    ;
 
     assign rtD = ports.dataD.instr.rt;
     assign rsD = ports.dataD.instr.rs;
@@ -135,6 +161,10 @@ module hazard (
     assign exception_validM = ports.exception_valid;
     assign i_data_ok = ports.i_data_ok;
     assign d_data_ok = ports.d_data_ok;
+    assign i_addr_ok = ports.i_addr_ok;
+    assign in_delay_slotD = ports.dataD.in_delay_slot;
+    assign branch_takenE = ports.dataE.branch_taken;
+    assign valid1 = ports.valid1;
     assign hiwriteM = ports.dataM.instr.ctl.hiwrite;
     assign lowriteM = ports.dataM.instr.ctl.lowrite;
     assign cp0writeM = ports.dataM.instr.ctl.cp0write;
@@ -172,4 +202,5 @@ module hazard (
     assign ports.loW = ports.dataW.lo;
     assign pcselect.stallF = stallF;
     assign ports.flush_ex = flush_ex;
+    assign ports.branchstall = branchstall;
 endmodule
