@@ -70,8 +70,8 @@ module CacheLayer #(
     /**
      * interface converter
      */
-    sramx_req_t  imem_sramx_req,  m_dmem_req,  dmem_req;
-    sramx_resp_t imem_sramx_resp, m_dmem_resp, dmem_resp;
+    sramx_req_t  imem_sramx_req,  dmem_req;
+    sramx_resp_t imem_sramx_resp, dmem_resp;
     ibus_req_t   imem_ibus_req;
     ibus_resp_t  imem_ibus_resp;
 
@@ -84,14 +84,14 @@ module CacheLayer #(
     assign inst_data_ok         = imem_sramx_resp.data_ok;
     assign inst_rdata           = imem_sramx_resp.rdata;
 
-    assign m_dmem_req.req   = data_req;
-    assign m_dmem_req.wr    = data_wr;
-    assign m_dmem_req.size  = data_size;
-    assign m_dmem_req.addr  = data_addr;
-    assign m_dmem_req.wdata = data_wdata;
-    assign data_addr_ok     = m_dmem_resp.addr_ok;
-    assign data_data_ok     = m_dmem_resp.data_ok;
-    assign data_rdata       = m_dmem_resp.rdata;
+    assign dmem_req.req   = data_req;
+    assign dmem_req.wr    = data_wr;
+    assign dmem_req.size  = data_size;
+    assign dmem_req.addr  = data_addr;
+    assign dmem_req.wdata = data_wdata;
+    assign data_addr_ok   = dmem_resp.addr_ok;
+    assign data_data_ok   = dmem_resp.data_ok;
+    assign data_rdata     = dmem_resp.rdata;
 
     assign imem_ibus_req.req  = inst_ibus_req;
     assign imem_ibus_req.addr = inst_ibus_addr;
@@ -99,27 +99,6 @@ module CacheLayer #(
     assign inst_ibus_data_ok  = imem_ibus_resp.data_ok;
     assign inst_ibus_data     = imem_ibus_resp.data;
     assign inst_ibus_index    = imem_ibus_resp.index;
-
-    if (USE_BUFFER == 1) begin: with_lsbuf
-        sramx_req_t  buf_dmem_req;
-        sramx_resp_t buf_dmem_resp;
-
-        LoadStoreBuffer #(
-            .BUFFER_LENGTH(LSBUF_LENGTH)
-        ) ls_buffer_inst(
-            .clk(aclk), .resetn(aresetn),
-            .m_req(m_dmem_req),
-            .m_resp(m_dmem_resp),
-            .s_req(buf_dmem_req),
-            .s_resp(buf_dmem_resp)
-        );
-
-        assign dmem_req      = buf_dmem_req;
-        assign buf_dmem_resp = dmem_resp;
-    end else begin: without_lsbuf
-        assign dmem_req    = m_dmem_req;
-        assign m_dmem_resp = dmem_resp;
-    end
 
     /**
      * address translation & request dispatching
@@ -196,7 +175,7 @@ module CacheLayer #(
             .OFFSET_BITS(DCACHE_OFFSET_BITS)
         ) dcache_inst(
             .clk(aclk), .resetn(aresetn),
-            .dbus_req_vaddr(dmem_req.addr),
+            .dbus_req_vaddr(data_addr),
             .dbus_req, .dbus_resp,
             .cbus_req(dcbus_req),
             .cbus_resp(dcbus_resp)
@@ -231,13 +210,36 @@ module CacheLayer #(
     /**
      * uncached converter
      */
+    sramx_req_t  mux_uncached_req;
+    sramx_resp_t mux_uncached_resp;
+
+    if (USE_BUFFER == 1) begin: with_lsbuf
+        sramx_req_t  buf_uncached_req;
+        sramx_resp_t buf_uncached_resp;
+
+        LoadStoreBuffer #(
+            .BUFFER_LENGTH(LSBUF_LENGTH)
+        ) ls_buffer_inst(
+            .clk(aclk), .resetn(aresetn),
+            .m_req(uncached_req),
+            .m_resp(uncached_resp),
+            .s_req(buf_uncached_req),
+            .s_resp(buf_uncached_resp)
+        );
+
+        assign mux_uncached_req  = buf_uncached_req;
+        assign buf_uncached_resp = mux_uncached_resp;
+    end else begin: without_lsbuf
+        assign mux_uncached_req = uncached_req;
+        assign uncached_resp    = mux_uncached_resp;
+    end
+
     axi_req_t  axi_uncached_req;
     axi_resp_t axi_uncached_resp;
 
     SRAMxToAXI axi_uncached_inst(
         .clk(aclk), .resetn(aresetn),
-        .sramx_req(uncached_req),
-        .sramx_resp(uncached_resp),
+        .sramx_req(mux_uncached_req), .sramx_resp(mux_uncached_resp),
         .axi_req(axi_uncached_req),
         .axi_resp(axi_uncached_resp)
     );
