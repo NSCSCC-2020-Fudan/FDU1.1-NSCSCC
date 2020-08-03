@@ -46,10 +46,10 @@ module memory (
     writedata writedata(.addr(aluoutM[1:0]), .op(op), ._wd(dataE.writedata),.en(wen), .wd(writedataM));
     // readdata readdata(._rd(dram.rd), .op(op), .addr(aluoutM[1:0]), .rd(readdataM));
     assign ren = dataE.instr.ctl.memtoreg;
-    assign mread.ren = ren & ~exception_load;
+    assign mread.ren = ren & ~hazard.exception_valid;
     assign mread.addr = aluoutM;
     assign mread.size = (op == LW) ? 2'b10 : (op == LH ? 2'b01:2'b00); 
-    assign mwrite.wen = wen & ~exception_save;
+    assign mwrite.wen = wen & ~hazard.exception_valid;
     assign mwrite.addr = aluoutM;
     assign mwrite.wd = writedataM;
     assign mwrite.size = (op == SW) ? 2'b10 : (op == SH ? 2'b01:2'b00);

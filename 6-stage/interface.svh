@@ -104,7 +104,7 @@ interface hazard_intf(input logic i_data_ok, d_data_ok, output logic stallF, flu
     modport wreg(input flushW);
     modport decode(output dataD, input aluoutM, resultW, forwardAD, forwardBD, hiM, loM, hiW, loW, alusrcaE, dataE, dataM);
     modport exec(output dataE, alusrcaE, mult_ok, input aluoutM, resultW, forwardAE, forwardBE, hiM, loM, hiW, loW);
-    modport memory(output dataM, is_eret);
+    modport memory(output dataM, is_eret, input exception_valid);
     modport writeback(output dataW);
     modport excep(output exception_valid);
 endinterface

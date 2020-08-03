@@ -21,7 +21,7 @@ module handshake (
         state_new = state;
         case (state)
                 INIT: begin
-                    if (cpu_req & resetn) begin
+                    if (cpu_req) begin
                         state_new = WAIT_ADDR;
                     end
                 end

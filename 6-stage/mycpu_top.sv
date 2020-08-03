@@ -1,4 +1,4 @@
-// `include "mips.svh"
+`include "mips.svh"
 
 
 // axi
@@ -75,7 +75,7 @@ module mycpu_top #(
     typedef logic [_IBUS_DATA_WIDTH - 1:0] _ibus_data_t;
     typedef logic [_IBUS_INDEX_BITS - 1:0] _ibus_index_t;
     logic         inst_ibus_req;
-    addr_t        inst_ibus_addr;
+    m_addr_t        inst_ibus_addr;
     logic         inst_ibus_addr_ok;
     logic         inst_ibus_data_ok;
     _ibus_data_t  inst_ibus_data;

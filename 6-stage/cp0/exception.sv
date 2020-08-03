@@ -74,7 +74,7 @@ module exception(
     // end
     // assign exception.location = `EXC_BASE + offset;
     assign exception.location = `EXC_ENTRY;
-    assign exception.valid = (interrupt_valid | exception_valid) & ~resetn;
+    assign exception.valid = (interrupt_valid | exception_valid) & resetn;
     assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exccode);
     assign exception.pc = pc;
     assign exception.in_delay_slot = in_delay_slot;
