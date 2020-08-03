@@ -31,7 +31,7 @@ BEFORE_FRQ=${BEFORE_FRQ:=50}
 FRQ=${FRQ:=100}
 VIVADO_PATH=${VIVADO_PATH:=vivado}
 PRJ_PATH=${PRJ_PATH:="../nscscc2020_group_v0.01/perf_test_v0.01/soc_axi_perf/run_vivado/mycpu_prj1"}
-THRESHOLD=${THRESHOLD:=0.5}
+THRESHOLD=${THRESHOLD:=0.3}
 LOG_PATH="$PRJ_PATH/mycpu.runs/impl_1/runme.log"
 XPR_PATH="$PRJ_PATH/mycpu.xpr"
 
@@ -46,15 +46,15 @@ function run_iterations {
     echo "[DYNAMIC] generate all IP"
     $VIVADO_PATH -mode tcl -source scripts/generate_all_ips.tcl $XPR_PATH
     echo "[DYNAMIC] run implementation"
-    $VIVADO_PATH -mode tcl -source scripts/run_implementation.tcl $XPR_PATH | tee "$FRQ.log"
+    $VIVADO_PATH -mode tcl -source scripts/run_implementation.tcl $XPR_PATH
 }
 
 while :
 do
     run_iterations
-    WNS=$(grep -oP 'Post Routing Timing Summary \| WNS=\K[^ ]+' "$FRQ.log")
+    WNS=$(grep -oP 'Post Routing Timing Summary \| WNS=\K[^ ]+' $LOG_PATH)
     echo "frequency:$FRQ WNS: $WNS" >> freq.log
-    if  [$FRQ -lt `expr $THRESHOLD + $BEFORE_FRQ`]
+    if  [$WNS -lt $THRESHOLD]
     then
         break
     fi
