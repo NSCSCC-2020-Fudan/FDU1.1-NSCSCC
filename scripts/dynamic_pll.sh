@@ -52,7 +52,7 @@ function run_iterations {
 while :
 do
     run_iterations
-    WNS=${grep -oP 'Post Routing Timing Summary \| WNS=\K[^ ]+' "$FRQ.log"}
+    WNS=$(grep -oP 'Post Routing Timing Summary \| WNS=\K[^ ]+' "$FRQ.log")
     echo "frequency:$FRQ WNS: $WNS" >> freq.log
     if  [$FRQ -lt `expr $THRESHOLD + $BEFORE_FRQ`]
     then
