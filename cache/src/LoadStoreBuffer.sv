@@ -70,9 +70,10 @@ module LoadStoreBuffer #(
         end
 
         for (int i = 0; i < BUFFER_LENGTH; i++) begin
-            /*unique*/ if (fifo_push && head == index_t'(i))
+            /*unique*/ if (fifo_push && head == index_t'(i)) begin
                 fifo[i]     <= m_req;
-            else if (tail == index_t'(i) && s_resp.addr_ok) begin
+                fifo[i].req <= fifo_empty ? ~s_resp.addr_ok : 1;
+            end else if (tail == index_t'(i) && s_resp.addr_ok) begin
                 fifo[i]     <= fifo[i];
                 fifo[i].req <= 0;
             end else
@@ -96,5 +97,5 @@ module LoadStoreBuffer #(
     assign m_resp.addr_ok = fifo_ready;
     assign m_resp.data_ok = tail_elem.wr ? last_data_ok : s_resp.data_ok;
 
-    assign s_req = fifo_empty ? 0 : tail_elem;
+    assign s_req = fifo_empty ? m_req : tail_elem;
 endmodule

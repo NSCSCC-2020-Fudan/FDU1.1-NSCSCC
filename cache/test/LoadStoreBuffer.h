@@ -36,14 +36,7 @@ public:
     }
 
     void pre_clock_hook() {
-        if (inst->s_req_x_req) {
-            inst->s_resp_x_addr_ok = randu(0, 3) != 3;
-
-            if (inst->s_resp_x_addr_ok)
-                _fifo.push(current(inst->s_req_x_addr, true));
-        } else
-            inst->s_resp_x_addr_ok = 0;
-
+        // "data_ok" is delayed by at least one clock cycle.
         if (!_fifo.empty()) {
             inst->s_resp_x_data_ok = randu(0, 1) == 0;
 
@@ -55,6 +48,14 @@ public:
             }
         } else
             inst->s_resp_x_data_ok = 0;
+
+        if (inst->s_req_x_req) {
+            inst->s_resp_x_addr_ok = randu(0, 3) != 3;
+
+            if (inst->s_resp_x_addr_ok)
+                _fifo.push(current(inst->s_req_x_addr, true));
+        } else
+            inst->s_resp_x_addr_ok = 0;
     }
 
     void clock_trigger() {
