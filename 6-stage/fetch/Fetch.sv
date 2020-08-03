@@ -15,13 +15,13 @@ module fetch (
     logic exception_instr;
     assign pc = ((~hazard.stallD | hazard.flushD) & valid1) ? in.pc : pcplus4_2 - 4;
     adder#(32) pcadder(pc, 32'b100, pcplus4);
-    assign exception_instr = (pcplus4_2[1:0] != '0);
+    assign exception_instr = (dataF.pcplus4[1:0] != '0);
     logic valid1, valid2, valid2_self;
     always_ff @(posedge clk) begin
         if (~resetn) begin
             pcplus4_2 <= 32'hbfc00004;
             valid2 <= 1'b1;
-        end else if(i_data_ok & d_data_ok)begin
+        end else if(~hazard.stallD)begin
             pcplus4_2 <= pcplus4;
             valid2 <= valid1;
         end
@@ -36,7 +36,7 @@ module fetch (
     // end
     assign valid2_self = d_data_ok;
     assign dataF.instr_ = out.instr_ & {32{valid2 & valid2_self}};
-    assign dataF.pcplus4 = pcplus4_2;
+    assign dataF.pcplus4 = pcplus4_2 & {32{valid2 & valid2_self}};
     assign dataF.exception_instr = exception_instr;
     assign out.dataF_new = dataF;
     assign pcselect.pcplus4F = pcplus4;

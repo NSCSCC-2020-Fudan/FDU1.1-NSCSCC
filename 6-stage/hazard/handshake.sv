@@ -49,5 +49,5 @@ module handshake (
                 end
             endcase
     end
-    assign req = state != INIT;
+    assign req = state == WAIT_ADDR;
 endmodule

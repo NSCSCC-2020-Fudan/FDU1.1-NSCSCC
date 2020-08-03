@@ -117,21 +117,26 @@ module hazard (
     // assign flushW = flush_ex | ~d_data_ok;
 
     assign stallF = //(~i_addr_ok & valid1) | 
-                    lwstall | branchstall |
-                    ~d_data_ok 
+                    ((lwstall | branchstall) & ~flush_ex) |
+                    ~d_data_ok |
+                    (~mult_ok & ~flush_ex)
                     ;
 
     assign stallD = ~i_data_ok | 
-                    lwstall | branchstall |
-                    ~d_data_ok 
+                    ((lwstall | branchstall) & ~flush_ex) |
+                    ~d_data_ok |
+                    (~mult_ok & ~flush_ex)
                     ;
-    assign stallE = ~d_data_ok | ~mult_ok
+    assign stallE = ~d_data_ok | (~mult_ok & ~flush_ex) | 
+                    (~i_data_ok & flush_ex)
                     ;
-    assign stallM = ~d_data_ok
+    assign stallM = ~d_data_ok | 
+                    (~i_data_ok & flush_ex)
                     ;
-    assign flushD = 1'b0;
+    assign flushD = flush_ex;
     assign flushE = ~i_data_ok |
-                    lwstall | branchstall
+                    lwstall | branchstall |
+                    flush_ex
                     ;
     assign flushM = flush_ex |
                     ~mult_ok
