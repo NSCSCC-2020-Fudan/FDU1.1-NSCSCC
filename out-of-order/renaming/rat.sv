@@ -8,7 +8,7 @@ module rat
     retire_intf.rat retire
 );
     // table
-    table_t mapping_table, mapping_table_new;
+    table_t mapping_table, mapping_table_new, mapping_table_temp;
 
     // write
     // logic [WRITE_PORTS-1:0] wen;
@@ -39,7 +39,7 @@ module rat
 
     // write
     always_comb begin
-        mapping_table_new = mapping_table;
+        mapping_table_new = mapping_table_temp;
         // retire
         for (int i=0; i<RELEASE_PORTS; i++) begin
             for (int j=0; j<TABLE_LEN; j++) begin
@@ -63,24 +63,7 @@ module rat
             end
         end
         // write
-        for (int i=0; i<MACHINE_WIDTH; i++) begin
-            renaming.renaming_info[i].src1.valid = mapping_table_new[renaming.instr[i].src1].valid;
-            renaming.renaming_info[i].src1.id = mapping_table_new[renaming.instr[i].src1].id;
-            renaming.renaming_info[i].src2.valid = mapping_table_new[renaming.instr[i].src2].valid;
-            renaming.renaming_info[i].src2.id = mapping_table_new[renaming.instr[i].src2].id;
-            for (int j=0; j<TABLE_LEN; j++) begin
-                if (renaming.instr[i].valid && renaming.instr[i].dst != 0 && renaming.instr[i].dst == j) begin
-                    mapping_table_new[j].id = renaming.rob_addr_new[i];
-                    mapping_table_new[j].valid = 1'b1;
-                end
-            end
-            if (renaming.instr[i].valid && renaming.instr[i].dst == 7'b1000011) begin
-                mapping_table_new[66].id = renaming.rob_addr_new[i];
-                mapping_table_new[66].valid = 1'b1;
-                mapping_table_new[65].id = renaming.rob_addr_new[i];
-                mapping_table_new[65].valid = 1'b1;
-            end
-        end
+
         // for (int i=0; i<TABLE_LEN; i++) begin
         //     for (int j=0; j<MACHINE_WIDTH; j++) begin
         //         renaming.renaming_info[j].src1.valid = mapping_table_new[renaming.instr[j].src1].valid;
@@ -94,13 +77,34 @@ module rat
         //     end
         // end
     end
+    always_comb begin
+        mapping_table_temp = mapping_table;
+        for (int i=0; i<MACHINE_WIDTH; i++) begin
+            renaming.renaming_info[i].src1.valid = mapping_table_temp[renaming.instr[i].src1].valid;
+            renaming.renaming_info[i].src1.id = mapping_table_temp[renaming.instr[i].src1].id;
+            renaming.renaming_info[i].src2.valid = mapping_table_temp[renaming.instr[i].src2].valid;
+            renaming.renaming_info[i].src2.id = mapping_table_temp[renaming.instr[i].src2].id;
+            for (int j=0; j<TABLE_LEN; j++) begin
+                if (renaming.instr[i].valid && renaming.instr[i].dst != 0 && renaming.instr[i].dst == j) begin
+                    mapping_table_temp[j].id = renaming.rob_addr_new[i];
+                    mapping_table_temp[j].valid = 1'b1;
+                end
+            end
+            if (renaming.instr[i].valid && renaming.instr[i].dst == 7'b1000011) begin
+                mapping_table_temp[66].id = renaming.rob_addr_new[i];
+                mapping_table_temp[66].valid = 1'b1;
+                mapping_table_temp[65].id = renaming.rob_addr_new[i];
+                mapping_table_temp[65].valid = 1'b1;
+            end
+        end
+    end
     // read; mode = write first
     for (genvar i=0; i<MACHINE_WIDTH; i++) begin
         // assign renaming.renaming_info[i].src1.valid = mapping_table[renaming.instr[i].src1].valid;
         // assign renaming.renaming_info[i].src1.id = mapping_table[renaming.instr[i].src1].id;
         // assign renaming.renaming_info[i].src2.valid = mapping_table[renaming.instr[i].src2].valid;
         // assign renaming.renaming_info[i].src2.id = mapping_table[renaming.instr[i].src2].id;
-        assign renaming.renaming_info[i].dst = mapping_table_new[renaming.instr[i].dst];
+        assign renaming.renaming_info[i].dst = mapping_table_temp[renaming.instr[i].dst];
     end
 
 

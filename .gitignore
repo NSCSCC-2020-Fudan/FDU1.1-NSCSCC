@@ -6,5 +6,5 @@ vivado/*
 .vscode/
 .Xil/
 6-stage/*
-out-of-order(rob)/execute/mult_gen_0/*
-!out-of-order(rob)/execute/mult_gen_0/*.sci
+out-of-order/execute/mult_gen_0/*
+!out-of-order/execute/mult_gen_0/*.sci

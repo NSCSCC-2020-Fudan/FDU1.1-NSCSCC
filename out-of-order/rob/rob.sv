@@ -56,7 +56,7 @@ module rob
     assign exception_valid = 1'b0;
 
     logic branch_taken;
-    assign head_ptr_b = head_ptr_new - 2;
+    assign head_ptr_b = head_ptr - 2;
     assign head_addr_b = head_ptr_b[ROB_ADDR_LEN-1:0];
     assign branch_taken = rob_table[head_addr_b].data.branch.branch_taken &&
                           (rob_table[head_addr_b].ctl.branch ||
