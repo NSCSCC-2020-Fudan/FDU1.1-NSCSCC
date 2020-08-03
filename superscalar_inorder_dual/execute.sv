@@ -15,8 +15,25 @@ module execute(
     
     logic [1: 0] FU_finish;
     exec_data_t [1: 0] FU_result;
-    FU FU1 (clk, reset, flushE, first_cycpeE, in[1], FU_result[1], FU_finish[1], mul_timeok, div_timeok);
-    FU FU0 (clk, reset, flushE, first_cycpeE, in[0], FU_result[0], FU_finish[0], mul_timeok, div_timeok);
+    
+    logic multok, multen0, multen1;
+    word_t multsrca1, multsrcb1, multsrca0, multsrcb0, hi, lo;
+    decoded_op_t mult_op, mult_op1, mult_op0;
+    FU FU1 (clk, reset, flushE, first_cycpeE, 
+    		in[1], FU_result[1], FU_finish[1], 
+    		mul_timeok, div_timeok,
+    		multsrca1, multsrcb1, mult_op1, multen1,
+    		hi, lo, multok);
+    FU FU0 (clk, reset, flushE, first_cycpeE, 
+    		in[0], FU_result[0], FU_finish[0], 
+    		mul_timeok, div_timeok,
+    		multsrca0, multsrcb0, mult_op0, multen0,
+    		hi, lo, multok);
+    word_t multsrca, multsrcb;
+    assign multsrca = (multen1) ? (multsrca1) : (multsrca0);
+    assign multsrcb = (multen1) ? (multsrcb1) : (multsrcb0);
+    assign mult_op = (multen1) ? (mult_op1) : (mult_op0);
+    mult mult(clk, reset, flushE, multsrca, multsrcb, mult_op, hi, lo, multok);
     
     logic finish;
     assign finish = FU_finish[1] && FU_finish[0];

@@ -5,7 +5,13 @@ module FU(
         input issue_data_t in,
         output exec_data_t out,
         output logic finish,
-        input logic mul_timeok, div_timeok
+        input logic mul_timeok, div_timeok,
+        //execute
+        output word_t multsrca, multsrcb,
+        output decoded_op_t mult_op,
+        output logic multen,
+        input word_t hi, lo, multok
+        //mult
     );
 
     decoded_op_t op;
@@ -20,13 +26,18 @@ module FU(
     assign alusrcaE = (in.instr.ctl.shamt_valid)    ? ({27'b0, in.instr.shamt}) : (in.srca);
     assign alusrcbE = (in.instr.ctl.alusrc == REGB) ? (in.srcb)                 : (in.instr.extended_imm);
 
-    word_t hi, lo, result;
-    logic exception_of, taken, multok, multfinish;
+    word_t result;
+    logic exception_of, taken, multfinish;
     /*
     DIVU DIVU (alusrcaE, alusrcbE, op, divtype, hi_div, lo_div, div_finish);
     MULU MULU (alusrcaE, alusrcbE, op, multype, hi_mul, lo_mul, mul_finish);
     */
-    mult mult(clk, reset, flushE, alusrcaE, alusrcbE, op, hi, lo, multok);
+    //mult mult(clk, reset, flushE, alusrcaE, alusrcbE, op, hi, lo, multok);
+    assign multsrca = alusrcaE;
+    assign multsrcb = alusrcbE;
+    assign mult_op = op;
+    
+    
     ALU ALU (alusrcaE, alusrcbE, func, result, exception_of);
     JUDGE JUDGE(alusrcaE, alusrcbE, in.instr.ctl.branch_type, taken);
     assign multfinish = (multok & ~first_cycpeE);

@@ -10,9 +10,9 @@ module datapath(
         output logic dwt,
         output word_t daddr, dwd,
         input word_t drd,
-        output logic den,
+        output logic den, dreq,
         output logic [1: 0] dsize,     
-        input logic ddataOK,
+        input logic ddataOK, daddrOK,
         //dmem
         output rf_w_t [1: 0] rfw_out,
         output word_t [1: 0] rt_pc_out,
@@ -120,8 +120,29 @@ module datapath(
                      mul_timeok, div_timeok);
     
     logic first_cycleC;
+    bypass_upd_t commitex_bypass, commitdt_bypass;
     creg creg (clk, reset, stallC, flushC,
                exec_data_out, commit_data_in, first_cycleC);
+	quickcommit quickcommit (.clk, .reset, .flushC, 
+                   			 .in(commit_data_in),
+                   			 .out(commit_data_out), 
+                   			 .finishC, .pc_mC,
+                   			 .dmem_wt(dwt),
+        					 .dmem_addr(daddr), .dmem_wd(dwd), 
+        					 .dmem_rd(drd),
+        					 .dmem_en(den),
+        					 .dmem_size(dsize),     
+        					 .dmem_data_ok(ddataOK),
+        					 .dmem_req(dreq), .dmem_addr_ok(daddrOK),
+                   			 .fetch(pc_new),
+                   			 .bypass0(commitex_bypass), .bypass1(commitdt_bypass),
+                   			 .ext_int, 
+                   			 .timer_interrupt,
+                   			 .exception_valid, 
+                   			 .exception_data(exceptionE),
+                   			 .is_eret,
+                   			 .pc_commitC, .predict_wen(predict_wenC), .destpc_commitC);              
+    /*
     commit commit (clk, reset,
                    commit_data_in,
                    commit_data_out,
@@ -139,6 +160,7 @@ module datapath(
                    exceptionE,
                    is_eret,
                    pc_commitC, predict_wenC, destpc_commitC);
+	*/                   
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,
@@ -153,7 +175,7 @@ module datapath(
                    cp0_addrI, cp0_dataI,
                    data_hazardI,
                    exec_bypass,
-                   commit_bypass,
+                   /*commit_bypass*/commitex_bypass, commitdt_bypass,
                    retire_bypass,
                    reg_addrW, reg_dataW,
                    hiloreadW, hiW, loW,
@@ -179,7 +201,7 @@ module datapath(
             exceptionE,
             cp0_causeW, cp0_statusW, cp0_epcW);        
             
-    cp0status_bypass cp0status_bypass(exec_bypass, commit_bypass, retire_bypass, 
+    cp0status_bypass cp0status_bypass(exec_bypass, commitex_bypass, commitdt_bypass/*commit_bypass*/, retire_bypass, 
                                       cp0_statusW, cp0_causeW, cp0_epcW,
                                       cp0_statusI, cp0_causeI, cp0_epcI);
                                       

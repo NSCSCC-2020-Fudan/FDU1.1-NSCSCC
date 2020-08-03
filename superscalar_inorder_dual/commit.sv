@@ -130,9 +130,6 @@ module commit(
     
     assign is_eret = (_out[1].instr.op == ERET) | (_out[0].instr.op == ERET);
     
-    logic judge;
-    assign judge = (in[1].instr.ctl.branch | in[1].instr.ctl.jump) & (~fetch.jump & ~fetch.branch);
-      
     assign pc_commitC = in[1].pcplus4 - 'd4;
     assign predict_wen = in[1].instr.ctl.branch || ((in[1].instr.ctl.jump) && (~in[1].instr.ctl.jr));
     assign destpc_commitC = {in[1].taken || (in[1].instr.ctl.jump & ~in[1].instr.ctl.jr), 

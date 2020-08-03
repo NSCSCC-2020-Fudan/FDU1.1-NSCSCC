@@ -48,10 +48,12 @@ module mycpu #(
     
     datapath datapath(.clk(clk_), .reset(resetn), .ext_int, 
                       .iaddr(iaddr), .idata({32'b0, inst_rdata}), .ihit(1'b0), 
-                      .idataOK(i_data_ok), .ddataOK(data_data_ok),
+                      .idataOK(i_data_ok), .ddataOK(data_data_ok), .daddrOK(data_addr_ok),
                       // .iaddrOK(inst_addr_ok),
-                      .dwd(dwd), .den(den), .dwt(dwt), .daddr(vaddr_d), .dsize(dsize),
-                      .rfw_out(rfw_out), .drd(data_rdata), .rt_pc_out(rt_pc_out),
+                      .den(den), .dwt(data_wr), .dreq(data_req), 
+                      .daddr(vaddr_d), .dsize(data_size),
+                      .dwd(data_wdata), .drd(data_rdata), 
+                      .rfw_out(rfw_out), .rt_pc_out(rt_pc_out),
                       .stallF_out(stallF), .flush_ex(flushE),
                       .inst_ibus_req, .inst_ibus_addr_ok, 
                       .inst_ibus_data_ok, .inst_ibus_data, .inst_ibus_index);
@@ -70,7 +72,7 @@ module mycpu #(
     */                          
     // assign data_req = (mread.ren) | (mwrite.wen);
 //    assign data_req = den;
-    assign data_wr = dwt;
+    //assign data_wr = dwt;
     //assign vaddr_d = daddr;
     assign vaddr_i = iaddr;
 
@@ -106,12 +108,14 @@ module mycpu #(
         assign data_addr = vaddr_d;
         assign inst_addr = vaddr_i;
     end
-
+    
+	/*
     assign data_wdata = dwd;
     assign data_size = dsize;
     handshake d_handshake(.clk, .reset(resetn), 
                           .cpu_req(den), .addr_ok(data_addr_ok), .data_ok(data_data_ok), 
                           .cpu_data_ok(d_data_ok), .req(data_req));
+	*/                          
         
     rfwrite_queue rfwrite_queue(.clk, .reset(resetn),
                                 .rfw(rfw_out), .rt_pc(rt_pc_out),
