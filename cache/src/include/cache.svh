@@ -14,6 +14,6 @@ parameter int DCACHE_IDX_BITS    = 3;  // id bits
 parameter int DCACHE_INDEX_BITS  = 6;  // index bits (set)
 parameter int DCACHE_OFFSET_BITS = 4;  // offset bits
 
-parameter int LSBUF_LENGTH = 16;  // length of load-store buffer for uncached ops
+parameter int LSBUF_LENGTH = 8;  // length of load-store buffer for uncached ops
 
 `endif
