@@ -9,12 +9,11 @@ module SRAMxToAXI(
     output axi_req_t    axi_req,
     input  axi_resp_t   axi_resp
 );
-    localparam int AR = 4;
-    localparam int R  = 3;
-    localparam int AW = 2;
-    localparam int W  = 1;
-    localparam int B  = 0;
-    typedef logic [4:0] chan_t;
+    localparam int AR = 3;
+    localparam int R  = 2;
+    localparam int AW = 1;
+    localparam int W  = 0;
+    typedef logic [3:0] chan_t;
 
     typedef struct packed {
         addr_t         addr;
@@ -42,7 +41,7 @@ module SRAMxToAXI(
     assign new_req.wdata = sramx_req.wdata;
 
     chan_t next_issue;
-    assign next_issue = sramx_req.wr ? 5'b00111 : 5'b11000;
+    assign next_issue = sramx_req.wr ? 4'b0011 : 4'b1100;
 
     // interactions with AXI
     chan_t in_issue;
@@ -56,8 +55,8 @@ module SRAMxToAXI(
         in_issue[AR] && axi_resp.ar.ready,
         in_issue[R ] && axi_resp.r .valid,
         in_issue[AW] && axi_resp.aw.ready,
-        in_issue[W ] && axi_resp.w .ready,
-        in_issue[B ] && axi_resp.b .valid
+        in_issue[W ] && axi_resp.w .ready
+        // in_issue[B ] && axi_resp.b .valid
     };
     assign remain = in_issue ^ handshake;
 
@@ -93,9 +92,10 @@ module SRAMxToAXI(
             axi_req.w.last  = 1;
         end
 
-        if (in_issue[B]) begin
-            axi_req.b.ready = 1;
-        end
+        // if (in_issue[B]) begin
+        //     axi_req.b.ready = 1;
+        // end
+        axi_req.b.ready = 1;  // ignore B channel
     end
 
     always_ff @(posedge clk)
@@ -110,4 +110,6 @@ module SRAMxToAXI(
     end else begin
         in_issue  <= 0;
     end
+
+    logic __unused_ok = &{1'b0, axi_resp, 1'b0};
 endmodule

@@ -43,25 +43,27 @@ module CacheBusToAXI #(
     typedef logic [29:0] _u30_t;
     assign addr_step = {_u30_t'(axi_len) + 30'b1, 2'b00};
 
+    // detect completion
+    logic is_last, is_final;
+    assign is_last  = len_cnt == 0;
+    assign is_final = is_last && round_cnt == 0;
+
     // NOTE: axready may be asserted even if axvalid is deasserted.
     // `transaction_ok`: DO RESPECT THE B CHANNEL! QAQ
+    // 2020.8.4: B channel?
     logic addr_ok, transaction_ok;
     assign addr_ok        = cbus_req.is_write ? axi_resp.aw.ready : axi_resp.ar.ready;
     // assign transaction_ok = axi_req.b.ready && axi_resp.b.valid;
-    assign transaction_ok = axi_resp.b.valid;
+    // assign transaction_ok = axi_resp.b.valid;
+    assign transaction_ok = is_final && axi_resp.w.ready;
 
     // state variables
-    enum logic [1:0] {
+    enum /*ogic [1:0]*/ {
         IDLE, TRANSFER, REQUEST, WAITING
     } state;
     addr_t    current_addr;
     round_t   round_cnt;
     axi_len_t len_cnt;
-
-    // detect completion
-    logic is_last, is_final;
-    assign is_last  = len_cnt == 0;
-    assign is_final = is_last && round_cnt == 0;
 
     // since we never issue both AR & AW request in one clock cycle,
     // it's okay to ignore `cbus_req.is_write`.
@@ -75,6 +77,7 @@ module CacheBusToAXI #(
         transaction_ok : rw_handshake;
 
     // only in WAITING state, `transaction_ok` will be asserted.
+    // or in the last beat of TRANSFER state.
     assign cbus_resp.last = is_final &&
         (cbus_req.is_write ? transaction_ok : rw_handshake);
 
@@ -88,6 +91,7 @@ module CacheBusToAXI #(
 
     always_comb begin
         axi_req = 0;
+        axi_req.b.ready = 1;  // ignore B channel
 
         // "verilator" updated to 4.036, which doesn't accept unique0
         unique case (state)
@@ -131,7 +135,7 @@ module CacheBusToAXI #(
             end
 
             WAITING: begin
-                axi_req.b.ready = 1;
+                // axi_req.b.ready = 1;
             end
         endcase
     end
@@ -152,9 +156,11 @@ module CacheBusToAXI #(
 
             TRANSFER: if (rw_handshake) begin
                 if (is_final) begin
-                    state <= cbus_req.is_write ? WAITING : IDLE;
+                    // state <= cbus_req.is_write ? WAITING : IDLE;
+                    state <= IDLE;
                 end else if (is_last) begin
-                    state        <= cbus_req.is_write ? WAITING : REQUEST;
+                    // state        <= cbus_req.is_write ? WAITING : REQUEST;
+                    state        <= IDLE;
                     current_addr <= current_addr + addr_step;
                 end else begin
                     len_cnt <= len_cnt - 1;
