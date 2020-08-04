@@ -27,7 +27,7 @@ module SRAMxToAXI(
     axi_strobe_t   axi_strb;
     axi_burst_size axi_size;
 
-    assign axi_size = axi_burst_size'({1'b0, saved_req.size});
+    assign axi_size = axi_burst_size'({1'b0, sramx_req.size});
 
     StrobeTranslator _strobe_inst(
         .size(sramx_req.size),
