@@ -94,7 +94,7 @@ module quickfetch (
             destpc_predict_sel_h_ = destpc_predict_sel_h;
             pc_stop_ = pc_stop;
             if (inst_ibus_addr_ok)
-                no_addr_ok_ <= 1'b0;
+                no_addr_ok_ = 1'b0;
             if (pc_upd)
                 begin
                     mask_ = 2'b11;

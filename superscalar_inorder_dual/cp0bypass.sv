@@ -18,7 +18,7 @@ module cp0bypass(
     assign retire_hit = ((retire.cp0_addr[1] == cp0_addr && execute.cp0_wen[1]) | 
                         (retire.cp0_addr[0] == cp0_addr && execute.cp0_wen[0])) & (~execute_hit) & (~commitex_hit) & (~commitdt_hit);
     
-    logic [2: 0] hits;
+    logic [3: 0] hits;
     assign hits = {execute_hit, commitex_hit, commitdt_hit, retire_hit};
     //assign hit = execute_hit | commitex_hit | commitdt_hit | retire_hit;
     always_comb begin

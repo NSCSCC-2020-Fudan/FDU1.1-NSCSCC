@@ -51,7 +51,7 @@ module quickcommit(
 	logic [1: 0] dmem_size_dt;
 	exec_data_t [1: 0] cdata_in;
     exception_t exception_data_dt;
-    logic dmem_en_dt, finish_exception;
+    logic dmem_en_dt;
 	
 	always_ff @(posedge clk)
 		begin
