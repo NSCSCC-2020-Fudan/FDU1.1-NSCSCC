@@ -12,7 +12,7 @@ module divider (
 );
     dword_t out;
     word_t a_u, b_u;
-    divider_u divider_u(.clk, .resetn(reset), .flush, .valid, .a(a_u), .b(b_u), .out, .ok);
+    divider_u divider_u(.clk, .resetn(reset), .flush, .valid, .a_in(a_u), .b_in(b_u), .out, .ok);
 
     assign a_u = (is_signed & a[31]) ? -a:a;
     assign b_u = (is_signed & b[31]) ? -b:b;
@@ -27,18 +27,26 @@ endmodule
 module divider_u(
     input logic clk, resetn, flush,
     input logic valid,
-    input word_t a, b, // a / b
+    input word_t a_in, b_in, // a / b
     output dword_t out, // {hi, lo}
     output logic ok
 );
     logic [4:0] shift_left;
     divide_data_t [17:1]div;
     divide_data_t [16:0]div_new;
+    word_t a, b;
+    dword_t out_;
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
             div <= '0;
+            a <= '0;
+            b <= '0;
+            out <= '0;
         end else begin
             div[17:1] <= div_new[16:0];
+            a <= a_in;
+            b <= b_in;
+            out <= out_;
         end
     end
     // stage 1
@@ -55,7 +63,7 @@ module divider_u(
 
     // output
     assign ok = div[17].ok;
-    assign out = div[17].PA[64] ? 
+    assign out_ = div[17].PA[64] ? 
                 {{(div[17].PA[63:32] + div[17].B) >> div[17].shiftnum}, {div[17].Q - 32'b1} } // negetive
                :{{div[17].PA[63:32] >> div[17].shiftnum}, div[17].Q };
 endmodule

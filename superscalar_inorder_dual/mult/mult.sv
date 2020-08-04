@@ -13,8 +13,8 @@ module mult (
                     .a, .b, .hilo(hilo_d));
     assign {hi, lo} = (op==MULT||op == MULTU) ? hilo_m : hilo_d;
     localparam MULT_DELAY = 1 << 4;
-    localparam DIV_DELAY = 1 << 17;
-    logic [17:0] counter, counter_new;
+    localparam DIV_DELAY = 1 << 19;
+    logic [19:0] counter, counter_new;
     localparam type state_t = enum logic {INIT, DOING};
     state_t state, state_new;
     assign ok = state_new == INIT;
@@ -47,7 +47,7 @@ module mult (
                 endcase
             end
             DOING: begin
-                counter_new = {1'b0, counter_new[17:1]};
+                counter_new = {1'b0, counter_new[19:1]};
                 if (counter_new == 0) begin
                     state_new = INIT;
                 end
