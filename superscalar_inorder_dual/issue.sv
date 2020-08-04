@@ -388,7 +388,7 @@ module issue(
                     tail <= '0;
                     valid <= '0;
                     first_cycpeE <= 1'b1;
-                    
+                    issue_queue <= '0;
                     signal_issue <= 0; 
                     dual_issue <= 0;
                 end
@@ -417,7 +417,6 @@ module issue(
                     	begin
                     		head <= '0;
                     		tail <= '0;
-                    		issue_queue <= '0;
                     		valid <= '0;
                     	end
                 	else

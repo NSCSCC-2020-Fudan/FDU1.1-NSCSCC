@@ -10,7 +10,7 @@
 
 module bpb_line0( 
         input logic clk, reset, stall,
-        input word_t [1: 0] pc_predict,
+        //input word_t [1: 0] pc_predict,
         output logic [1: 0] hit_predict,
         output bpb_result_t [1: 0] destpc_predict,
         input word_t pc_commit,

@@ -17,7 +17,11 @@ module instrfetch(
         input bpb_result_t [1: 0] destpc_predictF_in,
         output bpb_result_t destpc_predict_sel,
         input bpb_result_t last_predict_in,
-        output bpb_result_t next_predict
+        output bpb_result_t next_predict,
+        //to bpb
+        output logic [1: 0] jrp_pushF, jrp_popF,
+        input logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF, 
+        input word_t jrp_destpcF 
     );
     
     logic finish_his_, finish_his;
@@ -88,8 +92,15 @@ module instrfetch(
     assign exception_instr = (pcplus4[1:0] != '0);
     
     word_t [1: 0] instr;
-    bpbdecode bpbdecpde1(pc, pcplus4, instr[0], destpc_predict_np[1], destpc_predict[1]);
-    bpbdecode bpbdecpde0(pcplus4, pcplus8, instr[1], destpc_predict_np[1], destpc_predict[0]);
+    logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF_ [1: 0];
+    bpbdecode bpbdecpde1(pc, pcplus4, instr[0], 
+                         destpc_predict_np[1], destpc_predict[1],
+                         jrp_pushF[1], jrp_popF[1], jrp_destpcF,
+                         jrp_topF, jrp_topF_[1]);
+    bpbdecode bpbdecpde0(pcplus4, pcplus8, instr[1], 
+                         destpc_predict_np[0], destpc_predict[0],
+                         jrp_pushF[0], jrp_popF[0], jrp_destpcF,
+                         jrp_topF, jrp_topF_[0]);
     
     assign fetch_data[1].instr_ = instr[0];
     assign fetch_data[0].instr_ = instr[1];
@@ -101,6 +112,8 @@ module instrfetch(
     assign fetch_data[0].exception_instr = exception_instr;
     assign fetch_data[1].pred = destpc_predict[1];
     assign fetch_data[0].pred = (hitF[0]) ? destpc_predict[0] : ('0);
+    assign fetch_data[1].jrtop = jrp_topF_[1];
+    assign fetch_data[0].jrtop = jrp_topF_[0];
     //assign fetch_data[1].pred = '0;
     //assign fetch_data[0].pred = '0;
     

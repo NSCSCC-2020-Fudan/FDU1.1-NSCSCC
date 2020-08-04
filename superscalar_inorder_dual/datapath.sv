@@ -74,15 +74,12 @@ module datapath(
     word_t [1: 0] pc_predictF;
     bpb_result_t [1: 0] destpc_predictF;
     
-    /*
-    fetch fetch (clk, reset, 1'b0, stallF,
-                 pc_new, pc, pc_new_commit,
-                 iaddr, ihit, idata, idataOK,
-                 fetch_data, hitF_out, finishF,
-                 pc_predictF, destpc_predictF,
-                 inst_ibus_data_ok, inst_ibus_data,
-                 inst_ibus_index);
-    */
+    logic [1: 0] jrp_pushF, jrp_popF;
+    logic jrp_rstC;
+    logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topC, jrp_topF;
+    word_t jrp_destpcF;
+    word_t [1: 0] pc_jrpredictF;
+    
     quickfetch quickfetch(.clk, .reset, .flushF(1'b0), .stallF,
                           .fetch(pc_new), .pc, .pc_new_commit,
                           .addr(iaddr), .hit(ihit), .data(idata), .dataOK(idataOK),
@@ -90,7 +87,9 @@ module datapath(
                           .pc_predictF, .destpc_predictF,
                           .inst_ibus_req, .inst_ibus_addr_ok,
                           .inst_ibus_data_ok, .inst_ibus_data,
-                          .inst_ibus_index);                     
+                          .inst_ibus_index,
+                          .jrp_pushF, .jrp_popF, .pc_jrpredictF,
+                          .jrp_topF, .jrp_destpcF);                     
     
     dreg dreg (clk, reset, stallD, flushD,
                fetch_data, decode_data_in,
@@ -143,26 +142,8 @@ module datapath(
                    			 .exception_valid, 
                    			 .exception_data(exceptionE),
                    			 .is_eret,
-                   			 .pc_commitC, .predict_wen(predict_wenC), .destpc_commitC);              
-    /*
-    commit commit (clk, reset,
-                   commit_data_in,
-                   commit_data_out,
-                   first_cycleC, 
-                   finishC, pc_mC,
-                   dwt,
-                   daddr, dwd, drd,
-                   den,     
-                   dsize, ddataOK, 
-                   pc_new,
-                   commit_bypass,
-                   ext_int, 
-                   timer_interrupt,
-                   exception_valid, 
-                   exceptionE,
-                   is_eret,
-                   pc_commitC, predict_wenC, destpc_commitC);
-	*/                   
+                   			 .pc_commitC, .predict_wen(predict_wenC), .destpc_commitC,
+                   			 .jrp_reset(jrp_rstC), .jrp_top(jrp_topC));                               
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,
@@ -214,6 +195,15 @@ module datapath(
                                 .pc_commit(pc_commitC),
                                 .wen(predict_wenC),
                                 .destpc_commit(destpc_commitC));                                                                   
+   
+    jrpredict jrpredict(.clk, .reset, .en(finishF),
+                        .push(jrp_pushF),
+                        .pc(pc_jrpredictF),
+                        .pop(jrp_popF),
+                        .top_reset(jrp_rstC),
+                        .top_commit(jrp_topC),
+                        .jr_point(jrp_topF),
+                        .pc_jr(jrp_destpcF));
     
     assign rfw_out = rfw;
     assign rt_pc_out = rt_pc;                                                                                                                                    

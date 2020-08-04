@@ -23,6 +23,7 @@ module datacommit(
         input word_t dmem_rd,
         input logic dmem_data_ok,
         output logic finish_cdata
+        //from mem
     );
 
     
@@ -34,8 +35,8 @@ module datacommit(
     assign fetch.pcexception = `EXC_ENTRY; 
     assign fetch.epc = (in[1].instr.op == ERET) ? (in[1].cp0_epc) : (in[0].cp0_epc);
     assign fetch.branch = (in[1].instr.ctl.branch) & (in[1].taken != in[1].pred.taken);
-    assign fetch.jump = (in[1].instr.ctl.jump) & (~in[1].pred.taken);  
-    assign fetch.jr = in[1].instr.ctl.jr;
+    assign fetch.jump = 1'b0;//(in[1].instr.ctl.jump) & (~in[1].pred.taken);  
+    assign fetch.jr = in[1].instr.ctl.jr & (~in[1].pred.taken || in[1].pred.destpc != in[1].srca);
     assign fetch.pcbranch = (in[1].pred.taken) ? (in[0].pcplus4) : (in[1].instr.pcbranch);
     assign fetch.pcjr = in[1].srca;
     assign fetch.pcjump = in[1].instr.pcjump;
@@ -54,10 +55,10 @@ module datacommit(
     //to bypass net
     
     assign pc_commitC = in[1].pcplus4 - 'd4;
-    assign predict_wen = in[1].instr.ctl.branch || ((in[1].instr.ctl.jump) && (~in[1].instr.ctl.jr));
-    assign destpc_commitC = {in[1].taken || (in[1].instr.ctl.jump & ~in[1].instr.ctl.jr), 
+    assign predict_wen = in[1].instr.ctl.branch; //|| ((in[1].instr.ctl.jump) && (~in[1].instr.ctl.jr));
+    assign destpc_commitC = {in[1].taken, // || (in[1].instr.ctl.jump & ~in[1].instr.ctl.jr), 
                              (in[1].instr.ctl.jump) ? (in[1].instr.pcjump) : (in[1].instr.pcbranch)};
-	//to bpb   
+	//to bpb    
 	
 	m_q_t mem;
 	word_t dmem_rd_h, rd;

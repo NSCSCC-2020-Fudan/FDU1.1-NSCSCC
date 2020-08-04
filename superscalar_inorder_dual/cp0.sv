@@ -61,21 +61,19 @@ module cp0(
             default:rd[0] = '0;
         endcase
     end
-    always_ff @(posedge clk) begin
-        if (~reset) begin
-            timer_interrupt <= 1'b0;
-        end else if (cp0_new.count == cp0_new.compare - 1) begin
-            timer_interrupt <= 1'b1;
-        end else if ((cwrite[1].wen & cwrite[1].addr == 5'd11) | (cwrite[0].wen & cwrite[0].addr == 5'd11)) begin
-            timer_interrupt <= 1'b0;
-        end
-    end
+
     // update cp0 registers
     always_comb begin
         cp0_new = cp0;
 
         cp0_new.count = cp0_new.count + count_switch;
-        
+        if (~reset) begin
+            timer_interrupt = 1'b0;
+        end else if (cp0_new.count == cp0_new.compare - 1) begin
+            timer_interrupt = 1'b1;
+        end else if ((cwrite[1].wen & cwrite[1].addr == 5'd11) | (cwrite[0].wen & cwrite[0].addr == 5'd11)) begin
+            timer_interrupt = 1'b0;
+        end
         // write
         if (cwrite[1].wen) begin
             case (cwrite[1].addr)
@@ -128,13 +126,13 @@ module cp0(
             end
         end
 
-        // eret
         if (is_eret) begin
             if (cp0.status.ERL) begin
                 cp0_new.status.ERL = 1'b0;
             end else begin
                 cp0_new.status.EXL = 1'b0;
             end
+            // llbit = 1'b0;
         end
     end
 

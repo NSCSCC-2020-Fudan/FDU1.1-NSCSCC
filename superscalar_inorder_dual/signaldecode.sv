@@ -55,6 +55,7 @@ module signaldecode (
 */
 
 	assign dataD.in_delay_slot = 1'b0; //dataF.in_delay_slot;
+	assign dataD.jrtop = dataF.jrtop;
 	// assign dataD.en = dataF.en;
 	// ports
 

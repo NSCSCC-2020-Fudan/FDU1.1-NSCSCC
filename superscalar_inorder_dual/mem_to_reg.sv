@@ -24,5 +24,6 @@ module mem_to_reg(
     assign out.cp0_addr = in.cp0_addr;
     assign out.cp0_epc = in.cp0_epc;
     assign out.pred = in.pred;
+    assign out.jrtop = in.jrtop;
     
 endmodule

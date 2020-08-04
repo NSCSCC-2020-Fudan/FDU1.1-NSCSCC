@@ -58,6 +58,7 @@ module FU(
     assign out.cp0_status = in.cp0_status;
     assign out.cp0_epc = in.cp0_epc;
     assign out.pred = in.pred;
+    assign out.jrtop = in.jrtop;
     
     word_t pcplus8;
     adder adderpcplus8(in.pcplus4, 32'b0100, pcplus8);

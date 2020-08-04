@@ -1,6 +1,7 @@
 `include "mips.svh"
 
 module pc_cmtselect(
+        input logic clk, reset,
         input logic exception_valid, is_eret, branch, jump, jr,
         input word_t pcexception, epc, pcbranch, pcjump, pcjr,
         output word_t pc_new,
@@ -13,4 +14,5 @@ module pc_cmtselect(
                     jr                   ? pcjr       : (
                     jump                 ? pcjump     : 
                                            32'hbfc00000))));
+                                               
 endmodule
