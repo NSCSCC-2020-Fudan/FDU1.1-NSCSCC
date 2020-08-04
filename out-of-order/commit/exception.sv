@@ -44,44 +44,44 @@ module exception
     always_comb begin
         priority case (1'b1)
             interrupt_valid: begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_INT;
             end
             exc_info.instr : begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_ADEL;
             end
             exc_info.ri: begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_RI;
             end
             exc_info.of: begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_OV;
             end
             exc_info.sys: begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_SYS;
             end
             exc_info.bp: begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_BP;
             end
             exc_info.load: begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_ADEL;
             end
             exc_info.save: begin
-                exception_valid = 1'b1;
+                // exception_valid = 1'b1;
                 exccode = CODE_ADES;
             end
             default: begin
-                exception_valid = 1'b0;
+                // exception_valid = 1'b0;
                 exccode = '0;
             end
         endcase
     end
-        
+    assign exception_valid = (|exc_info) | interrupt_valid;
     //     if (interrupt_valid) begin
     //         exception_valid = 1'b1;
     //         exccode = CODE_INT;
