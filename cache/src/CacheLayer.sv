@@ -160,13 +160,25 @@ module CacheLayer #(
     end
 
     if (USE_DCACHE == 1) begin: use_dcache
-        dbus_req_t  dbus_req;
-        dbus_resp_t dbus_resp;
+        addr_t      buf_dbus_req_vaddr;
+        dbus_req_t  dbus_req,  buf_dbus_req;
+        dbus_resp_t dbus_resp, buf_dbus_resp;
 
         SRAMxToDataBus sramx_dbus_inst(
             .sramx_req(dcache_req),
             .sramx_resp(dcache_resp),
             .dbus_req, .dbus_resp
+        );
+
+        CacheBuffer dcache_buf_inst(
+            .clk(aclk), .resetn(aresetn),
+
+            .m_req_vaddr(dmem_req.addr),
+            .m_req(dbus_req),
+            .m_resp(dbus_resp),
+            .s_req_vaddr(buf_dbus_req_vaddr),
+            .s_req(buf_dbus_req),
+            .s_resp(buf_dbus_resp)
         );
 
         DCache #(
@@ -175,8 +187,9 @@ module CacheLayer #(
             .OFFSET_BITS(DCACHE_OFFSET_BITS)
         ) dcache_inst(
             .clk(aclk), .resetn(aresetn),
-            .dbus_req_vaddr(data_addr),
-            .dbus_req, .dbus_resp,
+            .dbus_req_vaddr(buf_dbus_req_vaddr),
+            .dbus_req(buf_dbus_req),
+            .dbus_resp(buf_dbus_resp),
             .cbus_req(dcbus_req),
             .cbus_resp(dcbus_resp)
         );
