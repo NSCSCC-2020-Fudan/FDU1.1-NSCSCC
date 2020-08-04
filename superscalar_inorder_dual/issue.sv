@@ -209,6 +209,7 @@ module issue(
         input logic stallI, flushI,
         input logic stallE, flushE,
         //control
+        output logic [3: 0] dhazard_maskI,
         output creg_addr_t [3: 0] reg_addrI,
         input word_t [3: 0] reg_dataI,
         output logic [1: 0] hiloreadI, 
@@ -376,6 +377,8 @@ module issue(
                 end;
 		end		                
     
+    integer signal_issue, dual_issue;
+    
     always_ff @(posedge clk) 
         begin
             if (~reset)
@@ -385,6 +388,9 @@ module issue(
                     tail <= '0;
                     valid <= '0;
                     first_cycpeE <= 1'b1;
+                    
+                    signal_issue <= 0; 
+                    dual_issue <= 0;
                 end
             else
                 begin
@@ -399,6 +405,9 @@ module issue(
 								begin
 									out <= out_;
 									first_cycpeE <= 1'b1;
+									
+									dual_issue <= (issue_en == 2'b11) ? (dual_issue + 1) : (dual_issue);
+									signal_issue <= (issue_en == 2'b10) ? (signal_issue + 1) : (signal_issue);
 								end 
 							else 
 								first_cycpeE <= 1'b0;
@@ -441,6 +450,7 @@ module issue(
         end
 
     word_t hi, lo;
+    assign dhazard_maskI = {1'b1, 1'b1, issue_en[0], issue_en[0]};
     assign reg_addrI = {aD.srcrega, aD.srcregb, bD.srcrega, bD.srcregb}; 
     assign hiloreadI = {aD.instr.ctl.hitoreg || bD.instr.ctl.hitoreg, 
                         aD.instr.ctl.lotoreg || bD.instr.ctl.lotoreg};

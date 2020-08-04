@@ -8,14 +8,19 @@ module mycpu #(
     input logic resetn,  //low active
     input logic[5:0] ext_int,  //interrupt,high active
 
-    output logic inst_req, data_req,
-    output logic inst_wr, data_wr,
+    output logic inst_req, 
+    (*mark_debug = "true"*) output logic data_req,
+    output logic inst_wr, 
+    (*mark_debug = "true"*) output logic data_wr,
     output logic [1:0] inst_size, data_size,
-    output word_t inst_addr, data_addr,
+    output word_t inst_addr, 
+    (*mark_debug = "true"*) output word_t data_addr,
     output word_t inst_wdata, data_wdata,
     input word_t inst_rdata, data_rdata,
-    input logic inst_addr_ok, data_addr_ok,
-    input logic inst_data_ok, data_data_ok,
+    input logic inst_addr_ok, 
+    (*mark_debug = "true"*) input logic data_addr_ok,
+    input logic inst_data_ok, 
+    (*mark_debug = "true"*) input logic data_data_ok,
     
     (*mark_debug = "true"*) output logic inst_ibus_req,
     (*mark_debug = "true"*) output word_t inst_ibus_addr,

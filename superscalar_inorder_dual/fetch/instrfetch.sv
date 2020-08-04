@@ -26,7 +26,8 @@ module instrfetch(
     word_t pc, pcplus4, pcplus8, pc_, pcplus4_, pcplus8_;
     
     bpb_result_t last_predict;
-    bpb_result_t [1: 0] destpc_predict_, destpc_predict;
+    bpb_result_t [1: 0] destpc_predict_, destpc_predict, destpc_predict_np;    
+    
     always_comb 
         begin
             pc_ = pc;
@@ -61,7 +62,7 @@ module instrfetch(
                     finish_his <= 1'b0;
                     data_his <= '0;
                     ien_his <= 2'b11;
-                    destpc_predict <= '0;
+                    destpc_predict_np <= '0;
                     last_predict <= '0;
                 end
             else
@@ -73,7 +74,7 @@ module instrfetch(
                     pc <= pc_;
                     pcplus4 <= pcplus4_;
                     pcplus8 <= pcplus8_;
-                    destpc_predict <= destpc_predict_;
+                    destpc_predict_np <= destpc_predict_;
                     //destpc_predict <= '0;
                 end
         end
@@ -83,11 +84,13 @@ module instrfetch(
     assign pcplus4_isf = pcplus4;
     assign pcplus8_isf = pcplus8;
     
-    
     logic exception_instr;
     assign exception_instr = (pcplus4[1:0] != '0);
     
     word_t [1: 0] instr;
+    bpbdecode bpbdecpde1(pc, pcplus4, instr[0], destpc_predict_np[1], destpc_predict[1]);
+    bpbdecode bpbdecpde0(pcplus4, pcplus8, instr[1], destpc_predict_np[1], destpc_predict[0]);
+    
     assign fetch_data[1].instr_ = instr[0];
     assign fetch_data[0].instr_ = instr[1];
     assign fetch_data[1].pcplus4 = pcplus4;

@@ -1,6 +1,7 @@
 `include "mips.svh"
 
 module control(
+        input logic clk, reset,
         input logic finishF, finishE, finishC, data_hazardI, queue_ofI, pcF,
         input logic is_eret, exception_valid,
         output logic stallF, stallD, flushD, stallI, flushI, 
@@ -30,5 +31,24 @@ module control(
     assign stallF = queue_ofI;
     
     assign pc_new_commit = pcF | flush_ex;
+    
+    int hazardC_count, hazardE_count, hazardI_count, hazardpc_count;
+    always_ff @(posedge clk)
+        begin
+            if (~reset)
+                begin
+                    hazardC_count <= 0;
+                    hazardE_count <= 0;
+                    hazardI_count <= 0;
+                    hazardpc_count <= 0;
+                end
+            else
+                begin
+                    hazardC_count <= (hazardC) ? (hazardI_count + 1) : (hazardC_count);
+                    hazardE_count <= (hazardE) ? (hazardE_count + 1) : (hazardE_count);
+                    hazardI_count <= (hazardI) ? (hazardC_count + 1) : (hazardI_count);
+                    hazardpc_count <= (pc_new_commit) ? (hazardpc_count + 1) : (hazardpc_count);
+                end
+        end
     
 endmodule

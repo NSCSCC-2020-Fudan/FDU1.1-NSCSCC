@@ -7,6 +7,7 @@ module bypass(
         output word_t [1: 0] hilodataI,
         input creg_addr_t [1: 0] cp0_addrI,
         output word_t [1: 0] cp0_dataI,
+        input logic [3: 0] dhazard_maskI,
         output logic data_hazardI,
         //issue
         input bypass_upd_t execute,
@@ -41,7 +42,10 @@ module bypass(
     cp0bypass bypass_cp01 (cp0_addrI[1], execute, commitex, commitdt, retire, cp0_dataR[1], _cp0_dataI[1]);
     cp0bypass bypass_cp00 (cp0_addrI[0], execute, commitex, commitdt, retire, cp0_dataR[0], _cp0_dataI[0]);
     
-    assign data_hazardI = hazard[3] | hazard[2] | hazard[1] | hazard[0];
+    assign data_hazardI = (hazard[3] & dhazard_maskI[3]) | 
+                          (hazard[2] & dhazard_maskI[2]) | 
+                          (hazard[1] & dhazard_maskI[1]) | 
+                          (hazard[0] & dhazard_maskI[0]);
     
     word_t [1: 0] _cp0_mask_and, _cp0_mask_or;
     assign _cp0_mask_and = {cp0_mask_and[cp0_addrI[1]], cp0_mask_and[cp0_addrI[0]]};

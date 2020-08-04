@@ -32,9 +32,11 @@ module regbypass(
     assign exec_hazard0 = (execute.destreg[0] == reg_addr) & (execute.memtoreg[0]);
     assign hazard = exec_hazard1 | exec_hazard0 | cmt_hazard1 | cmt_hazard0;
 
+    logic zero;
+    assign zero = (reg_addr == '0);
     
     logic [3: 0] hits;
-    assign hits = {execute_hit, commitex_hit, commitdt_hit, retire_hit};
+    assign hits = {execute_hit & ~zero, commitex_hit & ~zero, commitdt_hit & ~zero, retire_hit & ~zero};
     //assign hit = execute_hit | commitex_hit | retire_hit;
     always_comb begin
         case (hits)

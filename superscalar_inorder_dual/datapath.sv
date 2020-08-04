@@ -40,6 +40,7 @@ module datapath(
     assign flushE_out = flushE; 
     assign stallF_out = stallF;
     
+    logic [3: 0] dhazard_maskI;
     creg_addr_t [3: 0] reg_addrI, reg_addrW;
     word_t [3: 0] reg_dataI, reg_dataW;
     logic [1: 0] hiloreadI, hiloreadW;
@@ -105,6 +106,7 @@ module datapath(
                  queue_ofI, data_hazardI,
                  stallI, flushI,
                  stallE, flushE,
+                 dhazard_maskI,
                  reg_addrI, reg_dataI, 
                  hiloreadI, hilodataI,
                  cp0_addrI, cp0_dataI,
@@ -173,7 +175,7 @@ module datapath(
     bypass bypass (reg_addrI, reg_dataI, 
                    hiloreadI, hilodataI,
                    cp0_addrI, cp0_dataI,
-                   data_hazardI,
+                   dhazard_maskI, data_hazardI,
                    exec_bypass,
                    /*commit_bypass*/commitex_bypass, commitdt_bypass,
                    retire_bypass,
@@ -181,7 +183,8 @@ module datapath(
                    hiloreadW, hiW, loW,
                    cp0_addrW, cp0_dataW);
     
-    control control (finishF, finishE, finishC, data_hazardI, queue_ofI, pc_mC,
+    control control (clk, reset,
+                     finishF, finishE, finishC, data_hazardI, queue_ofI, pc_mC,
                      is_eret, exception_valid,
                      stallF, stallD, flushD, stallI, flushI, 
                      stallE, flushE, stallC, flushC, stallR, flushR, pc_new_commit, flush_ex);
