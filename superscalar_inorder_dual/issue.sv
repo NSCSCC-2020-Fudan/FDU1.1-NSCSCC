@@ -229,10 +229,10 @@ module issue(
 
     logic [`ISSUE_QUEUE_WIDTH - 1: 0] head, headplus1, headplus2;
     logic [`ISSUE_QUEUE_WIDTH - 1: 0] tail, tailplus1, tailplus2;
-    assign headplus1 = head + 5'b001;
-    assign headplus2 = head + 5'b010;
-    assign tailplus1 = tail + 5'b001;
-    assign tailplus2 = tail + 5'b010;
+    assign headplus1 = head + `ISSUE_QUEUE_WIDTH'b001;
+    assign headplus2 = head + `ISSUE_QUEUE_WIDTH'b010;
+    assign tailplus1 = tail + `ISSUE_QUEUE_WIDTH'b001;
+    assign tailplus2 = tail + `ISSUE_QUEUE_WIDTH'b010;
     
     logic queue_overflow;
     //assign queue_overflow = (hitD[1] && !free[0]) || (hitD[0] && !free[1]);
