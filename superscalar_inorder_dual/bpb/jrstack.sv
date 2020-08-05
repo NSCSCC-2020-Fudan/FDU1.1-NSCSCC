@@ -46,7 +46,7 @@ module jrstack(
             if (~reset)
                 begin
                     top <= '0;
-                    jr_stack[0] <= `JR_STACK_INIT;
+                    jr_stack <= `JR_STACK_INIT;
                 end
             else
                 begin
