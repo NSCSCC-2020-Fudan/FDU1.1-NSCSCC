@@ -7,12 +7,11 @@ module divider (
     input logic valid,
     input word_t a, b,
     output dword_t hilo,
-    output logic ok,
     input logic is_signed
 );
     dword_t out;
     word_t a_u, b_u;
-    divider_u divider_u(.clk, .resetn(reset), .flush, .valid, .a_in(a_u), .b_in(b_u), .out, .ok);
+    divider_u divider_u(.clk, .resetn(reset), .flush, .valid, .a_in(a_u), .b_in(b_u), .out);
 
     assign a_u = (is_signed & a[31]) ? -a:a;
     assign b_u = (is_signed & b[31]) ? -b:b;
@@ -28,44 +27,46 @@ module divider_u(
     input logic clk, resetn, flush,
     input logic valid,
     input word_t a_in, b_in, // a / b
-    output dword_t out, // {hi, lo}
-    output logic ok
+    output dword_t out // {hi, lo}
 );
     logic [4:0] shift_left;
-    divide_data_t [17:1]div;
-    divide_data_t [16:0]div_new;
+    divide_data_t div;
+    divide_data_t div_new, div_init;
     word_t a, b;
     dword_t out_;
+    logic valid_1;
     always_ff @(posedge clk) begin
         if (~resetn | flush) begin
             div <= '0;
             a <= '0;
             b <= '0;
             out <= '0;
+            valid_1 <= '0;
         end else begin
-            div[17:1] <= div_new[16:0];
+            div <= valid_1 ? div_new : div_init;
             a <= a_in;
             b <= b_in;
             out <= out_;
+            valid_1 <= valid;
         end
     end
     // stage 1
-    assign div_new[0].ok = valid;
-    assign div_new[0].Q = '0;
-    divide_initial divide_initial(.ina(a), .inb(b), .outpa(div_new[0].PA), .outb(div_new[0].B), .shiftnum(div_new[0].shiftnum));
+    // assign div_new[0].ok = valid;
+    assign div_init.Q = '0;
+    divide_initial divide_initial(.ina(a), .inb(b), .outpa(div_init.PA), .outb(div_init.B), .shiftnum(div_init.shiftnum));
 
-    genvar i;
-    generate
-        for (i=1; i<=16; i++) begin
-            divide_process divide_process(.in(div[i]), .out(div_new[i]));
-        end
-    endgenerate
-
+    // genvar i;
+    // generate
+    //     for (i=1; i<=16; i++) begin
+    //         divide_process divide_process(.in(div[i]), .out(div_new[i]));
+    //     end
+    // endgenerate
+    divide_process divide_process(.in(div), .out(div_new));
     // output
-    assign ok = div[17].ok;
-    assign out_ = div[17].PA[64] ? 
-                {{(div[17].PA[63:32] + div[17].B) >> div[17].shiftnum}, {div[17].Q - 32'b1} } // negetive
-               :{{div[17].PA[63:32] >> div[17].shiftnum}, div[17].Q };
+    // assign ok = div[17].ok;
+    assign out_ = div.PA[64] ? 
+                {{(div.PA[63:32] + div.B) >> div.shiftnum}, {div.Q - 32'b1} } // negetive
+               :{{div.PA[63:32] >> div.shiftnum}, div.Q };
 endmodule
 
 
@@ -110,7 +111,7 @@ module divide_process (
             end
         endcase
     end
-    assign out.ok = in.ok;
+    // assign out.ok = in.ok;
     assign out.shiftnum = in.shiftnum;
     assign out.B = in.B;
     // assign out.PA[31:0] = in.PA[31:0];

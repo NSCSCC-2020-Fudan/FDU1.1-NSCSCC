@@ -7,16 +7,18 @@ module mult (
     output word_t hi, lo,
     output logic ok
 );
+    localparam type state_t = enum logic {INIT, DOING};
+    state_t state, state_new;
     dword_t hilo_m, hilo_d;
     multiplier multiplier(.clk, .a, .b, .hilo(hilo_m), .is_signed(op == MULT));
-    divider divider(.clk, .reset(reset), .flush(1'b0), .valid(op == DIV || op == DIVU), .is_signed(op == DIV),
+    divider divider(.clk, .reset(reset), .flush(1'b0), .valid(state != INIT), .is_signed(op == DIV),
                     .a, .b, .hilo(hilo_d));
     assign {hi, lo} = (op==MULT||op == MULTU) ? hilo_m : hilo_d;
     localparam MULT_DELAY = 1 << 4;
-    localparam DIV_DELAY = 1 << 19;
+    localparam DIV_DELAY = 1 << 18;
     logic [19:0] counter, counter_new;
-    localparam type state_t = enum logic {INIT, DOING};
-    state_t state, state_new;
+    
+    
     assign ok = state_new == INIT;
 
     always_comb begin
