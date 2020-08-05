@@ -33,15 +33,17 @@ module DualPortBRAM #(
         word_t word;
     }
 ) (
-    input logic clk, reset, en,
+    input logic clk, reset,
 
     // port 1
+    input  logic   en_1,
     input  wrten_t write_en_1,
     input  addr_t  addr_1,
     input  word_t  data_in_1,
     output word_t  data_out_1,
 
     // port 2
+    input  logic   en_2,
     input  wrten_t write_en_2,
     input  addr_t  addr_2,
     input  word_t  data_in_2,
@@ -64,8 +66,8 @@ module DualPortBRAM #(
     logic addr_eq, hazard_1, hazard_2;
     logic hazard_reg_1 = 0, hazard_reg_2 = 0;
     assign addr_eq = addr_1 == addr_2;
-    assign hazard_1 = addr_eq && |write_en_2;
-    assign hazard_2 = addr_eq && |write_en_1;
+    assign hazard_1 = addr_eq && en_2 && |write_en_2;
+    assign hazard_2 = addr_eq && en_1 && |write_en_1;
 
     always_comb begin
         if (reset_reg) begin
@@ -91,24 +93,30 @@ module DualPortBRAM #(
     always_ff @(posedge clk) begin
         reset_reg <= reset;
 
-        if (en) begin
-            // {addr_reg_1, addr_reg_2} <= {addr_1, addr_2};
-
-            if (WRITE_MODE == "read_first") begin
+        if (en_1) begin
+            if (WRITE_MODE == "read_first")
                 data_out_reg_1 <= mem[addr_1].word;
-                data_out_reg_2 <= mem[addr_2].word;
-            end else if (WRITE_MODE == "write_first") begin
+            else if (WRITE_MODE == "write_first")
                 data_out_reg_1 <= new_data_1;
-                data_out_reg_2 <= new_data_2;
-            end else begin
+            else
                 data_out_reg_1 <= DEADBEEF;
-                data_out_reg_2 <= DEADBEEF;
-            end
 
-            {hazard_reg_1, hazard_reg_2} <= {hazard_1, hazard_2};
+            hazard_reg_1 <= hazard_1;
 
             if (|write_en_1)
                 mem[addr_1] <= new_data_1;
+        end
+
+        if (en_2) begin
+            if (WRITE_MODE == "read_first")
+                data_out_reg_2 <= mem[addr_2].word;
+            else if (WRITE_MODE == "write_first")
+                data_out_reg_2 <= new_data_2;
+            else
+                data_out_reg_2 <= DEADBEEF;
+
+            hazard_reg_2 <= hazard_2;
+
             if (|write_en_2)
                 mem[addr_2] <= new_data_2;
         end
@@ -152,7 +160,7 @@ module DualPortBRAM #(
     ) xpm_memory_tdpram_inst (
         .sleep(0),
         .clka(clk), .clkb(clk),
-        .ena(en), .enb(en),
+        .ena(en_1), .enb(en_2),
         .rsta(reset), .rstb(reset),
         .regcea(1), .regceb(1),
         .injectdbiterra(0),

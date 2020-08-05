@@ -81,7 +81,7 @@ public:
         inst->dbus_req_x_addr = 0;
         inst->dbus_req_x_data = 0;
         inst->dbus_req_x_is_write = 0;
-        inst->dbus_req_x_valid = 0;
+        inst->dbus_req_x_req = 0;
         inst->dbus_req_x_write_en = 0;
         inst->cbus_resp_x_okay = 0;
         inst->cbus_resp_x_last = 0;
@@ -110,7 +110,7 @@ public:
             inst->dbus_req_vaddr_x_offset,
             inst->dbus_req_vaddr_x_zeros
         ) = parse_vaddr(vaddr);
-        inst->dbus_req_x_valid = 1;
+        inst->dbus_req_x_req = 1;
         inst->dbus_req_x_is_write = 0;
         inst->dbus_req_x_write_en = 0;  // must be zeros if "is_write" is zero
         inst->dbus_req_x_addr = addr;
@@ -126,7 +126,7 @@ public:
             inst->dbus_req_vaddr_x_offset,
             inst->dbus_req_vaddr_x_zeros
         ) = parse_vaddr(vaddr);
-        inst->dbus_req_x_valid = 1;
+        inst->dbus_req_x_req = 1;
         inst->dbus_req_x_is_write = 1;
         inst->dbus_req_x_write_en = mask;
         inst->dbus_req_x_addr = addr;
@@ -234,7 +234,7 @@ public:
     }
 
     auto in_req() -> u8& {
-        return _top->inst->dbus_req_x_valid;
+        return _top->inst->dbus_req_x_req;
     }
 
     bool empty() const {

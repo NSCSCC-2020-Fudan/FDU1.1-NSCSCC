@@ -24,7 +24,7 @@ module CacheBuffer #(
 
     buf_req_t i_req, o_req;
 
-    assign i_req.req     = m_req.valid;
+    assign i_req.req     = m_req.req;
     assign i_req.vaddr   = m_req_vaddr;
     assign i_req.payload = m_req;
 

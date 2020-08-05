@@ -22,7 +22,7 @@ WITH LOG {
 WITH {
     for (int addr = 0; addr < 8192; addr++) {
         top->issue_read(_i(addr));
-        top->inst->dbus_req_x_valid = 0;
+        top->inst->dbus_req_x_req = 0;
         top->eval();
 
         for (int i = 0; i < 256; i++) {
@@ -36,7 +36,7 @@ WITH {
 WITH {
     for (int addr = 0; addr < 8192; addr++) {
         top->issue_write(_i(addr), randu());
-        top->inst->dbus_req_x_valid = 0;
+        top->inst->dbus_req_x_req = 0;
         top->eval();
 
         for (int i = 0; i < 256; i++) {

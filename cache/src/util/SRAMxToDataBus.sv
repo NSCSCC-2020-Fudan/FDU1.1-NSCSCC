@@ -7,7 +7,7 @@ module SRAMxToDataBus(
     output dbus_req_t   dbus_req,
     input  dbus_resp_t  dbus_resp
 );
-    assign dbus_req.valid    = sramx_req.req;
+    assign dbus_req.req      = sramx_req.req;
     assign dbus_req.is_write = sramx_req.wr;
     assign dbus_req.addr     = sramx_req.addr;
     assign dbus_req.data     = sramx_req.wdata;

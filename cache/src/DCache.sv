@@ -157,8 +157,7 @@ module DCache #(
     view_t  hit_wdata;
 
     assign hit_pos      = req_iaddr;
-    assign hit_write_en = (dbus_req.valid && req_miss_ready) ?
-        ({DBUS_DATA_BYTES{req_hit}} & dbus_req.write_en) : 0;
+    assign hit_write_en = dbus_req.write_en;
     assign hit_wdata    = dbus_req.data;
 
     /**
@@ -205,8 +204,8 @@ module DCache #(
         req_paddr.tag == miss_addr.tag &&
         req_iaddr.index == miss_pos.index;
     assign req_miss_ready = !req_in_miss || miss_ready[req_iaddr.offset];
-    assign req_to_hit     = req_hit && (dbus_req.valid && req_miss_ready);
-    assign req_to_miss    = dbus_req.valid && miss_avail && !req_hit;
+    assign req_to_hit     = req_hit && (dbus_req.req && req_miss_ready);
+    assign req_to_miss    = !req_hit && (dbus_req.req && miss_avail);
 
     /**
      * the BRAM
@@ -216,13 +215,15 @@ module DCache #(
         .ADDR_WIDTH(IADDR_BITS),
         .WRITE_MODE("read_first")  // for victim buffer
     ) bram_inst(
-        .clk(clk), .reset(~resetn), .en(1),
+        .clk(clk), .reset(~resetn),
 
+        .en_1(req_to_hit),
         .write_en_1(hit_write_en),
         .addr_1(hit_pos),
         .data_in_1(hit_wdata),
         .data_out_1(hit_rdata),
 
+        .en_2(1),
         .write_en_2(miss_write_en),
         .addr_2(miss_pos),
         .data_in_2(miss_wdata),

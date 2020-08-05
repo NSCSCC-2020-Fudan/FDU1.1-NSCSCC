@@ -100,6 +100,13 @@ module CacheLayer #(
     assign inst_ibus_data     = imem_ibus_resp.data;
     assign inst_ibus_index    = imem_ibus_resp.index;
 
+    addr_t imem_req_vaddr;
+
+    if (USE_IBUS == 1)
+        assign imem_req_vaddr = imem_sramx_req.addr;
+    else
+        assign imem_req_vaddr = imem_ibus_req.addr;
+
     /**
      * address translation & request dispatching
      */
@@ -124,8 +131,9 @@ module CacheLayer #(
     cbus_resp_t icbus_resp, dcbus_resp;
 
     if (USE_ICACHE == 1) begin: use_icache
-        ibus_req_t  mux_ibus_req;
-        ibus_resp_t mux_ibus_resp;
+        addr_t      buf_ibus_req_vaddr;
+        ibus_req_t  mux_ibus_req,  buf_ibus_req;
+        ibus_resp_t mux_ibus_resp, buf_ibus_resp;
 
         if (USE_IBUS) begin
             assign mux_ibus_req  = ibus_req;
@@ -137,6 +145,20 @@ module CacheLayer #(
             );
         end
 
+        CacheBuffer #(
+            .req_t(ibus_req_t),
+            .resp_t(ibus_resp_t)
+        ) icache_buf_inst(
+            .clk(aclk), .resetn(aresetn),
+
+            .m_req_vaddr(imem_req_vaddr),
+            .m_req(mux_ibus_req),
+            .m_resp(mux_ibus_resp),
+            .s_req_vaddr(buf_ibus_req_vaddr),
+            .s_req(buf_ibus_req),
+            .s_resp(buf_ibus_resp)
+        );
+
         ICache #(
             .IDX_BITS(ICACHE_IDX_BITS),
             .INDEX_BITS(ICACHE_INDEX_BITS),
@@ -144,9 +166,9 @@ module CacheLayer #(
             .ALIGN_BITS(ICACHE_ALIGN_BITS)
         ) icache_inst(
             .clk(aclk), .resetn(aresetn),
-            .ibus_req_vaddr(inst_addr),
-            .ibus_req(mux_ibus_req),
-            .ibus_resp(mux_ibus_resp),
+            .ibus_req_vaddr(buf_ibus_req_vaddr),
+            .ibus_req(buf_ibus_req),
+            .ibus_resp(buf_ibus_resp),
             .cbus_req(icbus_req),
             .cbus_resp(icbus_resp)
         );
@@ -170,7 +192,10 @@ module CacheLayer #(
             .dbus_req, .dbus_resp
         );
 
-        CacheBuffer dcache_buf_inst(
+        CacheBuffer #(
+            .req_t(dbus_req_t),
+            .resp_t(dbus_resp_t)
+        ) dcache_buf_inst(
             .clk(aclk), .resetn(aresetn),
 
             .m_req_vaddr(dmem_req.addr),

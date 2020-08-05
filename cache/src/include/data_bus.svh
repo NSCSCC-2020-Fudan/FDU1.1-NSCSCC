@@ -16,7 +16,7 @@ typedef union packed {
 } dbus_view_t;
 
 typedef struct packed {
-    logic        valid;
+    logic        req;
     logic        is_write;
     dbus_wrten_t write_en;
     addr_t       addr;

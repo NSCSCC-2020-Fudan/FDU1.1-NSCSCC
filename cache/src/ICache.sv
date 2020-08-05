@@ -250,8 +250,8 @@ module ICache #(
     assign req_miss_ready = !req_in_miss || miss_ready[req_count];
 
     logic req_to_hit, req_to_miss;
-    assign req_to_hit  = req_hit && ibus_req.req && req_miss_ready;
-    assign req_to_miss = !req_hit && ibus_req.req && miss_avail;
+    assign req_to_hit  = req_hit && (ibus_req.req && req_miss_ready);
+    assign req_to_miss = !req_hit && (ibus_req.req && miss_avail);
 
     /**
      * the BRAM
@@ -272,7 +272,8 @@ module ICache #(
         .ADDR_WIDTH(MEM_ADDR_BITS),
         .WRITE_MODE("read_first")
     ) bram_inst(
-        .clk(clk), .reset(~resetn), .en(1),
+        .clk(clk), .reset(~resetn),
+        .en_1(1), .en_2(1),
 
         .write_en_1(0),
         .addr_1(hit_pos),
