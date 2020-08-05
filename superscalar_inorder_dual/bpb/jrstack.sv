@@ -10,9 +10,10 @@ module jrstack(
         input logic[`JR_ENTRY_WIDTH - 1: 0] top_commit,
         //commit
         output logic[`JR_ENTRY_WIDTH - 1: 0] jr_point,
-        output word_t pc_jr 
+        output word_t pc_jr
     );
     
+    logic [`JR_ENTRIES - 1: 0] valid, valid_;
     word_t [`JR_ENTRIES - 1: 0] jr_stack, jr_stack_;
     logic [`JR_ENTRY_WIDTH - 1: 0] top, topplus1, topminus1, top_;
        
@@ -22,14 +23,17 @@ module jrstack(
         begin
             top_ = top;
             jr_stack_ = jr_stack;
+            valid_ = valid;
             if (push)
                 begin
                     top_ = topplus1;
+                    valid_[topplus1] = 1'b1;
                     jr_stack_[topplus1] = pc;
                 end
             if (pop)
                 begin
                     top_ = topminus1;
+                    valid_[topplus1] = 1'b0;
                     jr_stack_[top] = '0;
                 end
             if (pop & push)
@@ -46,15 +50,16 @@ module jrstack(
             if (~reset)
                 begin
                     top <= '0;
-                    jr_stack <= `JR_STACK_INIT;
+                    valid <= '0;
                 end
             else
                 begin
                     jr_stack <= jr_stack_;
                     top <= top_;
+                    valid <= valid_;
                 end
         end 
     
-    assign pc_jr = jr_stack[top];
+    assign pc_jr = (valid[top]) ? (jr_stack[top]) : (pc);
     assign jr_point = top;
 endmodule
