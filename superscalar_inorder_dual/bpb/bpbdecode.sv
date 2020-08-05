@@ -59,8 +59,8 @@ module bpbdecode(
     logic [`JR_ENTRY_WIDTH - 1: 0] jr_top_plus, jr_top_minus;
     assign jr_top_plus = jr_topF_in + 2'b01;
     assign jr_top_minus = jr_topF_in - 2'b01;
-    assign jr_topF_out = (jr_push ^ jr_pop) ? (jr_topF_in)   : (
-                         (jr_push)          ? (jr_top_plus)  : (
-                         (jr_pop)           ? (jr_top_minus) : ('0)));                 
+    assign jr_topF_out = (~(jr_push ^ jr_pop)) ? (jr_topF_in)   : (
+                         (jr_push)             ? (jr_top_plus)  : (
+                         (jr_pop)              ? (jr_top_minus) : ('0)));                 
     
 endmodule

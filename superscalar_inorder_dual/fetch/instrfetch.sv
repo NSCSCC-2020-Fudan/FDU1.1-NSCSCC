@@ -93,13 +93,16 @@ module instrfetch(
     
     word_t [1: 0] instr;
     logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF_ [1: 0];
+    logic [1: 0] jrp_pushF_, jrp_popF_;
+    assign jrp_pushF = {jrp_pushF_[1] & hitF[1], jrp_pushF_[0] & hitF[0]};
+    assign jrp_popF = {jrp_popF_[1] & hitF[1], jrp_popF_[0] & hitF[0]};
     bpbdecode bpbdecpde1(pc, pcplus4, instr[0], 
                          destpc_predict_np[1], destpc_predict[1],
-                         jrp_pushF[1], jrp_popF[1], jrp_destpcF,
+                         jrp_pushF_[1], jrp_popF_[1], jrp_destpcF,
                          jrp_topF, jrp_topF_[1]);
     bpbdecode bpbdecpde0(pcplus4, pcplus8, instr[1], 
                          destpc_predict_np[0], destpc_predict[0],
-                         jrp_pushF[0], jrp_popF[0], jrp_destpcF,
+                         jrp_pushF_[0], jrp_popF_[0], jrp_destpcF,
                          jrp_topF, jrp_topF_[0]);
     
     assign fetch_data[1].instr_ = instr[0];
