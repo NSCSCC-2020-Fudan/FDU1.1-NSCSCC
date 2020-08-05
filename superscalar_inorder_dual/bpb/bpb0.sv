@@ -29,7 +29,7 @@ module bpb0(
     generate 
         for (j = 0; j < `BPB_ENTRIES; j = j + 1) begin: bpb_set
             bpb_line0 bpb_line(clk, reset, stall,
-                               pc_predict, 
+                               //pc_predict, 
                                hit_set[j], destpc_predict_set[j],
                                pc_commit,
                                wen && (entry_commit == j),

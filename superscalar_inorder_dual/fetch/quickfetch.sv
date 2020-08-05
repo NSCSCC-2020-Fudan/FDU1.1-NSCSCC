@@ -23,13 +23,18 @@ module quickfetch (
     input logic inst_ibus_addr_ok,
     input logic inst_ibus_data_ok,
     input logic [63: 0] inst_ibus_data,
-    input logic inst_ibus_index
+    input logic inst_ibus_index,
     //to ibus
+    output logic [1: 0] jrp_pushF, jrp_popF,
+    output word_t [1: 0] pc_jrpredictF,
+    input logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF, 
+    input word_t jrp_destpcF 
 );
     
     logic pc_upd, pc_upd_h, stop, stop_h;
     word_t pc_cmt, pc_cmt_h, pc_stop;
-    pc_cmtselect pc_cmtselect(fetch.exception_valid, fetch.is_eret,
+    pc_cmtselect pc_cmtselect(clk, reset, 
+                              fetch.exception_valid, fetch.is_eret,
                               fetch.branch, fetch.jump, fetch.jr,
                               fetch.pcexception, fetch.epc, 
                               fetch.pcbranch, fetch.pcjump, fetch.pcjr,
@@ -75,7 +80,10 @@ module quickfetch (
                           .pc_isf, .pcplus4_isf, .pcplus8_isf,
                           .destpc_predictF_in(destpc_predict_pcf),
                           .destpc_predict_sel(destpc_predict_sel_isf),
-                          .last_predict_in(last_predict), .next_predict);                                         
+                          .last_predict_in(last_predict), .next_predict,
+                          .jrp_pushF, .jrp_popF,
+                          .jrp_topF, .jrp_destpcF);
+    assign pc_jrpredictF = {pc_isf, pcplus4_isf};                                                                   
     
     logic enF, debug;
     

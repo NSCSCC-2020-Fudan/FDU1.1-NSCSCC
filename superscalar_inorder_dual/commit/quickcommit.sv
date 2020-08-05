@@ -27,8 +27,10 @@ module quickcommit(
         //cp0
         output word_t pc_commitC,
         output logic predict_wen,
-        output bpb_result_t destpc_commitC
+        output bpb_result_t destpc_commitC,
         //branch predict
+        output logic jrp_reset,
+        output logic [`JR_ENTRY_WIDTH - 1: 0] jrp_top
     );
     
     exec_data_t [1: 0] exception_out;
@@ -95,5 +97,8 @@ module quickcommit(
 	assign exception_valid = exception_valid_dt;	
 	assign pc_mC = fetch.branch | fetch.jump | fetch.jr | fetch.exception_valid | fetch.is_eret;
 	assign is_eret = fetch.is_eret;						
+
+    assign jrp_reset = pc_mC;
+    assign jrp_top = cdata_in[1].jrtop;
            
 endmodule

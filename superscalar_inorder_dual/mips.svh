@@ -12,6 +12,9 @@
 `define BPB_ENTRY_WIDTH2    'd4
 `define BPB_TAG_WIDTH2      'd26
 
+`define JR_ENTRIES          'd16
+`define JR_ENTRY_WIDTH      'd4          
+
 typedef logic[31:0] word_t;
 
 typedef struct packed{
@@ -31,7 +34,7 @@ typedef logic[5:0] func_t;
 typedef logic[4:0] shamt_t;
 
 typedef enum logic[3:0] {
-    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR,
+    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
     ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
 } alufunc_t;
 
@@ -111,13 +114,13 @@ typedef enum logic[3:0] {
 typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
 typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
 
-typedef enum logic [5:0] {
-    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI,
+typedef enum logic [5:0] { 
+    // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, 
     ADDU, RESERVED,
-    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL,
+    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
     LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
-    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU,
-    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL,
+    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
+    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
     JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
 } decoded_op_t;
 
@@ -200,7 +203,7 @@ typedef struct packed {
 } cp0_status_t;
 
 typedef struct packed {
-    word_t
+    word_t 
         desave,     // 31, EJTAG debug exception save register
         errorepc,   // 30, Program counter at last error
         taghi,      // 29, High-order portion of cache tag interface
@@ -208,7 +211,7 @@ typedef struct packed {
         cacheerr,   // 27, Cache parity error control and status
         errctl,     // 26, Parity/ECC error control and status
         perfcnt,    // 25, Performance counter interface
-        depc,       // 24, Program counter at last EJTAG debug exception
+        depc,       // 24, Program counter at last EJTAG debug exception 
         debug,      // 23, EJTAG Debug register
         reserved22, // 22, reserved
         reserved21, // 21, reserved
@@ -389,6 +392,7 @@ typedef struct packed {
     logic exception_instr;
     logic en;
     bpb_result_t pred;
+    logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;
 } fetch_data_t;
 
 `define EXC_BASE 32'hbfc0_0000
@@ -409,7 +413,7 @@ typedef struct packed{
     logic exception_instr, exception_ri, exception_of;
     logic exception_load, exception_bp, exception_sys, exception_save;
     logic in_delay_slot;
-    interrupt_info_t interrupt_info;
+    interrupt_info_t interrupt_info; 
     word_t vaddr, pc;
 } exception_pipeline_t;
 
@@ -433,8 +437,9 @@ typedef struct packed {
     logic exception_instr, exception_ri;
     logic in_delay_slot;
     bpb_result_t pred;
-    cp0_cause_t cp0_cause;
-    cp0_status_t cp0_status;
+    //cp0_cause_t cp0_cause;
+    //cp0_status_t cp0_status;
+    logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;
 } decode_data_t;
 
 typedef struct packed {
@@ -447,8 +452,8 @@ typedef struct packed {
 typedef struct packed {
     decoded_instr_t instr;
     word_t pcplus4;
-    logic exception_instr, exception_ri;
-    logic taken;
+    logic exception_instr, exception_ri; 
+    logic taken; 
     bpb_result_t pred;
     word_t srca, srcb;
     creg_addr_t destreg, cp0_addr;
@@ -457,6 +462,7 @@ typedef struct packed {
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
     word_t cp0_epc;
+    logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;
 } issue_data_t;
 
 typedef struct packed {
@@ -472,6 +478,7 @@ typedef struct packed {
     cp0_cause_t cp0_cause;
     cp0_status_t cp0_status;
     word_t cp0_epc;
+    logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;
 } exec_data_t;
 
 typedef struct packed{
@@ -486,8 +493,12 @@ typedef struct packed{
 
 typedef struct packed{
     logic exception_valid, is_eret, branch, jump, jr;
-    word_t pcexception, epc, pcbranch, pcjump, pcjr;
+    word_t pcexception, epc, pcbranch, pcjump, pcjr; 
 } pc_data_t;
 
+`define JR_STACK_INIT {                                                                                             \
+    32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, \
+    32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000, 32'hbfc00000  \
+};
 
 `endif
