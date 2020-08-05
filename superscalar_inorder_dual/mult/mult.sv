@@ -17,8 +17,8 @@ module mult (
     localparam MULT_DELAY = 1 << 4;
     localparam DIV_DELAY = 1 << 18;
     logic [19:0] counter, counter_new;
-    
-    
+
+
     assign ok = state_new == INIT;
 
     always_comb begin
@@ -28,23 +28,23 @@ module mult (
             INIT: begin
                 case (op)
                     MULTU: begin
-                        counter_new = MULT_DELAY; 
+                        counter_new = MULT_DELAY;
                         state_new = DOING;
                     end
                     MULT: begin
-                        counter_new = MULT_DELAY; 
+                        counter_new = MULT_DELAY;
                         state_new = DOING;
                     end
                     DIVU: begin
-                        counter_new = DIV_DELAY; 
+                        counter_new = DIV_DELAY;
                         state_new = DOING;
                     end
                     DIV: begin
-                        counter_new = DIV_DELAY; 
+                        counter_new = DIV_DELAY;
                         state_new = DOING;
                     end
                     default: begin
-                        
+
                     end
                 endcase
             end
@@ -55,7 +55,7 @@ module mult (
                 end
             end
             default: begin
-                
+
             end
         endcase
     end
