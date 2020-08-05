@@ -67,10 +67,10 @@ module CacheBusToAXI #(
     // it's okay to ignore `cbus_req.is_write`.
     // the last write `okay` response is replaced by the end of transaction.
     logic rw_handshake;
-    // assign rw_handshake =
-    //     (axi_req.w.valid && axi_resp.w.ready) ||
-    //     (axi_req.r.ready && axi_resp.r.valid);
-    assign rw_handshake = axi_resp.w.ready || axi_resp.r.valid;
+    assign rw_handshake =
+        (axi_req.w.valid && axi_resp.w.ready) ||
+        (axi_req.r.ready && axi_resp.r.valid);
+    // assign rw_handshake = axi_resp.w.ready || axi_resp.r.valid;
     assign cbus_resp.okay = (cbus_req.is_write && is_last) ?
         transaction_ok : rw_handshake;
 

@@ -7,10 +7,11 @@
 `include "cache.svh"
 
 module CacheLayer #(
-    parameter logic USE_ICACHE = 1,
-    parameter logic USE_DCACHE = 1,
-    parameter logic USE_IBUS   = 1,
-    parameter logic USE_BUFFER = 1
+    parameter logic USE_ICACHE  = 1,
+    parameter logic USE_DCACHE  = 1,
+    parameter logic USE_IBUS    = 1,
+    parameter logic USE_BUFFER  = 1,
+    parameter logic USE_ARBITER = 1
 ) (
     input  logic aclk, aresetn,
 
@@ -257,141 +258,174 @@ module CacheLayer #(
         .axi_resp(axi_uncached_resp)
     );
 
-    /**
-     * AXI crossbar
-     */
-    logic [11:0] s_axi_awid;
-    logic [95:0] s_axi_awaddr;
-    logic [11:0] s_axi_awlen;
-    logic [8 :0] s_axi_awsize;
-    logic [5 :0] s_axi_awburst;
-    logic [5 :0] s_axi_awlock;
-    logic [11:0] s_axi_awcache;
-    logic [8 :0] s_axi_awprot;
-    logic [11:0] s_axi_awqos;
-    logic [2 :0] s_axi_awvalid;
-    logic [2 :0] s_axi_awready;
-    logic [11:0] s_axi_wid;
-    logic [95:0] s_axi_wdata;
-    logic [11:0] s_axi_wstrb;
-    logic [2 :0] s_axi_wlast;
-    logic [2 :0] s_axi_wvalid;
-    logic [2 :0] s_axi_wready;
-    logic [11:0] s_axi_bid;
-    logic [5 :0] s_axi_bresp;
-    logic [2 :0] s_axi_bvalid;
-    logic [2 :0] s_axi_bready;
-    logic [11:0] s_axi_arid;
-    logic [95:0] s_axi_araddr;
-    logic [11:0] s_axi_arlen;
-    logic [8 :0] s_axi_arsize;
-    logic [5 :0] s_axi_arburst;
-    logic [5 :0] s_axi_arlock;
-    logic [11:0] s_axi_arcache;
-    logic [8 :0] s_axi_arprot;
-    logic [11:0] s_axi_arqos;
-    logic [2 :0] s_axi_arvalid;
-    logic [2 :0] s_axi_arready;
-    logic [11:0] s_axi_rid;
-    logic [95:0] s_axi_rdata;
-    logic [5 :0] s_axi_rresp;
-    logic [2 :0] s_axi_rlast;
-    logic [2 :0] s_axi_rvalid;
-    logic [2 :0] s_axi_rready;
+    if (USE_ARBITER == 1) begin: use_arbiter
+        /**
+         * *homemade* bus arbiter
+         */
+        axi_req_t  axi_arbiter_req;
+        axi_resp_t axi_arbiter_resp;
 
-    logic [3:0] awqos, arqos;  // ignored
+        AXIArbiter #(
+            .NUM_PORTS(3)
+        ) axi_arbiter_inst(
+            .clk(aclk), .resetn(aresetn),
 
-    CrossbarWrap _wrap_inst(
-        .*,
-        .req({
-            axi_uncached_req,
-            axi_dcache_req,
-            axi_icache_req
-        }),
-        .resp({
-            axi_uncached_resp,
-            axi_dcache_resp,
-            axi_icache_resp
-        })
-    );
+            .m_req({
+                axi_uncached_req,
+                axi_dcache_req,
+                axi_icache_req
+            }),
+            .m_resp({
+                axi_uncached_resp,
+                axi_dcache_resp,
+                axi_icache_resp
+            }),
+            .s_req(axi_arbiter_req),
+            .s_resp(axi_arbiter_resp)
+        );
 
-`ifndef VERILATOR
-    AXICrossbar crossbar_inst(
-        .*,
-        .aclk(aclk), .aresetn(aresetn),
+        AXIWrap axi_wrap_inst(
+            .req(axi_arbiter_req),
+            .resp(axi_arbiter_resp),
+            .*
+        );
+    end else begin: use_crossbar
+        /**
+         * AXI crossbar
+         */
+        logic [11:0] s_axi_awid;
+        logic [95:0] s_axi_awaddr;
+        logic [11:0] s_axi_awlen;
+        logic [8 :0] s_axi_awsize;
+        logic [5 :0] s_axi_awburst;
+        logic [5 :0] s_axi_awlock;
+        logic [11:0] s_axi_awcache;
+        logic [8 :0] s_axi_awprot;
+        logic [11:0] s_axi_awqos;
+        logic [2 :0] s_axi_awvalid;
+        logic [2 :0] s_axi_awready;
+        logic [11:0] s_axi_wid;
+        logic [95:0] s_axi_wdata;
+        logic [11:0] s_axi_wstrb;
+        logic [2 :0] s_axi_wlast;
+        logic [2 :0] s_axi_wvalid;
+        logic [2 :0] s_axi_wready;
+        logic [11:0] s_axi_bid;
+        logic [5 :0] s_axi_bresp;
+        logic [2 :0] s_axi_bvalid;
+        logic [2 :0] s_axi_bready;
+        logic [11:0] s_axi_arid;
+        logic [95:0] s_axi_araddr;
+        logic [11:0] s_axi_arlen;
+        logic [8 :0] s_axi_arsize;
+        logic [5 :0] s_axi_arburst;
+        logic [5 :0] s_axi_arlock;
+        logic [11:0] s_axi_arcache;
+        logic [8 :0] s_axi_arprot;
+        logic [11:0] s_axi_arqos;
+        logic [2 :0] s_axi_arvalid;
+        logic [2 :0] s_axi_arready;
+        logic [11:0] s_axi_rid;
+        logic [95:0] s_axi_rdata;
+        logic [5 :0] s_axi_rresp;
+        logic [2 :0] s_axi_rlast;
+        logic [2 :0] s_axi_rvalid;
+        logic [2 :0] s_axi_rready;
 
-        .m_axi_awid(awid),
-        .m_axi_awaddr(awaddr),
-        .m_axi_awlen(awlen),
-        .m_axi_awsize(awsize),
-        .m_axi_awburst(awburst),
-        .m_axi_awlock(awlock),
-        .m_axi_awcache(awcache),
-        .m_axi_awprot(awprot),
-        .m_axi_awqos(awqos),
-        .m_axi_awvalid(awvalid),
-        .m_axi_awready(awready),
+        logic [3:0] awqos, arqos;  // ignored
 
-        .m_axi_wid(wid),
-        .m_axi_wdata(wdata),
-        .m_axi_wstrb(wstrb),
-        .m_axi_wlast(wlast),
-        .m_axi_wvalid(wvalid),
-        .m_axi_wready(wready),
+        CrossbarWrap _wrap_inst(
+            .*,
+            .req({
+                axi_uncached_req,
+                axi_dcache_req,
+                axi_icache_req
+            }),
+            .resp({
+                axi_uncached_resp,
+                axi_dcache_resp,
+                axi_icache_resp
+            })
+        );
 
-        .m_axi_bid(bid),
-        .m_axi_bresp(bresp),
-        .m_axi_bvalid(bvalid),
-        .m_axi_bready(bready),
+        `ifndef VERILATOR
+            AXICrossbar crossbar_inst(
+                .*,
+                .aclk(aclk), .aresetn(aresetn),
 
-        .m_axi_arid(arid),
-        .m_axi_araddr(araddr),
-        .m_axi_arlen(arlen),
-        .m_axi_arsize(arsize),
-        .m_axi_arburst(arburst),
-        .m_axi_arlock(arlock),
-        .m_axi_arcache(arcache),
-        .m_axi_arprot(arprot),
-        .m_axi_arqos(arqos),
-        .m_axi_arvalid(arvalid),
-        .m_axi_arready(arready),
+                .m_axi_awid(awid),
+                .m_axi_awaddr(awaddr),
+                .m_axi_awlen(awlen),
+                .m_axi_awsize(awsize),
+                .m_axi_awburst(awburst),
+                .m_axi_awlock(awlock),
+                .m_axi_awcache(awcache),
+                .m_axi_awprot(awprot),
+                .m_axi_awqos(awqos),
+                .m_axi_awvalid(awvalid),
+                .m_axi_awready(awready),
 
-        .m_axi_rid(rid),
-        .m_axi_rdata(rdata),
-        .m_axi_rresp(rresp),
-        .m_axi_rlast(rlast),
-        .m_axi_rvalid(rvalid),
-        .m_axi_rready(rready)
-    );
-`else
-    assign {
-        arid, araddr, arlen, arsize, arburst, arlock,
-        arcache, arprot, arvalid, rready, awid, awaddr,
-        awlen, awsize, awburst, awlock, awcache, awprot,
-        awvalid, wid, wdata, wstrb, wlast, wvalid, bready,
-        s_axi_awready, s_axi_awready, s_axi_bid, s_axi_bvalid,
-        s_axi_wready, s_axi_bresp, s_axi_arready, s_axi_rid,
-        s_axi_rdata, s_axi_rresp, s_axi_rlast, s_axi_rvalid,
-        awqos, arqos
-    } = 0;
+                .m_axi_wid(wid),
+                .m_axi_wdata(wdata),
+                .m_axi_wstrb(wstrb),
+                .m_axi_wlast(wlast),
+                .m_axi_wvalid(wvalid),
+                .m_axi_wready(wready),
 
-    logic __unused_ok = &{1'b0,
-        s_axi_awid, s_axi_awaddr, s_axi_awlen, s_axi_awsize,
-        s_axi_awburst, s_axi_awlock, s_axi_awcache, s_axi_awprot,
-        s_axi_awqos, s_axi_awvalid, s_axi_awready, s_axi_wid,
-        s_axi_wdata, s_axi_wstrb, s_axi_wlast, s_axi_wvalid,
-        s_axi_wready, s_axi_bid, s_axi_bresp, s_axi_bvalid,
-        s_axi_bready, s_axi_arid, s_axi_araddr, s_axi_arlen,
-        s_axi_arsize, s_axi_arburst, s_axi_arlock, s_axi_arcache,
-        s_axi_arprot, s_axi_arqos, s_axi_arvalid, s_axi_arready,
-        s_axi_rid, s_axi_rdata, s_axi_rresp, s_axi_rlast,
-        s_axi_rvalid, s_axi_rready, awqos, arqos,
-        arid, araddr, arlen, arsize, arburst, arlock,
-        arcache, arprot, arvalid, arready, rid, rdata, rresp,
-        rlast, rvalid, rready, awid, awaddr, awlen, awsize,
-        awburst, awlock, awcache, awprot, awvalid, awready,
-        wid, wdata, wstrb, wlast, wvalid, wready, bid, bresp,
-        bvalid, bready,
-    1'b0};
-`endif
+                .m_axi_bid(bid),
+                .m_axi_bresp(bresp),
+                .m_axi_bvalid(bvalid),
+                .m_axi_bready(bready),
+
+                .m_axi_arid(arid),
+                .m_axi_araddr(araddr),
+                .m_axi_arlen(arlen),
+                .m_axi_arsize(arsize),
+                .m_axi_arburst(arburst),
+                .m_axi_arlock(arlock),
+                .m_axi_arcache(arcache),
+                .m_axi_arprot(arprot),
+                .m_axi_arqos(arqos),
+                .m_axi_arvalid(arvalid),
+                .m_axi_arready(arready),
+
+                .m_axi_rid(rid),
+                .m_axi_rdata(rdata),
+                .m_axi_rresp(rresp),
+                .m_axi_rlast(rlast),
+                .m_axi_rvalid(rvalid),
+                .m_axi_rready(rready)
+            );
+        `else
+            assign {
+                arid, araddr, arlen, arsize, arburst, arlock,
+                arcache, arprot, arvalid, rready, awid, awaddr,
+                awlen, awsize, awburst, awlock, awcache, awprot,
+                awvalid, wid, wdata, wstrb, wlast, wvalid, bready,
+                s_axi_awready, s_axi_awready, s_axi_bid, s_axi_bvalid,
+                s_axi_wready, s_axi_bresp, s_axi_arready, s_axi_rid,
+                s_axi_rdata, s_axi_rresp, s_axi_rlast, s_axi_rvalid,
+                awqos, arqos
+            } = 0;
+
+            logic __unused_ok = &{1'b0,
+                s_axi_awid, s_axi_awaddr, s_axi_awlen, s_axi_awsize,
+                s_axi_awburst, s_axi_awlock, s_axi_awcache, s_axi_awprot,
+                s_axi_awqos, s_axi_awvalid, s_axi_awready, s_axi_wid,
+                s_axi_wdata, s_axi_wstrb, s_axi_wlast, s_axi_wvalid,
+                s_axi_wready, s_axi_bid, s_axi_bresp, s_axi_bvalid,
+                s_axi_bready, s_axi_arid, s_axi_araddr, s_axi_arlen,
+                s_axi_arsize, s_axi_arburst, s_axi_arlock, s_axi_arcache,
+                s_axi_arprot, s_axi_arqos, s_axi_arvalid, s_axi_arready,
+                s_axi_rid, s_axi_rdata, s_axi_rresp, s_axi_rlast,
+                s_axi_rvalid, s_axi_rready, awqos, arqos,
+                arid, araddr, arlen, arsize, arburst, arlock,
+                arcache, arprot, arvalid, arready, rid, rdata, rresp,
+                rlast, rvalid, rready, awid, awaddr, awlen, awsize,
+                awburst, awlock, awcache, awprot, awvalid, awready,
+                wid, wdata, wstrb, wlast, wvalid, wready, bid, bresp,
+                bvalid, bready,
+            1'b0};
+        `endif
+    end
 endmodule
