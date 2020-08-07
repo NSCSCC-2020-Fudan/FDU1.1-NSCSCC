@@ -116,7 +116,7 @@ IBus 对 SRAM* 总线接口做了简化。取指只需要发出请求信号 `req
 
 数据总线和 SRAM* 总线相比，只是处理 SRAM* 中 `size` 和 `addr` 组合的信息，生成一个 `write_en`。
 
-在 DBus 中，如果 `is_write` 为 0，此时依然要求 `write_en` 为全 0。
+**注意**：在 DBus 中，即使 `is_write` 为 0，此时依然要求 `write_en` 为全 0。
 
 参数：
 
@@ -145,3 +145,19 @@ Cache 部分只会修改 CPU 顶层模块的代码。代码位于 `code/mycpu_to
 * `USE_IBUS`：是否使用 IBus 。如果为 0 则会在 ICache 前接一个 `SRAMxToInstrBus` 的转接模块。
 
 对 `mycpu` 而言，需要根据需要使用 `inst_*`、`data_*` 或者是 `inst_ibus_*` 这些信号。
+
+## 地址翻译模块（`TranslationUnit`/TU）
+
+代码中将地址翻译模块独立了出来，写在了 `TranslationUnit` 模块内部，简称为 TU。默认的 TU 是没有实现 TLB 的。现在 TU 提供的接口如下：
+
+* `clk`：CPU 的时钟信号。
+* `resetn`：CPU 的 reset 信号。
+* `i_req`/`i_resp`：指令访问地址翻译请求。结构体的定义请参见 `src/include/tu_addr.svh`。
+* `d_req`/`d_resp`：数据访问地址翻译请求。同上。
+* `op_req`/`op_resp`：预留给 CPU 和 TU 间交互的通道。目前在 `src/include/tu.svh` 中没有写入详细的定义。
+
+`tu_addr_req_t` 和 `tu_addr_resp_t` 是地址翻译请求的结构体类型，其定义在 `src/include/tu_addr.svh` 中。这两个类型是与 MMU 部分交互的，一般不需要做修改。而 `tu_op_req_t` 和 `tu_op_resp_t` 是和 CPU 交互的接口结构体类型，其定义在 `src/include/tu.svh` 中，需要根据实际需求来增减信号。
+
+如果 CPU 需要和 TU 进行沟通，则要在 `mycpu` 模块的接口中添加 `tu_op_req` 和 `tu_op_resp` 这两个接口，类型分别为 `tu_op_req_t` 和 `tu_op_resp_t`。
+
+如果需要替换掉 cache 内部实现的默认 TU，可以将 `src/include/disable_tu.svh` 在 Vivado 中设置为全局包含（global include），或者在全局定义宏 `DISABLE_DEFAULT_TU`。设置后，`tu_op_req_t`、`tu_op_resp_t` 和 `TranslationUnit` 将不在 cache 的代码中定义。之后需要有其它地方提供头文件 `tu.svh` 和 `TranslationUnit` 这个模块。

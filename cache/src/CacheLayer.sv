@@ -5,6 +5,7 @@
 `include "instr_bus.svh"
 `include "data_bus.svh"
 `include "cache.svh"
+`include "tu.svh"
 
 module CacheLayer #(
     parameter logic USE_ICACHE = 1,
@@ -14,6 +15,7 @@ module CacheLayer #(
 ) (
     input  logic aclk, aresetn,
 
+    // AXI3
     output logic [3:0]  arid,
     output logic [31:0] araddr,
     output logic [3:0]  arlen,
@@ -51,6 +53,7 @@ module CacheLayer #(
     input  logic        bvalid,
     output logic        bready,
 
+    // SRAMx
     input  logic        inst_req,     data_req,
     input  logic        inst_wr,      data_wr,
     input  logic  [1:0] inst_size,    data_size,
@@ -60,12 +63,17 @@ module CacheLayer #(
     output logic        inst_addr_ok, data_addr_ok,
     output logic        inst_data_ok, data_data_ok,
 
+    // IBus
     input  logic        inst_ibus_req,
     input  addr_t       inst_ibus_addr,
     output logic        inst_ibus_addr_ok,
     output logic        inst_ibus_data_ok,
     output ibus_data_t  inst_ibus_data,
-    output ibus_index_t inst_ibus_index
+    output ibus_index_t inst_ibus_index,
+
+    // TU (inside MMU)
+    input  tu_op_req_t  tu_op_req,
+    output tu_op_resp_t tu_op_resp
 );
     /**
      * interface converter
