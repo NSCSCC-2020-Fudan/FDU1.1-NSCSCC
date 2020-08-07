@@ -1,5 +1,5 @@
 // `include "mips.svh"
-
+`include "tu.svh"
 
 // axi
 module mycpu_top #(
@@ -80,6 +80,9 @@ module mycpu_top #(
     logic         inst_ibus_data_ok;
     _ibus_data_t  inst_ibus_data;
     _ibus_index_t inst_ibus_index;
+
+    tu_op_req_t  tu_op_req;
+    tu_op_resp_t tu_op_resp;
 
     mycpu #(.DO_ADDR_TRANSLATION(~USE_CACHE)) mycpu(
         .clk(aclk), .resetn(aresetn), .*

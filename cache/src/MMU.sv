@@ -1,3 +1,5 @@
+`include "tu.svh"
+`include "tu_addr.svh"
 `include "sramx.svh"
 `include "instr_bus.svh"
 
@@ -6,9 +8,12 @@
  * redirecting, as they did in NonTrivialMIPS.
  */
 module MMU #(
-    parameter logic USE_IBUS = 0
+    parameter logic USE_IBUS = 1
 ) (
     input logic aclk, aresetn,
+
+    input  tu_op_req_t  tu_op_req,
+    output tu_op_resp_t tu_op_resp,
 
     input  sramx_req_t  imem_sramx_req,
     output sramx_resp_t imem_sramx_resp,
@@ -27,38 +32,35 @@ module MMU #(
     input  sramx_resp_t uncached_resp
 );
     // address translation
-    addr_t iaddr, daddr;
-    logic i_uncached, d_uncached;
+    tu_addr_req_t  i_req,  d_req;
+    tu_addr_resp_t i_resp, d_resp;
 
-    DirectMappedAddr _d_map_inst(
-        .vaddr(dmem_req.addr),
-        .paddr(daddr), .is_uncached(d_uncached)
-    );
-
-    // directly pass imem requests
     if (USE_IBUS == 1) begin: with_ibus
-        DirectMappedAddr _i_map_inst(
-            .vaddr(imem_ibus_req.addr),
-            .paddr(iaddr), .is_uncached(i_uncached)
-        );
+        assign i_req.vaddr = imem_ibus_req.addr;
 
         always_comb begin
             ibus_req       = imem_ibus_req;
-            ibus_req.addr  = iaddr;
+            ibus_req.addr  = i_resp.paddr;
             imem_ibus_resp = ibus_resp;
         end
     end else begin: without_ibus
-        DirectMappedAddr _i_map_inst(
-            .vaddr(imem_sramx_req.addr),
-            .paddr(iaddr), .is_uncached(i_uncached)
-        );
+        assign i_req.vaddr = imem_sramx_req.addr;
 
         always_comb begin
             isramx_req      = imem_sramx_req;
-            isramx_req.addr = iaddr;
+            isramx_req.addr = i_resp.paddr;
             imem_sramx_resp = isramx_resp;
         end
     end
+
+    assign d_req.vaddr = dmem_req.addr;
+
+    TranslationUnit tu_inst(
+        .clk(aclk), .resetn(aresetn),
+        .i_req, .i_resp, .d_req, .d_resp,
+        .op_req(tu_op_req),
+        .op_resp(tu_op_resp)
+    );
 
     // dispatch dcache/uncached accesses
     // NOTE: two stage pipeline here
@@ -81,7 +83,7 @@ module MMU #(
     logic cur_ready;     // can stage 1 step into stage 2?
     logic last_ready;    // stage 2 ok in current clock cycle?
 
-    assign real_addr_ok = d_uncached ? uncached_resp.addr_ok : dcache_resp.addr_ok;
+    assign real_addr_ok = d_resp.is_uncached ? uncached_resp.addr_ok : dcache_resp.addr_ok;
     assign cur_ready    = last_ready && (cur_finished || real_addr_ok);
     assign last_ready   = last_finished || dmem_data_ok;
 
@@ -93,14 +95,14 @@ module MMU #(
         // dmem_resp = 0;
 
         // AND with "!cur_finished": in case CPU does not deassert "req".
-        if (d_uncached) begin
+        if (d_resp.is_uncached) begin
             uncached_req      = dmem_req;
             uncached_req.req  = dmem_req.req && !cur_finished;
-            uncached_req.addr = daddr;
+            uncached_req.addr = d_resp.paddr;
         end else begin
             dcache_req      = dmem_req;
             dcache_req.req  = dmem_req.req && !cur_finished;
-            dcache_req.addr = daddr;
+            dcache_req.addr = d_resp.paddr;
         end
 
         if (last_d_uncached) begin
@@ -116,9 +118,9 @@ module MMU #(
     if (aresetn) begin
         if (dmem_req.req) begin
             if (cur_ready) begin
-                cur_finished <= 0;
-                last_finished <= 0;
-                last_d_uncached <= d_uncached;
+                cur_finished    <= 0;
+                last_finished   <= 0;
+                last_d_uncached <= d_resp.is_uncached;
             end else if (!cur_finished)
                 cur_finished <= real_addr_ok;
         end
@@ -139,14 +141,14 @@ module MMU #(
         assign isramx_req      = 0;
 
         logic __unused_ok = &{1'b0,
-            i_uncached, imem_sramx_req, isramx_resp,
+            i_resp.is_uncached, imem_sramx_req, isramx_resp,
         1'b0};
     end else begin
         assign imem_ibus_resp = 0;
         assign ibus_req       = 0;
 
         logic __unused_ok = &{1'b0,
-            i_uncached, imem_ibus_req, ibus_resp,
+            i_resp.is_uncached, imem_ibus_req, ibus_resp,
         1'b0};
     end
 endmodule
