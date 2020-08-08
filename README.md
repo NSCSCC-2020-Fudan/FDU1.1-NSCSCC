@@ -2,19 +2,7 @@
 
 ## 源码加入
 
-为了方便自动化加入源码，需要每个分支在自己的源码文件夹下添加一个 `sources.tcl` 的 Tcl 脚本。具体内容可以参考 `cache/sources.tcl` 和 `superscalar_inorder_dual/sources.tcl` 这两个文件。
-
-## 测试流程
-
-当需要进行整体测试时，考虑从 `master` 分支新建一个分支（例如 `superscalar-testing`），然后将你的代码 merge 到该分支上：
-
-```
-git checkout master
-git checkout -b superscalar-testing
-git merge superscalar
-```
-
-然后在 `sources` 目录添加或修改对应的 Tcl 脚本。例如，加入一个新的 Tcl 脚本（`sources/superscalar-inorder.tcl`），作用是将 `cache` 的代码和 `superscalar_inorder_dual` 的代码一起加入 Vivado 中：
+为了方便自动化加入源码，需要每个分支在自己的源码文件夹下添加一个 `sources.tcl` 的 Tcl 脚本。具体内容可以参考 `cache/sources.tcl` 和 `superscalar_inorder_dual/sources.tcl` 这两个文件。例如：
 
 ```
 # 文件 "sources/superscalar-inorder.tcl"
@@ -34,27 +22,95 @@ cd [file dirname [info script]]
 add_files ../cache/src/top/mycpu_top.sv
 ```
 
-注意 `mycpu_top` 可能存在多个版本，需要根据需求选择正确的版本。
+常用 Tcl 命令：
 
-在 Vivado 中打开功能测试或性能测试或系统测试的工程，删除以前的代码。然后点击 “Tools”→“Run Tcl Scripts...”，选择之前写好的 `sources/superscalar-inorder.tcl` 文件，之后如果没有问题就会加入所有需要测试的源码。
-
-测试完成后，将你的改动同步到 `master` 分支上：
+切换到当前脚本所在的目录：
 
 ```
-# 在 superscalar-testing 分支提交改动
-git add --all
-git commit
+cd [file dirname [info script]]
+```
 
-# 将改动同步到 master 分支上
-git fetch origin
+调用另外的脚本：
+
+```
+source ../cache/sources.tcl
+```
+
+添加文件：
+
+```
+add_files ../cache/src/top/mycpu_top.sv
+add_files [glob src/*.sv]
+```
+
+设置全局 include：
+
+```
+set_property is_global_include true [get_files src/xsim/global.svh]
+```
+
+## 开发流程
+
+因为队伍人数不多，所以整个仓库只需要一个长期的 master 分支就可以了。开发的过程相当于不断给 master 分支打补丁。基本的操作流程如下：
+
+准备开发前：
+
+* 更新你的本地仓库：
+
+```
+git fetch
+```
+
+* 从最新的 master 处新建一个分支。例如，如果要增加三级 Fetch，可以新建一个叫做 3-stage-fetch 的分支：
+
+```
+git checkout -b 3-stage-fetch origin/master
+```
+
+之后就可以开始写代码了。写完代码后尽量先和 master 上已有的代码一起测试后，在更新到 master 分支。测试流程见下一小节。
+
+## 测试流程
+
+记得先更新本地仓库：
+
+```
+git fetch
+```
+
+当需要进行整体测试时，先将你做的尝试 rebase 到 master 分支上。此时建议新建一个分支进行测试，以方便在意外时恢复测试前的状态。例如，假设你的现在在 superscalar 分支上，建立一个新的分支 superscalar-testing 用于测试：
+
+```
+git checkout -b superscalar-testing
 git rebase origin/master
 ```
 
-如果 rebase 中途发生冲突而失败，请参考 [public-doc](https://github.com/NSCSCC-2020-Fudan/public-doc) 中 “协同开发” 文档中的说明处理冲突。
+如果 rebase 中出现冲突，请参考 [public-doc](https://github.com/NSCSCC-2020-Fudan/public-doc) 中 “协同开发” 文档中的说明处理冲突。
 
-最后上传改动到 GitHub，同时可以删去临时的测试分支：
+测试成功后，可以将原来的 superscalar 分支移到 superscalar-testing 处，并且这个测试分支就不需要了。
+
+```
+git checkout superscalar
+git reset --hard superscalar-testing
+git branch -d superscalar-testing
+```
+
+push 分支代码的时候可能需要使用 `-f` 参数。
+
+```
+git push -f origin superscalar
+```
+
+## 提交改动
+
+经过上述测试流程后，你的分支应该是在 master 分支前面的。此时只需要将 master 分支移到你的分支上即可：
+
+```
+git checkout master
+git merge --ff-only superscalar
+```
+
+最后 push 代码：
 
 ```
 git push origin master
-git branch -d superscalar-testing
 ```
