@@ -1,58 +1,40 @@
 `include "tu.svh"
 `include "tu_addr.svh"
-`include "sramx.svh"
 `include "instr_bus.svh"
+`include "data_bus.svh"
 
 /**
  * we didn't distinguish cached/uncached accesses in icache
  * redirecting, as they did in NonTrivialMIPS.
  */
-module MMU #(
-    parameter logic USE_IBUS = 1
-) (
+module MMU(
     input logic aclk, aresetn,
 
     input  tu_op_req_t  tu_op_req,
     output tu_op_resp_t tu_op_resp,
 
-    input  sramx_req_t  imem_sramx_req,
-    output sramx_resp_t imem_sramx_resp,
-    input  ibus_req_t   imem_ibus_req,
-    output ibus_resp_t  imem_ibus_resp,
-    input  sramx_req_t  dmem_req,
-    output sramx_resp_t dmem_resp,
+    input  ibus_req_t  imem_req,
+    output ibus_resp_t imem_resp,
+    input  dbus_req_t  dmem_req,
+    output dbus_resp_t dmem_resp,
 
-    output sramx_req_t  isramx_req,
-    input  sramx_resp_t isramx_resp,
-    output ibus_req_t   ibus_req,
-    input  ibus_resp_t  ibus_resp,
-    output sramx_req_t  dcache_req,
-    input  sramx_resp_t dcache_resp,
-    output sramx_req_t  uncached_req,
-    input  sramx_resp_t uncached_resp
+    output ibus_req_t  icache_req,
+    input  ibus_resp_t icache_resp,
+    output dbus_req_t  dcache_req,
+    input  dbus_resp_t dcache_resp,
+    output dbus_req_t  uncached_req,
+    input  dbus_resp_t uncached_resp
 );
     // address translation
     tu_addr_req_t  i_req,  d_req;
     tu_addr_resp_t i_resp, d_resp;
 
-    if (USE_IBUS == 1) begin: with_ibus
-        assign i_req.req   = imem_ibus_req.req;
-        assign i_req.vaddr = imem_ibus_req.addr;
+    assign i_req.vaddr = imem_req.addr;
+    assign imem_resp   = icache_resp;
 
-        always_comb begin
-            ibus_req       = imem_ibus_req;
-            ibus_req.addr  = i_resp.paddr;
-            imem_ibus_resp = ibus_resp;
-        end
-    end else begin: without_ibus
-        assign i_req.req   = imem_sramx_req.req;
-        assign i_req.vaddr = imem_sramx_req.addr;
-
-        always_comb begin
-            isramx_req      = imem_sramx_req;
-            isramx_req.addr = i_resp.paddr;
-            imem_sramx_resp = isramx_resp;
-        end
+    always_comb begin
+        icache_req      = imem_req;
+        icache_req.addr = i_resp.paddr;
     end
 
     assign d_req.req   = dmem_req.req;
@@ -68,13 +50,13 @@ module MMU #(
     // dispatch dcache/uncached accesses
     // NOTE: two stage pipeline here
     // split variables
-    logic        dmem_addr_ok;
-    logic        dmem_data_ok;
-    sramx_word_t dmem_rdata;
+    logic       dmem_addr_ok;
+    logic       dmem_data_ok;
+    dbus_word_t dmem_rdata;
 
     assign dmem_resp.addr_ok = dmem_addr_ok;
     assign dmem_resp.data_ok = dmem_data_ok;
-    assign dmem_resp.rdata   = dmem_rdata;
+    assign dmem_resp.data    = dmem_rdata;
 
     // registers
     logic cur_finished;     // stage 1 "addr_ok" has been received?
@@ -110,10 +92,10 @@ module MMU #(
 
         if (last_d_uncached) begin
             dmem_data_ok = uncached_resp.data_ok;
-            dmem_rdata   = uncached_resp.rdata;
+            dmem_rdata   = uncached_resp.data;
         end else begin
             dmem_data_ok = dcache_resp.data_ok;
-            dmem_rdata   = dcache_resp.rdata;
+            dmem_rdata   = dcache_resp.data;
         end
     end
 
@@ -139,19 +121,7 @@ module MMU #(
     /**
      * unused
      */
-    if (USE_IBUS == 1) begin
-        assign imem_sramx_resp = 0;
-        assign isramx_req      = 0;
-
-        logic __unused_ok = &{1'b0,
-            i_resp.is_uncached, imem_sramx_req, isramx_resp,
-        1'b0};
-    end else begin
-        assign imem_ibus_resp = 0;
-        assign ibus_req       = 0;
-
-        logic __unused_ok = &{1'b0,
-            i_resp.is_uncached, imem_ibus_req, ibus_resp,
-        1'b0};
-    end
+    logic __unused_ok = &{1'b0,
+        i_resp.is_uncached,
+    1'b0};
 endmodule

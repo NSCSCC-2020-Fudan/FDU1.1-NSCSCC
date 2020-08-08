@@ -1,5 +1,5 @@
 `include "defs.svh"
-`include "sramx.svh"
+`include "data_bus.svh"
 
 module LoadStoreBuffer #(
 `ifdef IN_SIMULATION
@@ -8,7 +8,8 @@ module LoadStoreBuffer #(
     parameter int BUFFER_LENGTH = 16,
 `endif
 
-    parameter type req_t = sramx_req_t,
+    parameter type req_t  = dbus_req_t,
+    parameter type resp_t = dbus_resp_t,
 
     localparam int INDEX_BITS = $clog2(BUFFER_LENGTH),
 
@@ -22,10 +23,10 @@ module LoadStoreBuffer #(
 ) (
     input logic clk, resetn,
 
-    input  sramx_req_t  m_req,
-    output sramx_resp_t m_resp,
-    output sramx_req_t  s_req,
-    input  sramx_resp_t s_resp
+    input  req_t  m_req,
+    output resp_t m_resp,
+    output req_t  s_req,
+    input  resp_t s_resp
 );
     /**
      * states & storages
@@ -47,7 +48,7 @@ module LoadStoreBuffer #(
     assign tail_elem  = fifo[tail];
     assign fifo_avail = meta[head].avail;
     assign fifo_empty = meta[tail].avail;
-    assign fifo_ready = fifo_avail && (fifo_empty || m_req.wr == tail_elem.wr);
+    assign fifo_ready = fifo_avail && (fifo_empty || m_req.is_write == tail_elem.is_write);
     assign fifo_push  = m_req.req && fifo_ready;
     assign fifo_pop   = s_resp.data_ok;
 
@@ -58,7 +59,7 @@ module LoadStoreBuffer #(
 
     always_ff @(posedge clk)
     if (resetn) begin
-        last_data_ok <= fifo_push && m_req.wr;
+        last_data_ok <= fifo_push && m_req.is_write;
 
         for (int i = 0; i < BUFFER_LENGTH; i++) begin
             /*unique*/ if (fifo_push && head == index_t'(i))
@@ -93,9 +94,9 @@ module LoadStoreBuffer #(
     /**
      * driver for master
      */
-    assign m_resp.rdata   = s_resp.rdata;
+    assign m_resp.data    = s_resp.data;
     assign m_resp.addr_ok = fifo_ready;
-    assign m_resp.data_ok = tail_elem.wr ? last_data_ok : s_resp.data_ok;
+    assign m_resp.data_ok = tail_elem.is_write ? last_data_ok : s_resp.data_ok;
 
     assign s_req = fifo_empty ? m_req : tail_elem;
 endmodule

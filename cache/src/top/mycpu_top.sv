@@ -5,11 +5,7 @@
 
 
 // axi
-module mycpu_top #(
-    parameter logic USE_ICACHE = 1,
-    parameter logic USE_DCACHE = 1,
-    parameter logic USE_BUFFER = 1
-) (
+module mycpu_top(
     input logic[5:0] ext_int,  //high active
 
     input logic aclk,
@@ -66,13 +62,9 @@ module mycpu_top #(
     tu_op_req_t  tu_op_req;
     tu_op_resp_t tu_op_resp;
 
-    mycpu #(.DO_ADDR_TRANSLATION(~USE_CACHE)) mycpu(
+    mycpu #(.DO_ADDR_TRANSLATION(0)) mycpu(
         .clk(aclk), .resetn(aresetn), .*
     );
 
-    CacheLayer #(
-        .USE_ICACHE(USE_ICACHE),
-        .USE_DCACHE(USE_DCACHE),
-        .USE_BUFFER(USE_BUFFER)
-    ) layer_inst(.*);
+    CacheLayer layer_inst(.*);
 endmodule
