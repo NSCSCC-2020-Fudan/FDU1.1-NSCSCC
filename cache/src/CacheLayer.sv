@@ -10,7 +10,6 @@
 module CacheLayer #(
     parameter logic USE_ICACHE = 1,
     parameter logic USE_DCACHE = 1,
-    parameter logic USE_IBUS   = 1,
     parameter logic USE_BUFFER = 1
 ) (
     input  logic aclk, aresetn,
@@ -53,68 +52,11 @@ module CacheLayer #(
     input  logic        bvalid,
     output logic        bready,
 
-    // SRAMx
-    input  logic        inst_req,     data_req,
-    input  logic        inst_wr,      data_wr,
-    input  logic  [1:0] inst_size,    data_size,
-    input  addr_t       inst_addr,    data_addr,
-    input  word_t       inst_wdata,   data_wdata,
-    output word_t       inst_rdata,   data_rdata,
-    output logic        inst_addr_ok, data_addr_ok,
-    output logic        inst_data_ok, data_data_ok,
-
-    // IBus
-    input  logic        inst_ibus_req,
-    input  addr_t       inst_ibus_addr,
-    output logic        inst_ibus_addr_ok,
-    output logic        inst_ibus_data_ok,
-    output ibus_data_t  inst_ibus_data,
-    output ibus_index_t inst_ibus_index,
-
-    // TU (inside MMU)
-    input  tu_op_req_t  tu_op_req,
-    output tu_op_resp_t tu_op_resp
+    input  ibus_req_t  imem_req,
+    output ibus_resp_t imem_resp,
+    input  dbus_req_t  dmem_req,
+    output dbus_resp_t dmem_resp
 );
-    /**
-     * interface converter
-     */
-    sramx_req_t  imem_sramx_req,  dmem_req;
-    sramx_resp_t imem_sramx_resp, dmem_resp;
-    ibus_req_t   imem_ibus_req;
-    ibus_resp_t  imem_ibus_resp;
-
-    assign imem_sramx_req.req   = inst_req;
-    assign imem_sramx_req.wr    = inst_wr;
-    assign imem_sramx_req.size  = inst_size;
-    assign imem_sramx_req.addr  = inst_addr;
-    assign imem_sramx_req.wdata = inst_wdata;
-    assign inst_addr_ok         = imem_sramx_resp.addr_ok;
-    assign inst_data_ok         = imem_sramx_resp.data_ok;
-    assign inst_rdata           = imem_sramx_resp.rdata;
-
-    assign dmem_req.req   = data_req;
-    assign dmem_req.wr    = data_wr;
-    assign dmem_req.size  = data_size;
-    assign dmem_req.addr  = data_addr;
-    assign dmem_req.wdata = data_wdata;
-    assign data_addr_ok   = dmem_resp.addr_ok;
-    assign data_data_ok   = dmem_resp.data_ok;
-    assign data_rdata     = dmem_resp.rdata;
-
-    assign imem_ibus_req.req  = inst_ibus_req;
-    assign imem_ibus_req.addr = inst_ibus_addr;
-    assign inst_ibus_addr_ok  = imem_ibus_resp.addr_ok;
-    assign inst_ibus_data_ok  = imem_ibus_resp.data_ok;
-    assign inst_ibus_data     = imem_ibus_resp.data;
-    assign inst_ibus_index    = imem_ibus_resp.index;
-
-    addr_t imem_req_vaddr;
-
-    if (USE_IBUS == 1)
-        assign imem_req_vaddr = imem_sramx_req.addr;
-    else
-        assign imem_req_vaddr = imem_ibus_req.addr;
-
     /**
      * address translation & request dispatching
      */
@@ -130,7 +72,7 @@ module CacheLayer #(
     ibus_resp_t  ibus_resp;
     // verilator lint_restore
 
-    MMU #(.USE_IBUS(USE_IBUS)) mmu_inst(.*);
+    MMU mmu_inst(.*);
 
     /**
      * buffers or caches
