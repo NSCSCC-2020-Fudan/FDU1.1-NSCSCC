@@ -1,17 +1,12 @@
 `include "defs.svh"
 `include "axi.svh"
-`include "sramx.svh"
 `include "cache_bus.svh"
 `include "instr_bus.svh"
 `include "data_bus.svh"
 `include "cache.svh"
 `include "tu.svh"
 
-module CacheLayer #(
-    parameter logic USE_ICACHE = 1,
-    parameter logic USE_DCACHE = 1,
-    parameter logic USE_BUFFER = 1
-) (
+module CacheLayer(
     input  logic aclk, aresetn,
 
     // AXI3
@@ -52,25 +47,23 @@ module CacheLayer #(
     input  logic        bvalid,
     output logic        bready,
 
+    // CPU requests
     input  ibus_req_t  imem_req,
     output ibus_resp_t imem_resp,
     input  dbus_req_t  dmem_req,
-    output dbus_resp_t dmem_resp
+    output dbus_resp_t dmem_resp,
+
+    // TU (inside MMU)
+    input  tu_op_req_t  tu_op_req,
+    output tu_op_resp_t tu_op_resp
 );
     /**
-     * address translation & request dispatching
+     * address translations & request dispatching
      */
-    sramx_req_t  dcache_req,  uncached_req;
-    sramx_resp_t dcache_resp, uncached_resp;
-
-    // verilator lint_save
-    // verilator lint_off UNUSED
-    // verilator lint_off UNDRIVEN
-    sramx_req_t  isramx_req;
-    sramx_resp_t isramx_resp;
-    ibus_req_t   ibus_req;
-    ibus_resp_t  ibus_resp;
-    // verilator lint_restore
+    ibus_req_t  icache_req;
+    ibus_resp_t icache_resp;
+    dbus_req_t  dcache_req,  uncached_req;
+    dbus_resp_t dcache_resp, uncached_resp;
 
     MMU mmu_inst(.*);
 
@@ -80,101 +73,72 @@ module CacheLayer #(
     cbus_req_t  icbus_req,  dcbus_req;
     cbus_resp_t icbus_resp, dcbus_resp;
 
-    if (USE_ICACHE == 1) begin: use_icache
-        addr_t      buf_ibus_req_vaddr;
-        ibus_req_t  mux_ibus_req,  buf_ibus_req;
-        ibus_resp_t mux_ibus_resp, buf_ibus_resp;
+    // ICache
+    addr_t      buf_imem_req_vaddr;
+    ibus_req_t  buf_icache_req;
+    ibus_resp_t buf_icache_resp;
 
-        if (USE_IBUS) begin
-            assign mux_ibus_req  = ibus_req;
-            assign ibus_resp = mux_ibus_resp;
-        end else begin: sramx_to_ibus
-            SRAMxToInstrBus sramx_ibus_inst(
-                .sramx_req(isramx_req), .sramx_resp(isramx_resp),
-                .ibus_req(mux_ibus_req), .ibus_resp(mux_ibus_resp)
-            );
-        end
+    CacheBuffer #(
+        .req_t(ibus_req_t),
+        .resp_t(ibus_resp_t)
+    ) icache_buf_inst(
+        .clk(aclk), .resetn(aresetn),
 
-        CacheBuffer #(
-            .req_t(ibus_req_t),
-            .resp_t(ibus_resp_t)
-        ) icache_buf_inst(
-            .clk(aclk), .resetn(aresetn),
+        .m_req_vaddr(imem_req.addr),
+        .m_req(icache_req),
+        .m_resp(icache_resp),
+        .s_req_vaddr(buf_imem_req_vaddr),
+        .s_req(buf_icache_req),
+        .s_resp(buf_icache_resp)
+    );
 
-            .m_req_vaddr(imem_req_vaddr),
-            .m_req(mux_ibus_req),
-            .m_resp(mux_ibus_resp),
-            .s_req_vaddr(buf_ibus_req_vaddr),
-            .s_req(buf_ibus_req),
-            .s_resp(buf_ibus_resp)
-        );
+    ICache #(
+        .IDX_BITS(ICACHE_IDX_BITS),
+        .INDEX_BITS(ICACHE_INDEX_BITS),
+        .OFFSET_BITS(ICACHE_OFFSET_BITS),
+        .ALIGN_BITS(ICACHE_ALIGN_BITS)
+    ) icache_inst(
+        .clk(aclk), .resetn(aresetn),
 
-        ICache #(
-            .IDX_BITS(ICACHE_IDX_BITS),
-            .INDEX_BITS(ICACHE_INDEX_BITS),
-            .OFFSET_BITS(ICACHE_OFFSET_BITS),
-            .ALIGN_BITS(ICACHE_ALIGN_BITS)
-        ) icache_inst(
-            .clk(aclk), .resetn(aresetn),
-            .ibus_req_vaddr(buf_ibus_req_vaddr),
-            .ibus_req(buf_ibus_req),
-            .ibus_resp(buf_ibus_resp),
-            .cbus_req(icbus_req),
-            .cbus_resp(icbus_resp)
-        );
-    end else begin: use_ibuf
-        // NOTE: "USE_IBUS" does not affect ibuf
-        OneLineBuffer ibuf_inst(
-            .clk(aclk), .resetn(aresetn),
-            .sramx_req(isramx_req), .sramx_resp(isramx_resp),
-            .cbus_req(icbus_req), .cbus_resp(icbus_resp)
-        );
-    end
+        .ibus_req_vaddr(buf_imem_req_vaddr),
+        .ibus_req(buf_icache_req),
+        .ibus_resp(buf_icache_resp),
+        .cbus_req(icbus_req),
+        .cbus_resp(icbus_resp)
+    );
 
-    if (USE_DCACHE == 1) begin: use_dcache
-        addr_t      buf_dbus_req_vaddr;
-        dbus_req_t  dbus_req,  buf_dbus_req;
-        dbus_resp_t dbus_resp, buf_dbus_resp;
+    // DCache
+    addr_t      buf_dmem_req_vaddr;
+    dbus_req_t  buf_dcache_req;
+    dbus_resp_t buf_dcache_resp;
 
-        SRAMxToDataBus sramx_dbus_inst(
-            .sramx_req(dcache_req),
-            .sramx_resp(dcache_resp),
-            .dbus_req, .dbus_resp
-        );
+    CacheBuffer #(
+        .req_t(dbus_req_t),
+        .resp_t(dbus_resp_t)
+    ) dcache_buf_inst(
+        .clk(aclk), .resetn(aresetn),
 
-        CacheBuffer #(
-            .req_t(dbus_req_t),
-            .resp_t(dbus_resp_t)
-        ) dcache_buf_inst(
-            .clk(aclk), .resetn(aresetn),
+        .m_req_vaddr(dmem_req.addr),
+        .m_req(dcache_req),
+        .m_resp(dcache_resp),
+        .s_req_vaddr(buf_dmem_req_vaddr),
+        .s_req(buf_dcache_req),
+        .s_resp(buf_dcache_resp)
+    );
 
-            .m_req_vaddr(dmem_req.addr),
-            .m_req(dbus_req),
-            .m_resp(dbus_resp),
-            .s_req_vaddr(buf_dbus_req_vaddr),
-            .s_req(buf_dbus_req),
-            .s_resp(buf_dbus_resp)
-        );
+    DCache #(
+        .IDX_BITS(DCACHE_IDX_BITS),
+        .INDEX_BITS(DCACHE_INDEX_BITS),
+        .OFFSET_BITS(DCACHE_OFFSET_BITS)
+    ) dcache_inst(
+        .clk(aclk), .resetn(aresetn),
 
-        DCache #(
-            .IDX_BITS(DCACHE_IDX_BITS),
-            .INDEX_BITS(DCACHE_INDEX_BITS),
-            .OFFSET_BITS(DCACHE_OFFSET_BITS)
-        ) dcache_inst(
-            .clk(aclk), .resetn(aresetn),
-            .dbus_req_vaddr(buf_dbus_req_vaddr),
-            .dbus_req(buf_dbus_req),
-            .dbus_resp(buf_dbus_resp),
-            .cbus_req(dcbus_req),
-            .cbus_resp(dcbus_resp)
-        );
-    end else begin: use_dbuf
-        OneLineBuffer dbuf_inst(
-            .clk(aclk), .resetn(aresetn),
-            .sramx_req(dcache_req), .sramx_resp(dcache_resp),
-            .cbus_req(dcbus_req), .cbus_resp(dcbus_resp)
-        );
-    end
+        .dbus_req_vaddr(buf_dmem_req_vaddr),
+        .dbus_req(buf_dcache_req),
+        .dbus_resp(buf_dcache_resp),
+        .cbus_req(dcbus_req),
+        .cbus_resp(dcbus_resp)
+    );
 
     /**
      * $bus to AXI
@@ -198,36 +162,27 @@ module CacheLayer #(
     /**
      * uncached converter
      */
-    sramx_req_t  mux_uncached_req;
-    sramx_resp_t mux_uncached_resp;
+    dbus_req_t  buf_uncached_req;
+    dbus_resp_t buf_uncached_resp;
 
-    if (USE_BUFFER == 1) begin: with_lsbuf
-        sramx_req_t  buf_uncached_req;
-        sramx_resp_t buf_uncached_resp;
+    LoadStoreBuffer #(
+        .BUFFER_LENGTH(LSBUF_LENGTH)
+    ) ls_buffer_inst(
+        .clk(aclk), .resetn(aresetn),
 
-        LoadStoreBuffer #(
-            .BUFFER_LENGTH(LSBUF_LENGTH)
-        ) ls_buffer_inst(
-            .clk(aclk), .resetn(aresetn),
-            .m_req(uncached_req),
-            .m_resp(uncached_resp),
-            .s_req(buf_uncached_req),
-            .s_resp(buf_uncached_resp)
-        );
-
-        assign mux_uncached_req  = buf_uncached_req;
-        assign buf_uncached_resp = mux_uncached_resp;
-    end else begin: without_lsbuf
-        assign mux_uncached_req = uncached_req;
-        assign uncached_resp    = mux_uncached_resp;
-    end
+        .m_req(uncached_req),
+        .m_resp(uncached_resp),
+        .s_req(buf_uncached_req),
+        .s_resp(buf_uncached_resp)
+    );
 
     axi_req_t  axi_uncached_req;
     axi_resp_t axi_uncached_resp;
 
-    SRAMxToAXI axi_uncached_inst(
+    DataBusToAXI axi_uncached_inst(
         .clk(aclk), .resetn(aresetn),
-        .sramx_req(mux_uncached_req), .sramx_resp(mux_uncached_resp),
+        .dbus_req(buf_uncached_req),
+        .dbus_resp(buf_uncached_resp),
         .axi_req(axi_uncached_req),
         .axi_resp(axi_uncached_resp)
     );
