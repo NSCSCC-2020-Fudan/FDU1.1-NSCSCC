@@ -3,7 +3,7 @@
 module control(
         input logic clk, reset,
         input logic finishF, finishE, finishC, data_hazardI, queue_ofI, pcF,
-        input logic is_eret, exception_valid,
+        input logic is_eret, exception_valid, wait_ex,
         output logic stallF, stallD, flushD, stallI, flushI, 
         output logic stallE, flushE, stallC, flushC, stallR, flushR, pc_new_commit, flush_ex
     );
@@ -20,9 +20,9 @@ module control(
     assign flushC = hazardE | (pcF & finishC) | flush_ex;
     assign flushR = hazardC;
     
-    assign stallI = hazardC | hazardE | hazardI;
-    assign stallE = hazardC | hazardE;
-    assign stallC = hazardC;
+    assign stallI = hazardC | hazardE | hazardI | wait_ex;
+    assign stallE = hazardC | hazardE | wait_ex;
+    assign stallC = hazardC | wait_ex;
     assign stallR = 'b0;
     
     assign flushD = (~finishF & ~queue_ofI) | pcF | flush_ex;

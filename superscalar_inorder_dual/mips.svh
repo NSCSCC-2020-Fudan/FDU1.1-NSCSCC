@@ -33,10 +33,16 @@ typedef logic[5:0] op_t;
 typedef logic[5:0] func_t;
 typedef logic[4:0] shamt_t;
 
-typedef enum logic[3:0] {
-    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, ALU_XOR, 
-    ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, ALU_PASSB
+typedef enum logic[4:0] {
+    ALU_ADDU, ALU_AND, ALU_OR, ALU_ADD, ALU_SLL, 
+    ALU_SRL, ALU_SRA, ALU_SUB, ALU_SLT, ALU_NOR, 
+    ALU_XOR, ALU_SUBU, ALU_SLTU, ALU_PASSA, ALU_LUI, 
+    ALU_PASSB, ALU_MOVN, ALU_MOVZ
 } alufunc_t;
+
+typedef enum logic [3: 0] {
+    MUL_ADDU, MUL_ADD, MUL_SUBU, MUL_SUB, MUL_CLO, MUL_CLZ, MUL_MULT 
+} mulfunc_t;
 
 // op
 `define OP_RT           6'b000000
@@ -70,6 +76,9 @@ typedef enum logic[3:0] {
 // `define OP_MFC0         6'b010000
 // `define OP_MTC0         6'b010000
 `define OP_MUL          6'b011100
+`define OP_LL           6'b110000
+`define OP_SC           6'b111000
+`define OP_TLB          6'b010000
 
 
 // funct
@@ -101,28 +110,46 @@ typedef enum logic[3:0] {
 `define F_MTLO          6'b010011
 `define F_BREAK         6'b001101
 `define F_SYSCALL       6'b001100
+`define F_MOVZ          6'b001010
+`define F_MOVN          6'b001011 
+
+`define M_MUL           6'b011000
+`define M_CLO           6'b100001
+`define M_CLZ           6'b100000
+`define M_ADD           6'b000000
+`define M_ADDU          6'b000001
+`define M_SUB           6'b000100
+`define M_SUBU          6'b000101
 
 `define B_BGEZ          5'b00001
 `define B_BLTZ          5'b00000
 `define B_BGEZAL        5'b10001
 `define B_BLTZAL        5'b10000
 
-`define C_ERET          5'b10000
 `define C_MFC0          5'b00000
 `define C_MTC0          5'b00100
+`define C_ERET          6'b011000
+`define C_WAIT          6'b100000
+
+`define TLB_WI          6'b000010
+`define TLB_R           6'b000001
+`define TLB_P           6'b001000
 
 typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
 typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
 
-typedef enum logic [5:0] { 
+typedef enum logic [6: 0] { 
     // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, 
     ADDU, RESERVED,
     BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
-    LB, LBU, LH, LHU, LW, SB, SH, SW, ERET, MFC0, MTC0,
+    LB, LBU, LH, LHU, LW, SB, SH, SW, MFC0, MTC0, 
     ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
     AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
-    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI
-} decoded_op_t;
+    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI, ERET,
+    CLO, CLZ, MOVN, MOVZ, MADD, MADDU, MSUB, MSUBU, MUL,
+    LL, SC, WAIT_EX,
+    TLBR, TLBP, TLBWI
+} decoded_op_t;//64 left
 
 
 typedef logic[4:0] creg_addr_t;
@@ -138,6 +165,7 @@ typedef enum logic[2:0] { NOFORWARD, RESULTW, ALUOUTM, HIM, LOM, HIW, LOW, ALUSR
 
 typedef struct packed {
     alufunc_t alufunc;
+    mulfunc_t mulfunc;
     logic memtoreg, memwrite;
     logic regwrite;
     alusrcb_t alusrc;
@@ -155,8 +183,10 @@ typedef struct packed {
     logic is_bp;
     logic is_sys;
     logic hitoreg, lotoreg, cp0toreg;
-    logic is_link;
+    logic is_link, is_like;
     logic mul_div_r;
+    logic llwrite, cp0_modify;
+    logic delayen;
 } control_t;
 
 
@@ -431,6 +461,10 @@ typedef struct packed{
 `define CODE_TR    5'h0d  // TRap
 
 typedef struct packed {
+    logic readya, readyb, ready;
+} pipe_state_t;
+
+typedef struct packed {
     decoded_instr_t instr;
     word_t pcplus4;
     creg_addr_t srcrega, srcregb, destreg, cp0_addr;
@@ -450,45 +484,44 @@ typedef struct packed {
 } wb_data_t;
 
 typedef struct packed {
+    logic valid;
     decoded_instr_t instr;
     word_t pcplus4;
     logic exception_instr, exception_ri; 
     logic taken; 
     bpb_result_t pred;
     word_t srca, srcb;
-    creg_addr_t destreg, cp0_addr;
-    word_t result; //, resulthi, resultlo;
+    creg_addr_t srcrega, srcregb, destreg, cp0_addr;
+    word_t result;
     logic in_delay_slot;
-    cp0_cause_t cp0_cause;
-    cp0_status_t cp0_status;
-    word_t cp0_epc;
+    word_t srchi, srclo;
     logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;
+    pipe_state_t state;
 } issue_data_t;
 
 typedef struct packed {
+    logic valid;
     decoded_instr_t instr;
     word_t pcplus4;
     logic exception_instr, exception_ri, exception_of;
     logic taken;
     bpb_result_t pred;
     word_t srca, srcb;
-    creg_addr_t destreg, cp0_addr;
+    creg_addr_t srcrega, srcregb, destreg, cp0_addr;
     word_t result, hiresult, loresult;
     logic in_delay_slot;
-    cp0_cause_t cp0_cause;
-    cp0_status_t cp0_status;
-    word_t cp0_epc;
     logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;
+    pipe_state_t state;
 } exec_data_t;
 
 typedef struct packed{
     creg_addr_t [1: 0] destreg;
-    creg_addr_t [1: 0] cp0_addr;
     word_t [1: 0] result;
-    logic [1: 0] memtoreg;
-    logic [1: 0] wen, cp0_wen;
+    logic [1: 0] ready;
+    logic [1: 0] wen;
     logic [1: 0] lowrite, hiwrite;
     word_t [1: 0] hidata, lodata;
+    logic [1: 0] cp0_modify;
 } bypass_upd_t;
 
 typedef struct packed{

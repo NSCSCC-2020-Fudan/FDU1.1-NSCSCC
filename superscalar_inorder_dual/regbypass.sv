@@ -26,11 +26,14 @@ module regbypass(
     assign hazard = mem_hazard;
 */            
     logic exec_hazard1, exec_hazard0, exec_hazard;
-    assign cmt_hazard1 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] != reg_addr) & (commitex.destreg[0] != reg_addr) & (commitex.destreg[1] == reg_addr) & (commitex.memtoreg[1]);
-    assign cmt_hazard0 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] != reg_addr) & (commitex.destreg[0] == reg_addr) & (commitex.memtoreg[0]);
-    assign exec_hazard1 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] == reg_addr) & (execute.memtoreg[1]);
-    assign exec_hazard0 = (execute.destreg[0] == reg_addr) & (execute.memtoreg[0]);
-    assign hazard = exec_hazard1 | exec_hazard0 | cmt_hazard1 | cmt_hazard0;
+    assign cmt_hazard1 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] != reg_addr) & (commitex.destreg[0] != reg_addr) & 
+                         (commitex.destreg[1] == reg_addr) & (commitex.wen[1]) & (~commitex.ready[1]);
+    assign cmt_hazard0 = (execute.destreg[0] != reg_addr) & (execute.destreg[1] != reg_addr) & 
+                         (commitex.destreg[0] == reg_addr) & (commitex.wen[0]) & (~commitex.ready[0]);
+    assign exec_hazard1 = (execute.destreg[0] != reg_addr) & 
+                          (execute.destreg[1] == reg_addr) & (execute.wen[1]) & (~execute.ready[1]);
+    assign exec_hazard0 = (execute.destreg[0] == reg_addr) & (execute.wen[0]) & (~execute.ready[0]);
+    assign hazard = (exec_hazard1 | exec_hazard0 | cmt_hazard1 | cmt_hazard0) & (reg_addr != '0);
 
     logic zero;
     assign zero = (reg_addr == '0);
