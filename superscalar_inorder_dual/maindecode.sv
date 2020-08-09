@@ -18,13 +18,72 @@ module maindecode (
         ctl = '0;
         case (op_)
             `OP_MUL: begin
-                op = MULT;
-                ctl.regwrite = 1'b1;
-                ctl.alusrc = REGB;
-                ctl.mul_div_r = 1'b1;
-                srcrega = rs;
-                srcregb = rt;
-                destreg = rd;
+                case (func)
+                    `M_MUL: begin
+                        op = MUL;
+                        ctl.regwrite = 1'b1;
+                        ctl.alusrc = REGB;
+                        ctl.mul_div_r = 1'b1;
+                        srcrega = rs;
+                        srcregb = rt;
+                        destreg = rd;
+                    end
+                    `M_ADDU: begin
+                        op = MADDU;
+                        ctl.regwrite = 1'b1;
+                        ctl.mul_div_r = 1'b1;
+                        ctl.hiwrite = 1'b1;
+                        ctl.lowrite = 1'b1;
+                        srcrega = rs;
+                        srcregb = rt;
+                        destreg = rd;
+                    end
+                    `M_ADD: begin
+                        op = MADD;
+                        ctl.regwrite = 1'b1;
+                        ctl.mul_div_r = 1'b1;
+                        ctl.hiwrite = 1'b1;
+                        ctl.lowrite = 1'b1;
+                        srcrega = rs;
+                        srcregb = rt;
+                        destreg = rd;
+                    end
+                    `M_SUBU: begin
+                        op = MSUB;
+                        ctl.regwrite = 1'b1;
+                        ctl.mul_div_r = 1'b1;
+                        ctl.hiwrite = 1'b1;
+                        ctl.lowrite = 1'b1;
+                        srcrega = rs;
+                        srcregb = rt;
+                        destreg = rd;
+                    end
+                    `M_SUB: begin
+                        op = MSUBU;
+                        ctl.regwrite = 1'b1;
+                        ctl.mul_div_r = 1'b1;
+                        ctl.hiwrite = 1'b1;
+                        ctl.lowrite = 1'b1;
+                        srcrega = rs;
+                        srcregb = rt;
+                        destreg = rd;
+                    end
+                    `M_CLO: begin
+                        op = CLO;
+                        ctl.regwrite = 1'b1;
+                        srcrega = rs;
+                        srcregb = '0;
+                        destreg = rd;
+                    end
+                    `M_CLZ: begin
+                        op = CLZ;
+                        ctl.regwrite = 1'b1;
+                        ctl.alusrc = REGB;
+                        srcrega = rs;
+                        srcregb = '0;
+                        destreg = rd;
+                    end
+                endcase
             end
             `OP_ADDI: begin
                 op = ADD;
@@ -37,6 +96,7 @@ module maindecode (
             end  
             `OP_ADDIU: begin
                 op = ADDU;
+                ctl.delayen = 1'b1;
                 ctl.alufunc = ALU_ADDU;
                 ctl.regwrite = 1'b1;
                 ctl.alusrc = IMM;
@@ -46,6 +106,7 @@ module maindecode (
             end 
             `OP_SLTI:  begin
                 op = SLT;
+                ctl.delayen = 1'b1;
                 ctl.alufunc = ALU_SLT;
                 ctl.regwrite = 1'b1;
                 
@@ -56,6 +117,7 @@ module maindecode (
             end 
             `OP_SLTIU: begin
                 op = SLTU;
+                ctl.delayen = 1'b1;
                 ctl.alufunc = ALU_SLTU;
                 ctl.regwrite = 1'b1;
                 
@@ -66,6 +128,7 @@ module maindecode (
             end 
             `OP_ANDI: begin
                 op = AND;
+                ctl.delayen = 1'b1;
                 ctl.alufunc = ALU_AND;
                 ctl.regwrite = 1'b1;
                 ctl.zeroext = 1'b1;
@@ -76,6 +139,7 @@ module maindecode (
             end  
             `OP_LUI:  begin
                 op = LUI;
+                ctl.delayen = 1'b1;
                 ctl.alufunc = ALU_LUI;
                 ctl.regwrite = 1'b1;
                 ctl.alusrc = IMM;
@@ -85,6 +149,7 @@ module maindecode (
             end  
             `OP_ORI:  begin
                 op = OR;
+                ctl.delayen = 1'b1;
                 ctl.alufunc = ALU_OR;
                 ctl.regwrite = 1'b1;
                 ctl.alusrc = IMM;
@@ -95,6 +160,7 @@ module maindecode (
             end  
             `OP_XORI: begin
                 op = XOR;
+                ctl.delayen = 1'b1;
                 ctl.alufunc = ALU_XOR;
                 ctl.regwrite = 1'b1;
                 ctl.alusrc = IMM;
@@ -277,15 +343,9 @@ module maindecode (
             end    
             `OP_ERET: begin
                 case (instr[25:21])
-                    `C_ERET:begin
-                        op = ERET;
-                        ctl.is_eret = 1'b1;
-                        srcrega = '0;
-                        srcregb = '0;
-                        destreg = '0;        
-                    end 
-                    `C_MFC0:begin
+                    `C_MFC0: begin
                         op = MFC0;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_PASSA;
                         ctl.regwrite = 1'b1;
                         ctl.cp0toreg = 1'b1;
@@ -293,20 +353,38 @@ module maindecode (
                         srcregb = '0;
                         destreg = rt;
                     end 
-                    `C_MTC0:begin
+                    `C_MTC0: begin
                         op = MTC0;
                         ctl.cp0write = 1'b1;
                         ctl.alufunc = ALU_PASSB;
+                        ctl.cp0_modify = 1'b1;
                         srcrega = '0;
                         srcregb = rt;
                         destreg = '0;
-                    end 
+                    end
                     default: begin
-                        exception_ri = 1'b1;
-                        op = RESERVED;
-                        srcrega = '0;
-                        srcregb = '0;
-                        destreg = '0;
+                        case (instr[5: 0])
+                            `C_ERET: begin
+                                op = ERET;
+                                ctl.is_eret = 1'b1;
+                                srcrega = '0;
+                                srcregb = '0;
+                                destreg = '0; 
+                            end
+                            `C_WAIT: begin
+                                op = WAIT_EX;
+                                srcrega = '0;
+                                srcregb = '0;
+                                destreg = '0;
+                            end
+                            default: begin
+                                exception_ri = 1'b1;
+                                op = RESERVED;
+                                srcrega = '0;
+                                srcregb = '0;
+                                destreg = '0;
+                            end
+                        endcase
                     end
                 endcase
             end
@@ -323,6 +401,7 @@ module maindecode (
                     end    
                     `F_ADDU: begin
                         op = ADDU;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_ADDU;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -341,6 +420,7 @@ module maindecode (
                     end    
                     `F_SUBU: begin
                         op = SUBU;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SUBU;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -350,6 +430,7 @@ module maindecode (
                     end   
                     `F_SLT: begin
                         op = SLT;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SLT;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -359,6 +440,7 @@ module maindecode (
                     end    
                     `F_SLTU: begin
                         op = SLTU;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SLTU;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -368,6 +450,7 @@ module maindecode (
                     end   
                     `F_DIV: begin
                         op = DIV;
+                        ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -377,6 +460,7 @@ module maindecode (
                     end    
                     `F_DIVU: begin
                         op = DIVU;
+                        ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -386,6 +470,7 @@ module maindecode (
                     end   
                     `F_MULT: begin
                         op = MULT;
+                        ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -395,6 +480,7 @@ module maindecode (
                     end   
 					`F_MULTU:begin
                         op = MULTU;
+                        ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -404,6 +490,7 @@ module maindecode (
                     end	
 					`F_AND:begin
                         op = AND;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_AND;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -413,6 +500,7 @@ module maindecode (
                     end		
 					`F_NOR:begin
                         op = NOR;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_NOR;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -422,6 +510,7 @@ module maindecode (
                     end		
 					`F_OR:begin
                         op = OR;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_OR;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -431,6 +520,7 @@ module maindecode (
                     end		
 					`F_XOR:begin
                         op = XOR;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_XOR;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -440,6 +530,7 @@ module maindecode (
                     end		
 					`F_SLLV:begin
                         op = SLLV;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SLL;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -449,6 +540,7 @@ module maindecode (
                     end	
 					`F_SLL:begin
                         op = SLL;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SLL;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -459,6 +551,7 @@ module maindecode (
                     end		
 					`F_SRAV:begin
                         op = SRAV;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SRA;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -469,6 +562,7 @@ module maindecode (
                     end	
 					`F_SRA:begin
                         op = SRA;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SRA;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -479,6 +573,7 @@ module maindecode (
                     end		
 					`F_SRLV:begin
                         op = SRLV;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SRL;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -489,6 +584,7 @@ module maindecode (
                     end	
 					`F_SRL:begin
                         op = SRL;
+                        ctl.delayen = 1'b1;
                         ctl.alufunc = ALU_SRL;
                         ctl.regwrite = 1'b1;
                         ctl.alusrc = REGB;
@@ -519,6 +615,7 @@ module maindecode (
                     end	
 					`F_MFHI:begin
                         op = MFHI;
+                        ctl.delayen = 1'b1;
                         ctl.regwrite = 1'b1;
                         ctl.alufunc = ALU_PASSA;
                         ctl.hitoreg = 1'b1;
@@ -528,6 +625,7 @@ module maindecode (
                     end	
 					`F_MFLO:begin
                         op = MFLO;
+                        ctl.delayen = 1'b1;
                         ctl.regwrite = 1'b1;
                         ctl.alufunc = ALU_PASSB;
                         ctl.lotoreg = 1'b1;
@@ -537,6 +635,7 @@ module maindecode (
                     end	
 					`F_MTHI:begin
                         op = MTHI;
+                        //ctl.delayen = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.alufunc = ALU_PASSA;
                         srcrega = rs;
@@ -545,6 +644,7 @@ module maindecode (
                     end	
 					`F_MTLO:begin
                         op = MTLO;
+                        //ctl.delayen = 1'b1;
                         ctl.lowrite = 1'b1;
                         ctl.alufunc = ALU_PASSA;
                         srcrega = rs;
@@ -566,7 +666,25 @@ module maindecode (
                         srcrega = 'b0;
                         srcregb = 'b0;
                         destreg = 'b0;
+                    end
+                    `F_MOVZ:begin
+                        op = MOVZ;
+                        ctl.delayen = 1'b1;
+                        ctl.alufunc = ALU_MOVZ;
+                        ctl.regwrite = 1'b1;
+                        srcrega = rs;
+                        srcregb = rt;
+                        destreg = rd;
                     end	
+                    `F_MOVN:begin
+                        op = MOVN;
+                        ctl.delayen = 1'b1;
+                        ctl.alufunc = ALU_MOVN;
+                        ctl.regwrite = 1'b1;
+                        srcrega = rs;
+                        srcregb = rt;
+                        destreg = rd;
+                    end
                     default: begin
                         exception_ri = 1'b1;
                         op = RESERVED;
@@ -576,6 +694,24 @@ module maindecode (
                         destreg = 'b0;
                     end
                 endcase
+            end
+            `OP_LL: begin
+                op = LL;
+                ctl.llwrite = 1'b1;
+                ctl.regwrite = 1'b1;
+                ctl.memtoreg = 1'b1;
+                ctl.alusrc = IMM;
+                srcrega = rs;
+                srcregb = '0;
+                destreg = rt;
+            end
+            `OP_SC: begin
+                op = SC;
+                ctl.memwrite = 1'b1;
+                ctl.alusrc = IMM;
+                srcrega = rs;
+                srcregb = rt;
+                destreg = '0;
             end
             default: begin
                 exception_ri = 1'b1;

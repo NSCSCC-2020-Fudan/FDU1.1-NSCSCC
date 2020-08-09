@@ -8,6 +8,7 @@ module cp0bypass(
         input word_t cp0_data_complete,
         output word_t cp0_data
     );
+    /*
     logic regire_hit, commit_hit, execute_hit;
     assign execute_hit = (execute.cp0_addr[1] == cp0_addr && execute.cp0_wen[1]) | 
                          (execute.cp0_addr[0] == cp0_addr && execute.cp0_wen[0]);
@@ -30,5 +31,6 @@ module cp0bypass(
             default: cp0_data <= cp0_data_complete;
         endcase
     end
-    
+    */
+    assign cp0_data = cp0_data_complete;
 endmodule

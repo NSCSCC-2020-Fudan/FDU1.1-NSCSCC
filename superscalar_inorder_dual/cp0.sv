@@ -14,8 +14,9 @@ module cp0(
         //exception
         output cp0_cause_t cp0_cause,
         output cp0_status_t cp0_status,
-        output word_t cp0_epc
+        output word_t cp0_epc,
         //bypass
+        output cp0_regs_t out
     );
 
     cp0_regs_t cp0, cp0_new;
@@ -143,4 +144,6 @@ module cp0(
     assign cp0_cause = cp0.cause;
     assign cp0_epc = cp0.epc;
 
+    assign out = cp0;
+    
 endmodule

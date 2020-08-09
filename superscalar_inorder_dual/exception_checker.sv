@@ -8,7 +8,9 @@ module exception_checker(
         output logic exception_valid,
         output word_t pcexception,
         output exception_t exception_data,
-        output exec_data_t _out
+        output exec_data_t _out,
+        input cp0_status_t cp0_status,
+        input cp0_cause_t cp0_cause
     );
     
     logic exception_valid_;
@@ -44,17 +46,17 @@ module exception_checker(
     assign pipe.in_delay_slot = data.in_delay_slot;
     assign pipe.pc = data.pcplus4 - 32'd4;
     assign pipe.vaddr = (data.exception_instr) ? pipe.pc : data.result;
-    assign pipe.interrupt_info = ({ext_int, 2'b00} | data.cp0_cause.IP | {/*1'b0*/timer_interrupt, 7'b0}) & data.cp0_status.IM;
+    assign pipe.interrupt_info = ({ext_int, 2'b00} | cp0_cause.IP | {/*1'b0*/timer_interrupt, 7'b0}) & cp0_status.IM;
     
     exception exception (reset, ext_int,
                          pipe,
                          exception_valid_, pcexception_, 
                          exception_data_, 
-                         data.cp0_status);  
+                         cp0_status);  
                          
-    assign exception_valid = (~flush) ? (exception_valid_) : (1'b0);
-    assign pcexception = (~flush) ? (pcexception_) : ('0);
-    assign exception_data = (~flush) ? (exception_data_) : ('0);
-    assign _out = (~flush) ? (_out_) : ('0);                                                   
+    assign exception_valid = (~flush && data.valid) ? (exception_valid_) : (1'b0);
+    assign pcexception = (~flush && data.valid) ? (pcexception_) : ('0);
+    assign exception_data = (~flush && data.valid) ? (exception_data_) : ('0);
+    assign _out = (~flush && data.valid) ? (_out_) : ('0);                                                   
     
 endmodule

@@ -6,6 +6,7 @@ module mem_to_reg(
         output exec_data_t out
     );
     
+    assign out.valid = in.valid;
     assign out.instr = in.instr;
     assign out.pcplus4 = in.pcplus4;
     assign out.exception_instr = in.exception_instr;
@@ -15,15 +16,16 @@ module mem_to_reg(
     assign out.srca = in.srca;
     assign out.srcb = in.srcb;
     assign out.destreg = in.destreg;
+    assign out.srcrega = in.srcrega;
+    assign out.srcregb = in.srcregb;
     assign out.result = (in.instr.ctl.memtoreg) ? (mem.rd) : (in.result);
     assign out.hiresult = in.hiresult;
     assign out.loresult = in.loresult;
     assign out.in_delay_slot = in.in_delay_slot;
-    assign out.cp0_status = in.cp0_status;
-    assign out.cp0_cause = in.cp0_cause;
     assign out.cp0_addr = in.cp0_addr;
-    assign out.cp0_epc = in.cp0_epc;
     assign out.pred = in.pred;
     assign out.jrtop = in.jrtop;
+    
+    assign out.state = 3'b1;
     
 endmodule

@@ -48,9 +48,9 @@ module execute(
     assign bypass.lowrite = {out[1].instr.ctl.lowrite, out[0].instr.ctl.lowrite};
     assign bypass.hidata = {out[1].hiresult, out[0].hiresult};
     assign bypass.lodata = {out[1].loresult, out[0].loresult};
-    assign bypass.memtoreg = {out[1].instr.ctl.memtoreg, out[0].instr.ctl.memtoreg};
-    assign bypass.cp0_addr = {out[1].cp0_addr, out[0].cp0_addr};
+    //assign bypass.memtoreg = {out[1].instr.ctl.memtoreg, out[0].instr.ctl.memtoreg};
+    assign bypass.ready = {out[1].state.ready, out[0].state.ready};
     assign bypass.wen = {out[1].instr.ctl.regwrite, out[0].instr.ctl.regwrite};
-    assign bypass.cp0_wen = {out[1].instr.ctl.cp0write, out[0].instr.ctl.cp0write};
+    assign bypass.cp0_modify = {out[1].instr.ctl.cp0_modify, out[0].instr.ctl.cp0_modify};
     
 endmodule

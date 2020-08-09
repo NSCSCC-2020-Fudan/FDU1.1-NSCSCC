@@ -30,9 +30,19 @@ module quickcommit(
         output bpb_result_t destpc_commitC,
         //branch predict
         output logic jrp_reset,
-        output logic [`JR_ENTRY_WIDTH - 1: 0] jrp_top
+        output logic [`JR_ENTRY_WIDTH - 1: 0] jrp_top,
+        //to jr predict
+        input cp0_regs_t cp0_data,
+        output rf_w_t [1: 0] cp0w,
+        output logic wait_ex,
+        //cp0
+        output creg_addr_t [3: 0] reg_addrC,
+        input word_t [3: 0] reg_dataC,
+        input word_t [1: 0] hiloC
+        //delay execute
     );
     
+    logic llwrite_ex;
     exec_data_t [1: 0] exception_out;
     exception_t exception_data_ex;
     logic exception_valid_ex, exception_valid_dt, finish_exception;
@@ -47,7 +57,18 @@ module quickcommit(
         							.timer_interrupt,
         							.exception_valid(exception_valid_ex), .exception_data(exception_data_ex),
         							.bypass(bypass0),
-        							.finish_exception);
+        							.finish_exception,
+        							.llwrite(llwrite_ex),
+        							.llbit, .wait_ex,
+        							.cp0_status(cp0_data.status), 
+        							.cp0_cause(cp0_data.cause));
+        							
+    assign cp0w[1].addr = exception_out[1].cp0_addr;
+    assign cp0w[1].wd = exception_out[1].result;
+    assign cp0w[1].wen = exception_out[1].instr.ctl.cp0write & finishC;
+    assign cp0w[0].addr = exception_out[0].cp0_addr;
+    assign cp0w[0].wd = exception_out[0].result;
+    assign cp0w[0].wen = exception_out[0].instr.ctl.cp0write & finishC;        							
 	
 	word_t dmem_addr_dt;
 	logic [1: 0] dmem_size_dt;
@@ -55,6 +76,7 @@ module quickcommit(
     exception_t exception_data_dt;
     logic dmem_en_dt;
 	
+	logic llbit;
 	always_ff @(posedge clk)
 		begin
 			if (~reset || exception_valid_dt)
@@ -65,6 +87,8 @@ module quickcommit(
 					dmem_en_dt <= 1'b0;
 					dmem_size_dt <= '0;
 					dmem_addr_dt <= '0;
+					
+					llbit <= 1'b0;
 				end
 			else				
 				if (finishC) 
@@ -75,6 +99,8 @@ module quickcommit(
 						dmem_en_dt <= dmem_en;
 						dmem_size_dt <= dmem_size;
 						dmem_addr_dt <= dmem_addr;
+						
+						llbit <= llbit || llwrite_ex;
 					end
 		end        							
 	     
@@ -91,7 +117,9 @@ module quickcommit(
         				  .dmem_size(dmem_size_dt), .dmem_addr(dmem_addr_dt),
         				  .dmem_rd,
         				  .dmem_data_ok,
-        				  .finish_cdata);
+        				  .finish_cdata,
+        				  .cp0_epc(cp0_data.epc),
+        				  .reg_addrC, .reg_dataC, .hiloC);
 	
 	assign finishC = finish_exception & finish_cdata;   
 	assign exception_valid = exception_valid_dt;	
@@ -100,5 +128,6 @@ module quickcommit(
 
     assign jrp_reset = pc_mC;
     assign jrp_top = cdata_in[1].jrtop;
+    
            
 endmodule

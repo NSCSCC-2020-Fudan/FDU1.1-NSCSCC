@@ -40,7 +40,7 @@ module datapath(
     assign flushE_out = flushE; 
     assign stallF_out = stallF;
     
-    logic [3: 0] dhazard_maskI;
+    logic [3: 0] dhazard_maskI, reg_readyI;
     creg_addr_t [3: 0] reg_addrI, reg_addrW;
     word_t [3: 0] reg_dataI, reg_dataW;
     logic [1: 0] hiloreadI, hiloreadW;
@@ -80,6 +80,11 @@ module datapath(
     word_t jrp_destpcF;
     word_t [1: 0] pc_jrpredictF;
     
+    creg_addr_t [3: 0] reg_addrRP, reg_addrC;
+    word_t [3: 0] reg_dataRP, reg_dataC;
+    word_t [1: 0] hiloRP, hiloC;
+    
+    logic wait_ex;
     quickfetch quickfetch(.clk, .reset, .flushF(1'b0), .stallF,
                           .fetch(pc_new), .pc, .pc_new_commit,
                           .addr(iaddr), .hit(ihit), .data(idata), .dataOK(idataOK),
@@ -98,20 +103,19 @@ module datapath(
                    .out(decode_data_out), .hitD(hitD_out));
     
     logic first_cycpeE;
-    issue issue (clk, reset,
-                 decode_data_out,
-                 hitD_out,
-                 issue_data_out,
-                 queue_ofI, data_hazardI,
-                 stallI, flushI,
-                 stallE, flushE,
-                 dhazard_maskI,
-                 reg_addrI, reg_dataI, 
-                 hiloreadI, hilodataI,
-                 cp0_addrI, cp0_dataI,
-                 cp0_statusI, cp0_causeI, cp0_epcI,
-                 mul_timeok, div_timeok,
-                 first_cycpeE);  
+    issue issue (.clk, .reset,
+                 .in(decode_data_out),
+                 .hitD(hitD_out),
+                 .out(issue_data_out),
+                 .queue_ofI, .data_hazardI,
+                 .reg_readyI,
+                 .stallI, .flushI,
+                 .stallE, .flushE,
+                 .dhazard_maskI,
+                 .reg_addrI, .reg_dataI, 
+                 .hiloreadI, .hilodataI,
+                 .cp0_addrI, .cp0_dataI,
+                 .first_cycpeE);  
     
     execute execute (clk, reset, first_cycpeE,
                      issue_data_out,
@@ -143,39 +147,57 @@ module datapath(
                    			 .exception_data(exceptionE),
                    			 .is_eret,
                    			 .pc_commitC, .predict_wen(predict_wenC), .destpc_commitC,
-                   			 .jrp_reset(jrp_rstC), .jrp_top(jrp_topC));                               
+                   			 .jrp_reset(jrp_rstC), .jrp_top(jrp_topC),
+                   			 //.llwrite,
+                   			 .cp0_data,
+                   			 .wait_ex,
+                   			 .reg_addrC, .reg_dataC, .hiloC,
+                             .cp0w    
+                   			 /*
+                   			 .TLB_req
+                   			 .TLB_res
+                   			 */);                               
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,
                retire_data_in);
     retire retire (retire_data_in,
                    rfw, rt_pc, 
-                   hlw, cp0w,
+                   hlw,
                    retire_bypass);
     
-    bypass bypass (reg_addrI, reg_dataI, 
-                   hiloreadI, hilodataI,
-                   cp0_addrI, cp0_dataI,
-                   dhazard_maskI, data_hazardI,
-                   exec_bypass,
-                   /*commit_bypass*/commitex_bypass, commitdt_bypass,
-                   retire_bypass,
-                   reg_addrW, reg_dataW,
-                   hiloreadW, hiW, loW,
-                   cp0_addrW, cp0_dataW);
+    bypass bypass (.reg_addrI, .reg_dataI, 
+                   .hiloreadI, .hilodataI,
+                   .cp0_addrI, .cp0_dataI,
+                   .dhazard_maskI, .data_hazardI,
+                   .execute(exec_bypass),
+                   .commitex(commitex_bypass), .commitdt(commitdt_bypass),
+                   .retire(retire_bypass),
+                   .reg_addrR(reg_addrW), .reg_dataR(reg_dataW),
+                   .hiloreadR(hiloreadW), .hiR(hiW), .loR(loW),
+                   .cp0_addrR(cp0_addrW), .cp0_dataR(cp0_dataW),
+                   .readyI(reg_readyI));
+                       
+    retirebypass retirebypass(.reg_addrC, .reg_dataC,
+                              .hilodataC(hiloC),
+                              .retire(retire_bypass),
+                              .reg_addrR(reg_addrRP),
+                              .reg_dataR(reg_dataRP), 
+                              .hiR(hiW), .loR(loW));                   
     
-    control control (clk, reset,
-                     finishF, finishE, finishC, data_hazardI, queue_ofI, pc_mC,
-                     is_eret, exception_valid,
-                     stallF, stallD, flushD, stallI, flushI, 
-                     stallE, flushE, stallC, flushC, stallR, flushR, pc_new_commit, flush_ex);
+    control control (.clk, .reset,
+                     .finishF, .finishE, .finishC, .data_hazardI, .queue_ofI, .pcF(pc_mC),
+                     .is_eret, .exception_valid, .wait_ex,
+                     .stallF, .stallD, .flushD, .stallI, .flushI, 
+                     .stallE, .flushE, .stallC, .flushC, .stallR, .flushR, .pc_new_commit, .flush_ex);
     
     hilo hilo (clk, reset,
                hiW, loW, hlw);               
     
     regfile regfile (clk, reset,
                      rfw,
-                     reg_addrW, reg_dataW);               
+                     reg_addrW, reg_dataW,
+                     reg_addrRP, reg_dataRP);               
     
     cp0 cp0(clk, reset,
             cp0w,
@@ -183,11 +205,14 @@ module datapath(
             is_eret, 
             timer_interrupt,
             exceptionE,
-            cp0_causeW, cp0_statusW, cp0_epcW);        
-            
-    cp0status_bypass cp0status_bypass(exec_bypass, commitex_bypass, commitdt_bypass/*commit_bypass*/, retire_bypass, 
+            cp0_causeW, cp0_statusW, cp0_epcW,
+            cp0_data);        
+    
+    /*            
+    cp0status_bypass cp0status_bypass(exec_bypass, commitex_bypass, commitdt_bypass, retire_bypass, 
                                       cp0_statusW, cp0_causeW, cp0_epcW,
                                       cp0_statusI, cp0_causeI, cp0_epcI);
+    */                                      
                                       
     branchpredict branchpredict(.clk, .reset, .stall(1'b0),
                                 .pc_predict(pc_predictF),
