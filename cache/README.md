@@ -1,6 +1,6 @@
 # Cache
 
-<img src="assets/architecture.png" width="100%" />
+<img src="assets/architecture.svg" width="100%" />
 
 ## 文件结构
 

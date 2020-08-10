@@ -25,19 +25,15 @@ module MMU(
     output dbus_req_t  uncached_req,
     input  dbus_resp_t uncached_resp
 );
-    // address translation
+    /**
+     * address translation
+     */
     tu_addr_req_t  i_req,  d_req;
     tu_addr_resp_t i_resp, d_resp;
 
+    assign i_req.req   = imem_req.req && !imem_req.cache_op.req;
     assign i_req.vaddr = imem_req.addr;
-    assign imem_resp   = icache_resp;
-
-    always_comb begin
-        icache_req      = imem_req;
-        icache_req.addr = i_resp.paddr;
-    end
-
-    assign d_req.req   = dmem_req.req;
+    assign d_req.req   = dmem_req.req && !dmem_req.cache_op.req;
     assign d_req.vaddr = dmem_req.addr;
 
     TranslationUnit tu_inst(
@@ -51,8 +47,21 @@ module MMU(
     assign i_uncached = i_resp.is_uncached && !imem_req.cache_op.req;
     assign d_uncached = d_resp.is_uncached && !dmem_req.cache_op.req;
 
-    // dispatch dcache/uncached accesses
-    // NOTE: two stage pipeline here
+    /**
+     * dispatch icache access
+     */
+    assign imem_resp   = icache_resp;
+
+    always_comb begin
+        icache_req      = imem_req;
+        icache_req.addr = i_resp.paddr;
+    end
+
+    /**
+     * dispatch dcache/uncached accesses
+     *
+     * NOTE: two stage pipeline here
+     */
     // split variables
     logic       dmem_addr_ok;
     logic       dmem_data_ok;
