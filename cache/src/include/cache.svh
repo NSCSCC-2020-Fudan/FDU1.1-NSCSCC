@@ -16,4 +16,16 @@ parameter int DCACHE_OFFSET_BITS = 4;  // offset bits
 
 parameter int LSBUF_LENGTH = 8;  // length of load-store buffer for uncached ops
 
+// for cache instruction
+typedef struct packed {
+    logic as_index;
+    logic invalidate;
+    logic writeback;
+} cache_funct_t;
+
+typedef struct packed {
+    logic         req;
+    cache_funct_t funct;
+} cache_op_t;
+
 `endif

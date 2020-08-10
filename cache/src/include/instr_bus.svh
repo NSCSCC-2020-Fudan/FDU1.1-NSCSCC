@@ -2,6 +2,7 @@
 `define __CACHE_INSTR_BUS_SVH__
 
 `include "defs.svh"
+`include "cache.svh"
 
 parameter int IBUS_DATA_WIDTH = 64;
 parameter int IBUS_WORD_WIDTH = 32;
@@ -12,8 +13,9 @@ typedef logic [IBUS_DATA_WIDTH - 1:0] ibus_data_t;
 typedef logic [IBUS_INDEX_WIDTH - 1:0] ibus_index_t;
 
 typedef struct packed {
-    logic  req;
-    addr_t addr;
+    logic      req;
+    addr_t     addr;
+    cache_op_t cache_op;
 } ibus_req_t;
 
 typedef struct packed {
