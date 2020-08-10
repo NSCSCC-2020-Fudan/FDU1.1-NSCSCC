@@ -146,11 +146,12 @@ module DCache #(
     assign req_iaddr.index  = req_vaddr.index;
     assign req_iaddr.offset = req_vaddr.offset;
 
-    // assignment later
+    // signal declarations
     logic req_in_miss;
     logic req_miss_ready;
     logic req_to_hit;
     logic req_to_miss;
+    logic req_to_flush;  // for cache operation
 
     /**
      * hit stage
@@ -174,8 +175,8 @@ module DCache #(
     localparam wrten_t BRAM_FULL_MASK = {DATA_BYTES{1'b1}};
 
     // state variables
-    enum /*logic [1:0]*/ {  // hope Vivado uses one-hot encoding
-        IDLE, READ, WRITE
+    enum /*logic [2:0]*/ {
+        IDLE, READ, WRITE, FILL, FLUSH
     } miss_state;
     addr_t       miss_addr;
     iaddr_t      miss_pos;
@@ -211,8 +212,9 @@ module DCache #(
         req_iaddr.index == miss_pos.index;
     assign req_miss_ready = !req_in_miss || miss_ready[req_iaddr.offset];
 
-    assign req_to_hit  =  req_hit && (!cop.req && dbus_req.req && req_miss_ready);
-    assign req_to_miss = !req_hit && (!cop.req && dbus_req.req && miss_avail);
+    assign req_to_hit   =  req_hit && (!cop.req && dbus_req.req && req_miss_ready);
+    assign req_to_miss  = !req_hit && (!cop.req && dbus_req.req && miss_avail);
+    assign req_to_flush = 0;  // TODO
 
     /**
      * the BRAM
@@ -240,10 +242,18 @@ module DCache #(
     /**
      * cache operations
      */
-    logic cop_busy;
-    idx_t cop_idx;
+    logic  cop_busy;
+    idx_t  cop_raw_idx;
+    idx_t  cop_idx;
+    addr_t cop_flush_addr;
 
-    assign cop_idx = cop.funct.as_index ? idx_t'(req_vaddr.tag) : req_idx;
+    assign cop_raw_idx = idx_t'(req_vaddr.tag);
+    assign cop_idx     = cop.funct.as_index ? cop_raw_idx : req_idx;
+
+    assign cop_flush_addr.tag    = cop.funct.as_index ? ram_tags[cop_raw_idx] : req_vaddr.tag;
+    assign cop_flush_addr.index  = req_vaddr.index;
+    assign cop_flush_addr.offset = 0;
+    assign cop_flush_addr.zeros  = 0;
 
     /**
      * pipelining & state transitions
@@ -334,6 +344,23 @@ module DCache #(
                     miss_pos.offset <= offset_t'(miss_pos.offset + 1);  // ensure overflow
             end
 
+            FILL: begin
+                miss_vwrten     <= 1;
+                miss_pos.offset <= offset_t'(miss_pos.offset + 1);
+                miss_voffset    <= miss_pos.offset;
+                miss_state      <= miss_pos.offset == '1 ? FLUSH : FILL;
+            end
+
+            FLUSH: begin
+                miss_vwrten <= 0;
+
+                if (cbus_resp.last)
+                    miss_state <= IDLE;
+
+                if (cbus_resp.okay)
+                    miss_pos.offset <= offset_t'(miss_pos.offset + 1);
+            end
+
             default: /* do nothing */;
         endcase
 
@@ -356,6 +383,14 @@ module DCache #(
             // miss_vwrten     <= 0;
             miss_vrecord    <= ram_meta[req_victim_idx];
             miss_vtag       <= ram_tags[req_victim_idx];
+        end else if (req_to_flush) begin
+            miss_state      <= FILL;
+            miss_addr       <= cop_flush_addr;
+            miss_pos.idx    <= cop_idx;
+            miss_pos.index  <= req_iaddr.index;
+            miss_pos.offset <= 0;
+            miss_ready      <= 0;
+            // miss_vwrten     <= 0;
         end
     end else begin
         cop_busy    <= 0;
@@ -374,8 +409,8 @@ module DCache #(
     /**
      * CBus driver
      */
-    assign cbus_req.valid    = miss_busy;
-    assign cbus_req.is_write = miss_state == WRITE;
+    assign cbus_req.valid    = miss_state == READ || miss_state == WRITE || miss_state == FLUSH;
+    assign cbus_req.is_write = miss_state == WRITE || miss_state == FLUSH;
     assign cbus_req.addr     = miss_addr;
     assign cbus_req.order    = cbus_order_t'(OFFSET_BITS);
     assign cbus_req.wdata    = miss_victim[miss_pos.offset];
