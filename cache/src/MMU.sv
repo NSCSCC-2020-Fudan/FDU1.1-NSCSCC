@@ -36,6 +36,7 @@ module MMU #(
     tu_addr_resp_t i_resp, d_resp;
 
     if (USE_IBUS == 1) begin: with_ibus
+        assign i_req.req   = imem_ibus_req.req;
         assign i_req.vaddr = imem_ibus_req.addr;
 
         always_comb begin
@@ -44,6 +45,7 @@ module MMU #(
             imem_ibus_resp = ibus_resp;
         end
     end else begin: without_ibus
+        assign i_req.req   = imem_sramx_req.req;
         assign i_req.vaddr = imem_sramx_req.addr;
 
         always_comb begin
@@ -53,6 +55,7 @@ module MMU #(
         end
     end
 
+    assign d_req.req   = dmem_req.req;
     assign d_req.vaddr = dmem_req.addr;
 
     TranslationUnit tu_inst(

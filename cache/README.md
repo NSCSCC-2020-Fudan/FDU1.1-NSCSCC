@@ -161,3 +161,10 @@ Cache 部分只会修改 CPU 顶层模块的代码。代码位于 `code/mycpu_to
 如果 CPU 需要和 TU 进行沟通，则要在 `mycpu` 模块的接口中添加 `tu_op_req` 和 `tu_op_resp` 这两个接口，类型分别为 `tu_op_req_t` 和 `tu_op_resp_t`。
 
 如果需要替换掉 cache 内部实现的默认 TU，可以将 `src/include/disable_tu.svh` 在 Vivado 中设置为全局包含（global include），或者在全局定义宏 `DISABLE_DEFAULT_TU`。设置后，`tu_op_req_t`、`tu_op_resp_t` 和 `TranslationUnit` 将不在 cache 的代码中定义。之后需要有其它地方提供头文件 `tu.svh` 和 `TranslationUnit` 这个模块。
+
+地址翻译请求信号：
+
+* `req`：`→`。表示当前周期是否有请求。没有地址翻译的情况包括 CPU 没有发送访存请求、`cache` 指令的请求。
+* `vaddr`：`→`。需要翻译的虚拟地址。
+* `paddr`：`←`。翻译后的物理地址。
+* `is_uncached`：`←`。指示该地址的访问是否不经过 cache。

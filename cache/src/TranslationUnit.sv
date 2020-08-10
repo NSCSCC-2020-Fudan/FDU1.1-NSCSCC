@@ -28,7 +28,9 @@ module TranslationUnit(
     );
 
     assign op_resp = 0;
-    logic __unused_ok = &{1'b0, clk, resetn, op_req, 1'b0};
+    logic __unused_ok = &{1'b0,
+        clk, resetn, i_req.req, d_req.req, op_req,
+    1'b0};
 endmodule
 
 `endif

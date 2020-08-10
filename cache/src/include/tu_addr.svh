@@ -4,6 +4,7 @@
 `include "defs.svh"
 
 typedef struct packed {
+    logic  req;
     addr_t vaddr;
 } tu_addr_req_t;
 
