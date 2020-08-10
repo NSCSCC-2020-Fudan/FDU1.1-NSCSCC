@@ -33,7 +33,10 @@ module execute(
     assign multsrca = (multen1) ? (multsrca1) : (multsrca0);
     assign multsrcb = (multen1) ? (multsrcb1) : (multsrcb0);
     assign mult_op = (multen1) ? (mult_op1) : (mult_op0);
-    mult mult(clk, reset, flushE, multsrca, multsrcb, mult_op, hi, lo, multok);
+    mult mult(.clk, .reset, .flushE, 
+              .a(multsrca), .b(multsrcb), .op(mult_op), 
+              .hi, .lo, 
+              .ok(multok));
     
     logic finish;
     assign finish = FU_finish[1] && FU_finish[0];

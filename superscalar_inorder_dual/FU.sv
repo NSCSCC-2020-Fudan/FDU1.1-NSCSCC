@@ -10,7 +10,8 @@ module FU(
         output word_t multsrca, multsrcb,
         output decoded_op_t mult_op,
         output logic multen,
-        input word_t hi, lo, multok
+        input word_t hi, lo,
+        input logic multok
         //mult
     );
 
@@ -26,9 +27,12 @@ module FU(
     assign alusrcaE = (in.instr.ctl.shamt_valid)    ? ({27'b0, in.instr.shamt}) : (in.srca);
     assign alusrcbE = (in.instr.ctl.alusrc == REGB) ? (in.srcb)                 : (in.instr.extended_imm);
     
+    logic multmask;
     assign multsrca = alusrcaE;
     assign multsrcb = alusrcbE;
-    assign mult_op = op;
+    assign mult_op = (multype || divtype)                                         ? (op)    : ( 
+                     ((in.instr.op == MADD || in.instr.op == MSUB) & ~multmask)   ? (MULT)  : (
+                     ((in.instr.op == MADDU || in.instr.op == MSUBU) & ~multmask) ? (MULTU) : (ADDU)));
     assign multen = in.instr.ctl.mul_div_r;
 
     word_t result_cl, result_alu, result;
@@ -45,9 +49,10 @@ module FU(
     JUDGE JUDGE(alusrcaE, alusrcbE, in.instr.ctl.branch_type, taken);
     assign result = cl ? (result_cl) : (result_alu);
     
-    logic maluexception_of, malufinish;
+    logic maluexception_of, malufinish, maluok;
     word_t hi_mult, lo_mult;
     assign multfinish = (multok & ~first_cycpeE);
+    assign malufinish = (maluok & ~first_cycpeE);
     assign finish = (~in.instr.ctl.mul_div_r)            || 
                     ((multype || divtype) && multfinish) || 
                     (~(multype || divtype) && malufinish);
@@ -56,8 +61,9 @@ module FU(
                   in.srchi, in.srclo,
                   hi, lo, 
                   hi_mult, lo_mult, 
-                  multen, multfinish, 
-                  malufinish, maluexception_of); 
+                  multen, multfinish & ~multmask, 
+                  maluok, maluexception_of,
+                  multmask); 
     //assign finish = 1'b1;
 
     assign out.valid = in.valid;
@@ -94,8 +100,9 @@ module FU(
                           (multype || divtype) ? (hi)     : (hi_mult));//mul/div or HTHI 
     assign out.loresult = (~multen)            ? (result) : (
                           (multype || divtype) ? (lo)     : (lo_mult));//mul/div or HTHI
-    assign out.result = (in.instr.ctl.is_link)   ? (pcplus8) : (
-                        (in.instr.ctl.mul_div_r) ? (lo)      : (result));
+    assign out.result = (in.instr.ctl.is_link)    ? (pcplus8) : (
+                        (~in.instr.ctl.mul_div_r) ? (result)  : (
+                        (multype || divtype)      ? (lo)      : (lo_mult)));
     assign out.exception_of = (multype | divtype | cl) ? ('0)           : (
                               (~multen)                ? (exception_of) : (maluexception_of));
 

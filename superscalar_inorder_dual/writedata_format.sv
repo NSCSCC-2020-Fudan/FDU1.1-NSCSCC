@@ -2,7 +2,8 @@
 
 module writedata_format (
         input exec_data_t in,
-        output m_q_t out
+        output m_q_t out,
+        output dbus_wrten_t dmem_write_en
     );
     
     op_t op;
@@ -29,20 +30,24 @@ module writedata_format (
             SW : begin
                 wen = 1'b1;
                 wd = _wd;
+                dmem_write_en = 4'b1111;
             end 
             SH: begin
                 case (addr[1])
                     1'b0: begin
                         wen = 1'b1;
                         wd = _wd;
+                        dmem_write_en = 4'b0011;
                     end 
                     1'b1: begin
                         wen = 1'b1;
                         wd = {_wd[15:0], 16'b0};
+                        dmem_write_en = 4'b1100;
                     end
                     default: begin
                         wen = 'b0;
                         wd = '0;
+                        dmem_write_en = 4'b0000;
                     end
                 endcase
             end
@@ -51,28 +56,92 @@ module writedata_format (
                     2'b00: begin
                         wen = 1'b1;
                         wd = _wd;
+                        dmem_write_en = 4'b0001;
                     end 
                     2'b01: begin
                         wen = 1'b1;
                         wd = {_wd[23:0], 8'b0};
+                        dmem_write_en = 4'b0010;
                     end 
                     2'b10: begin
                         wen = 1'b1;
                         wd = {_wd[15:0], 16'b0};
+                        dmem_write_en = 4'b0100;
                     end 
                     2'b11: begin
                         wen = 1'b1;
                         wd = {_wd[7:0], 24'b0};
+                        dmem_write_en = 4'b1000;
                     end 
                     default: begin
                         wen = 'b0;
                         wd = '0;
+                        dmem_write_en = 4'b0000;
+                    end
+                endcase
+            end
+            SWL: begin
+                case (addr)
+                    2'b00: begin
+                        wen = 1'b1;
+                        wd = {24'b0, _wd[31: 24]};
+                        dmem_write_en = 4'b0001;
+                    end 
+                    2'b01: begin
+                        wen = 1'b1;
+                        wd = {8'b0, _wd[31: 16]};
+                        dmem_write_en = 4'b0011;
+                    end 
+                    2'b10: begin
+                        wen = 1'b1;
+                        wd = {8'b0, _wd[31: 8]};
+                        dmem_write_en = 4'b0111;
+                    end 
+                    2'b11: begin
+                        wen = 1'b1;
+                        wd = _wd;
+                        dmem_write_en = 4'b1111;
+                    end 
+                    default: begin
+                        wen = 'b0;
+                        wd = '0;
+                        dmem_write_en = 4'b0000;
+                    end
+                endcase
+            end
+            SWR: begin
+                case (addr)
+                    2'b00: begin
+                        wen = 1'b1;
+                        wd = _wd;
+                        dmem_write_en = 4'b1111;
+                    end 
+                    2'b01: begin
+                        wen = 1'b1;
+                        wd = {_wd[23: 0], 8'b0};
+                        dmem_write_en = 4'b1110;
+                    end 
+                    2'b10: begin
+                        wen = 1'b1;
+                        wd = {_wd[15: 0], 16'b0};
+                        dmem_write_en = 4'b1100;
+                    end 
+                    2'b11: begin
+                        wen = 1'b1;
+                        wd = {_wd[7: 0], 24'b0};
+                        dmem_write_en = 4'b1000;
+                    end 
+                    default: begin
+                        wen = 'b0;
+                        wd = '0;
+                        dmem_write_en = 4'b0000;
                     end
                 endcase
             end
             default: begin
                 wen = '0;
                 wd = '0;
+                dmem_write_en = '0;
             end
         endcase
     end

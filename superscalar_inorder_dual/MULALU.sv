@@ -7,7 +7,8 @@ module MULALU(
         input word_t hi_inb, lo_inb,
         output word_t hi_out, lo_out,
         input logic multen, finish_in, 
-        output logic finish_out, exception_of 
+        output logic finish_out, exception_of,
+        output logic multmask 
     );
     
     logic [63: 0] a, b, c;
@@ -19,12 +20,14 @@ module MULALU(
                     finish_out <= 1'b1;
                     a <= {hi_ina, lo_ina};
                     b <= {hi_inb, lo_inb};
+                    multmask <= 1'b1;
                 end
             else
                 begin
                     finish_out <= 1'b0;
                     a <= '0;
                     b <= '0;
+                    multmask <= 1'b0;
                 end
         end
     
@@ -34,22 +37,12 @@ module MULALU(
         case (mulfunc)
             MUL_ADD: begin
                 c = a + b;
-                temp = {a[63], a} + {b[63], b};
-                exception_of = (temp[64] != temp[63]);
             end
             MUL_SUB: begin
                 c = a - b;
-                temp = {a[63], a} - {b[63], b};
-                exception_of = (temp[64] != temp[63]);
-            end
-            MUL_ADDU: begin
-                c = a + b;
-            end
-            MUL_SUBU: begin
-                c = a - b;
             end
             default: begin
-                c = '0;
+                c = b;
             end
         endcase
     end

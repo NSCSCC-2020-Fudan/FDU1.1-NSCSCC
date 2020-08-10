@@ -1,8 +1,11 @@
 `include "mips.svh"
+`include "data_bus.svh"
+`include "instr_bus.svh"
 
 module datapath(
         input logic clk, reset,
         input logic [5: 0] ext_int,
+        /*
         output word_t iaddr,  
         input logic ihit, idataOK,
         input word_t [1: 0] idata, 
@@ -14,15 +17,20 @@ module datapath(
         output logic [1: 0] dsize,     
         input logic ddataOK, daddrOK,
         //dmem
-        output rf_w_t [1: 0] rfw_out,
-        output word_t [1: 0] rt_pc_out,
-        output logic stallF_out, flush_ex,
-        //output word_t pc
         output logic inst_ibus_req, 
         input logic inst_ibus_addr_ok,
         input logic inst_ibus_data_ok,
         input logic [63: 0] inst_ibus_data,
         input logic inst_ibus_index
+        */
+        output rf_w_t [1: 0] rfw_out,
+        output word_t [1: 0] rt_pc_out,
+        output logic stallF_out, flush_ex,
+        //output word_t pc
+        output ibus_req_t  imem_req,
+        input ibus_resp_t imem_resp,
+        output dbus_req_t  dmem_req,
+        input dbus_resp_t dmem_resp
     );
     
     
@@ -80,19 +88,17 @@ module datapath(
     word_t jrp_destpcF;
     word_t [1: 0] pc_jrpredictF;
     
-    creg_addr_t [3: 0] reg_addrRP, reg_addrC;
-    word_t [3: 0] reg_dataRP, reg_dataC;
+    creg_addr_t [4: 0] reg_addrRP, reg_addrC;
+    word_t [4: 0] reg_dataRP, reg_dataC;
     word_t [1: 0] hiloRP, hiloC;
     
     logic wait_ex;
     quickfetch quickfetch(.clk, .reset, .flushF(1'b0), .stallF,
                           .fetch(pc_new), .pc, .pc_new_commit,
-                          .addr(iaddr), .hit(ihit), .data(idata), .dataOK(idataOK),
-                          .fetch_data, .hitF(hitF_out), .finishF,
+                          .fetch_data, .hitF(hitF_out), 
+                          .finishF,
                           .pc_predictF, .destpc_predictF,
-                          .inst_ibus_req, .inst_ibus_addr_ok,
-                          .inst_ibus_data_ok, .inst_ibus_data,
-                          .inst_ibus_index,
+                          .imem_req, .imem_resp,
                           .jrp_pushF, .jrp_popF, .pc_jrpredictF,
                           .jrp_topF, .jrp_destpcF);                     
     
@@ -132,13 +138,8 @@ module datapath(
                    			 .in(commit_data_in),
                    			 .out(commit_data_out), 
                    			 .finishC, .pc_mC,
-                   			 .dmem_wt(dwt),
-        					 .dmem_addr(daddr), .dmem_wd(dwd), 
-        					 .dmem_rd(drd),
-        					 .dmem_en(den),
-        					 .dmem_size(dsize),     
-        					 .dmem_data_ok(ddataOK),
-        					 .dmem_req(dreq), .dmem_addr_ok(daddrOK),
+        					 .dmem_req,
+        					 .dmem_resp,
                    			 .fetch(pc_new),
                    			 .bypass0(commitex_bypass), .bypass1(commitdt_bypass),
                    			 .ext_int, 

@@ -4,7 +4,9 @@ module readdata_format (
         input word_t _rd,
         output word_t rd,
         input logic[1:0] addr,
-        input decoded_op_t op
+        input decoded_op_t op,
+        output creg_addr_t reg_addrC,
+        input word_t reg_dataC
     );
     always_comb begin
         case (op)
@@ -42,6 +44,24 @@ module readdata_format (
                     default: begin
                         rd = _rd;
                     end
+                endcase
+            end
+            LWL: begin
+                case (addr)
+                    2'b00: rd = {_rd[7: 0], reg_dataC[23: 0]};
+                    2'b01: rd = {_rd[15: 0], reg_dataC[15: 0]};
+                    2'b10: rd = {_rd[23: 0], reg_dataC[7: 0]};
+                    2'b11: rd = _rd;
+                    default: rd = reg_dataC;
+                endcase
+            end
+            LWR: begin
+                case (addr)
+                    2'b00: rd = _rd;
+                    2'b01: rd = {reg_dataC[31: 24], _rd[31: 8]};
+                    2'b10: rd = {reg_dataC[31: 16], _rd[31: 16]};
+                    2'b11: rd = {reg_dataC[31: 8], _rd[31: 24]};
+                    default: rd = reg_dataC;
                 endcase
             end
             default: begin

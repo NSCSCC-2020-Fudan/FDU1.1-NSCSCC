@@ -1,4 +1,5 @@
 `include "mips.svh"
+`include "data_bus.svh"
 
 module quickcommit(
         input logic clk, reset, flushC,
@@ -8,12 +9,16 @@ module quickcommit(
         input logic first_cycleC, 
         output logic finishC, pc_mC,
         //control
+        /*
         output logic dmem_wt,
         output word_t dmem_addr, dmem_wd, 
         input word_t dmem_rd,
         output logic dmem_en, dmem_req,
         output logic [1: 0] dmem_size,     
         input logic dmem_addr_ok, dmem_data_ok,
+        */
+        output dbus_req_t  dmem_req,
+        input dbus_resp_t dmem_resp,
         //dmem
         output pc_data_t fetch,
         //fetch new pc
@@ -46,13 +51,18 @@ module quickcommit(
     exec_data_t [1: 0] exception_out;
     exception_t exception_data_ex;
     logic exception_valid_ex, exception_valid_dt, finish_exception;
+    logic dmem_en;
+    logic [1: 0] dmem_size;
     exceptioncommit exceptioncommit(.clk, .reset, .flush(flushC), .stall(~finishC),
     								.mask(pc_mC),
 									.in, .out(exception_out),
-									.dmem_addr_ok, .dmem_req, 
-									.dmem_en,
-									.dmem_wt, .dmem_addr, .dmem_wd,
-        							.dmem_size, 
+									.dmem_addr_ok(dmem_resp.addr_ok), 
+									.dmem_req(dmem_req.req), 
+									.dmem_wt(dmem_req.is_write), 
+									.dmem_addr(dmem_req.addr), 
+									.dmem_wd(dmem_req.data),
+									.dmem_write_en(dmem_req.write_en),
+        							.dmem_en, .dmem_size, 
         							.ext_int,
         							.timer_interrupt,
         							.exception_valid(exception_valid_ex), .exception_data(exception_data_ex),
@@ -98,7 +108,7 @@ module quickcommit(
 						exception_valid_dt <= exception_valid_ex;
 						dmem_en_dt <= dmem_en;
 						dmem_size_dt <= dmem_size;
-						dmem_addr_dt <= dmem_addr;
+						dmem_addr_dt <= dmem_req.addr;
 						
 						llbit <= llbit || llwrite_ex;
 					end
@@ -114,9 +124,10 @@ module quickcommit(
         			      .exception_data_out(exception_data),
         				  .bypass(bypass1),
         				  .dmem_en(dmem_en_dt),
-        				  .dmem_size(dmem_size_dt), .dmem_addr(dmem_addr_dt),
-        				  .dmem_rd,
-        				  .dmem_data_ok,
+        				  .dmem_size(dmem_size_dt), 
+        				  .dmem_addr(dmem_addr_dt),
+        				  .dmem_rd(dmem_resp.data),
+        				  .dmem_data_ok(dmem_resp.data_ok),
         				  .finish_cdata,
         				  .cp0_epc(cp0_data.epc),
         				  .reg_addrC, .reg_dataC, .hiloC);
