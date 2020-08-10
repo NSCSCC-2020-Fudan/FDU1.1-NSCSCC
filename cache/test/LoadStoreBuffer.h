@@ -11,12 +11,12 @@ public:
         inst->resetn = 1;
         inst->m_req_x_addr = 0;
         inst->m_req_x_req = 0;
-        inst->m_req_x_size = 0;
-        inst->m_req_x_wdata = 0;
-        inst->m_req_x_wr = 0;
+        inst->m_req_x_write_en = 0;
+        inst->m_req_x_data = 0;
+        inst->m_req_x_is_write = 0;
         inst->s_resp_x_addr_ok = 0;
         inst->s_resp_x_data_ok = 0;
-        inst->s_resp_x_rdata = 0;
+        inst->s_resp_x_data = 0;
         inst->eval();
 
         inst->resetn = 0;
@@ -41,10 +41,10 @@ public:
             inst->s_resp_x_data_ok = randu(0, 1) == 0;
 
             if (inst->s_resp_x_data_ok) {
-                inst->s_resp_x_rdata = _fifo.front();
+                inst->s_resp_x_data = _fifo.front();
                 _fifo.pop();
             } else {
-                inst->s_resp_x_rdata = 0xdeadbeef;
+                inst->s_resp_x_data = 0xdeadbeef;
             }
         } else
             inst->s_resp_x_data_ok = 0;
@@ -59,8 +59,8 @@ public:
     }
 
     void clock_trigger() {
-        if (inst->m_req_x_req && inst->m_req_x_wr && inst->m_resp_x_addr_ok) {
-            _sw_bits_reg ^= inst->m_req_x_wdata;
+        if (inst->m_req_x_req && inst->m_req_x_is_write && inst->m_resp_x_addr_ok) {
+            _sw_bits_reg ^= inst->m_req_x_data;
             _sw_count_reg++;
 
             if (inst->resetn) {
@@ -72,12 +72,12 @@ public:
 
     void issue_store(int addr, u32 wdata) {
         inst->m_req_x_req = 1;
-        inst->m_req_x_size = 0b10;
-        inst->m_req_x_wr = 1;
+        inst->m_req_x_write_en = 0b1111;
+        inst->m_req_x_is_write = 1;
         inst->m_req_x_addr = addr;
-        inst->m_req_x_wdata = wdata;
+        inst->m_req_x_data = wdata;
 
-        _sw_bits ^= inst->m_req_x_wdata;
+        _sw_bits ^= inst->m_req_x_data;
         _sw_count++;
 
         inst->eval();
@@ -85,10 +85,10 @@ public:
 
     void issue_load(int addr) {
         inst->m_req_x_req = 1;
-        inst->m_req_x_size = 0b10;
-        inst->m_req_x_wr = 0;
+        inst->m_req_x_write_en = 0b1111;
+        inst->m_req_x_is_write = 0;
         inst->m_req_x_addr = addr;
-        inst->m_req_x_wdata = 0xdeadbeef;
+        inst->m_req_x_data = 0xdeadbeef;
         inst->eval();
     }
 
@@ -104,7 +104,7 @@ public:
         top->add_clock_trigger([this] {
             this->addr_ok = this->_top->inst->m_resp_x_addr_ok;
             this->data_ok = this->_top->inst->m_resp_x_data_ok;
-            this->data = this->_top->inst->m_resp_x_rdata;
+            this->data = this->_top->inst->m_resp_x_data;
         });
     }
 

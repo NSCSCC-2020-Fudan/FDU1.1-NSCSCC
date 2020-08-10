@@ -371,6 +371,6 @@ module ICache #(
      * unused (for Verilator)
      */
     logic __unused_ok = &{1'b0,
-        req_vaddr, unused_data,
+        req_vaddr, unused_data, ibus_req,
     1'b0};
 endmodule
