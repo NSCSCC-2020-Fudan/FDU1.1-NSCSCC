@@ -74,6 +74,10 @@ public:
 
         inst->clk = 0;
         inst->resetn = 1;
+        inst->dbus_req_x_cache_op_x_req = 0;
+        inst->dbus_req_x_cache_op_x_funct_x_as_index = 0;
+        inst->dbus_req_x_cache_op_x_funct_x_invalidate = 0;
+        inst->dbus_req_x_cache_op_x_funct_x_writeback = 0;
         inst->dbus_req_vaddr_x_index = 0;
         inst->dbus_req_vaddr_x_offset = 0;
         inst->dbus_req_vaddr_x_tag = 0;

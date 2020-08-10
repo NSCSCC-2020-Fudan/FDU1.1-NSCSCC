@@ -63,6 +63,10 @@ module DCache #(
     output cbus_req_t  cbus_req,
     input  cbus_resp_t cbus_resp
 );
+    // shortuct for cache operations
+    cache_op_t cop;
+    assign cop = dbus_req.cache_op;
+
     /**
      * storages for cache tags & records
      */
@@ -123,16 +127,18 @@ module DCache #(
     );
 
     // perform replacement algorithm
-    idx_t    req_victim_idx;
+    idx_t    computed_victim_idx, req_victim_idx;
     select_t req_new_select;
     PLRU #(
         .NUM_WAYS(NUM_WAYS)
     ) replacement_inst(
         .select(ram_select),
-        .victim_idx(req_victim_idx),
+        .victim_idx(computed_victim_idx),
         .idx(req_idx),
         .new_select(req_new_select)
     );
+
+    assign req_victim_idx = computed_victim_idx;
 
     // generate cache BRAM address
     iaddr_t req_iaddr;
@@ -204,8 +210,9 @@ module DCache #(
         req_paddr.tag == miss_addr.tag &&
         req_iaddr.index == miss_pos.index;
     assign req_miss_ready = !req_in_miss || miss_ready[req_iaddr.offset];
-    assign req_to_hit     = req_hit && (dbus_req.req && req_miss_ready);
-    assign req_to_miss    = !req_hit && (dbus_req.req && miss_avail);
+
+    assign req_to_hit  =  req_hit && (!cop.req && dbus_req.req && req_miss_ready);
+    assign req_to_miss = !req_hit && (!cop.req && dbus_req.req && miss_avail);
 
     /**
      * the BRAM
@@ -231,13 +238,31 @@ module DCache #(
     );
 
     /**
+     * cache operations
+     */
+    logic cop_busy;
+    idx_t cop_idx;
+
+    assign cop_idx = cop.funct.as_index ? idx_t'(req_vaddr.tag) : req_idx;
+
+    /**
      * pipelining & state transitions
      */
     // LUTRAM updates
     assign ram_new_select = req_to_hit ? req_new_select : ram_select;
 
     always_comb
-    unique if (req_to_hit) begin
+    unique if (cop.req) begin
+        for (int i = 0; i < NUM_WAYS; i++) begin
+            if (cop_idx == idx_t'(i)) begin
+                ram_new_meta[i].valid = cop.funct.invalidate ? 0 : 1;
+                ram_new_meta[i].dirty = ram_meta[i].dirty;
+            end else
+                ram_new_meta[i] = ram_meta[i];
+        end
+
+        ram_new_tags = ram_tags;
+    end else if (req_to_hit) begin
         if (dbus_req.is_write) begin
             for (int i = 0; i < NUM_WAYS; i++) begin
                 if (req_iaddr.idx == idx_t'(i)) begin
@@ -333,6 +358,7 @@ module DCache #(
             miss_vtag       <= ram_tags[req_victim_idx];
         end
     end else begin
+        cop_busy    <= 0;
         hit_data_ok <= 0;
         miss_state  <= IDLE;
         miss_vwrten <= 0;
@@ -341,7 +367,7 @@ module DCache #(
     /**
      * DBus driver
      */
-    assign dbus_resp.addr_ok = req_hit && req_miss_ready;
+    assign dbus_resp.addr_ok = cop.req ? !cop_busy : (req_hit && req_miss_ready);
     assign dbus_resp.data_ok = hit_data_ok;
     assign dbus_resp.data    = hit_rdata;
 
