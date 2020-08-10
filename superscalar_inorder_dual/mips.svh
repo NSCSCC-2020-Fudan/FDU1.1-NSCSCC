@@ -41,7 +41,7 @@ typedef enum logic[4:0] {
 } alufunc_t;
 
 typedef enum logic [3: 0] {
-    MUL_ADDU, MUL_ADD, MUL_SUBU, MUL_SUB, MUL_CLO, MUL_CLZ, MUL_MULT 
+    MUL_ADD, MUL_SUB, MUL_CLO, MUL_CLZ, MUL_PASS 
 } mulfunc_t;
 
 // op
@@ -79,6 +79,10 @@ typedef enum logic [3: 0] {
 `define OP_LL           6'b110000
 `define OP_SC           6'b111000
 `define OP_TLB          6'b010000
+`define OP_LWL          6'b100010
+`define OP_LWR          6'b100110
+`define OP_SWL          6'b101010
+`define OP_SWR          6'b101110
 
 
 // funct
@@ -147,7 +151,7 @@ typedef enum logic [6: 0] {
     AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
     JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI, ERET,
     CLO, CLZ, MOVN, MOVZ, MADD, MADDU, MSUB, MSUBU, MUL,
-    LL, SC, WAIT_EX,
+    LL, SC, LWL, LWR, SWL, SWR, WAIT_EX, 
     TLBR, TLBP, TLBWI
 } decoded_op_t;//64 left
 

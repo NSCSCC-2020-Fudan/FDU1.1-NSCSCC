@@ -64,12 +64,8 @@ module issue(
     //an instr changes epc before ERET
     //an instr changes cause/status before exception 
     
-    logic MULTa, MULTb, DMULT;
-    assign MULTa = (aD.instr.op == MULT) || (aD.instr.op == MULTU) || 
-    			   (aD.instr.op == DIV) || (aD.instr.op == DIVU);
-    assign MULTb = (bD.instr.op == MULT) || (bD.instr.op == MULTU) || 
-    			   (bD.instr.op == DIV) || (bD.instr.op == DIVU);
-	assign DMULT = MULTa & MULTb;    			   
+    logic DMULT;
+	assign DMULT = aD.instr.ctl.mul_div_r & bD.instr.ctl.mul_div_r;    			   
     
     assign enb = ~(BJ || RAW || MM || PRIV || DMULT);
     //assign enb = 1'b0;

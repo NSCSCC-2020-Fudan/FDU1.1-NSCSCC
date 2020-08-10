@@ -21,8 +21,8 @@ module maindecode (
                 case (func)
                     `M_MUL: begin
                         op = MUL;
+                        ctl.mulfunc = MUL_PASS;
                         ctl.regwrite = 1'b1;
-                        ctl.alusrc = REGB;
                         ctl.mul_div_r = 1'b1;
                         srcrega = rs;
                         srcregb = rt;
@@ -30,43 +30,43 @@ module maindecode (
                     end
                     `M_ADDU: begin
                         op = MADDU;
-                        ctl.regwrite = 1'b1;
+                        ctl.mulfunc = MUL_ADD;
                         ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         srcrega = rs;
                         srcregb = rt;
-                        destreg = rd;
+                        destreg = '0;
                     end
                     `M_ADD: begin
                         op = MADD;
-                        ctl.regwrite = 1'b1;
+                        ctl.mulfunc = MUL_ADD;
                         ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         srcrega = rs;
                         srcregb = rt;
-                        destreg = rd;
+                        destreg = '0;
                     end
                     `M_SUBU: begin
-                        op = MSUB;
-                        ctl.regwrite = 1'b1;
+                        op = MSUBU;
+                        ctl.mulfunc = MUL_SUB;
                         ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         srcrega = rs;
                         srcregb = rt;
-                        destreg = rd;
+                        destreg = '0;
                     end
                     `M_SUB: begin
-                        op = MSUBU;
-                        ctl.regwrite = 1'b1;
+                        op = MSUB;
+                        ctl.mulfunc = MUL_SUB;
                         ctl.mul_div_r = 1'b1;
                         ctl.hiwrite = 1'b1;
                         ctl.lowrite = 1'b1;
                         srcrega = rs;
                         srcregb = rt;
-                        destreg = rd;
+                        destreg = '0;
                     end
                     `M_CLO: begin
                         op = CLO;
@@ -340,7 +340,41 @@ module maindecode (
                 srcrega = rs;
                 srcregb = rt;
                 destreg = '0;
-            end    
+            end   
+            `OP_LWL: begin
+                op = LWL;
+                ctl.regwrite = 1'b1;
+                ctl.memtoreg = 1'b1;
+                ctl.alusrc = IMM;
+                srcrega = rs;
+                srcregb = '0;
+                destreg = rt;
+            end
+            `OP_LWR: begin
+                op = LWR;
+                ctl.regwrite = 1'b1;
+                ctl.memtoreg = 1'b1;
+                ctl.alusrc = IMM;
+                srcrega = rs;
+                srcregb = '0;
+                destreg = rt;
+            end
+            `OP_SWL: begin
+                op = SWL;
+                ctl.memwrite = 1'b1;
+                ctl.alusrc = IMM;
+                srcrega = rs;
+                srcregb = rt;
+                destreg = '0;
+            end
+            `OP_SWR: begin
+                op = SWR;
+                ctl.memwrite = 1'b1;
+                ctl.alusrc = IMM;
+                srcrega = rs;
+                srcregb = rt;
+                destreg = '0;
+            end 
             `OP_ERET: begin
                 case (instr[25:21])
                     `C_MFC0: begin

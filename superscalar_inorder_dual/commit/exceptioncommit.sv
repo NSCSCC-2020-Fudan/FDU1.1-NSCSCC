@@ -1,4 +1,5 @@
 `include "mips.svh"
+`include "data_bus.svh"
 
 module exceptioncommit(
 		input logic clk, reset, flush, stall,
@@ -10,7 +11,8 @@ module exceptioncommit(
 		output logic dmem_req, dmem_en,
 		output logic dmem_wt,
         output word_t dmem_addr, dmem_wd,
-        output logic [1: 0] dmem_size,     
+        output logic [1: 0] dmem_size,
+        output dbus_wrten_t dmem_write_en,  
         //mem
         input logic timer_interrupt, 
         input logic [5: 0] ext_int,
@@ -63,14 +65,16 @@ module exceptioncommit(
     assign bypass.cp0_modify = {in[1].instr.ctl.cp0_modify, in[0].instr.ctl.cp0_modify};
     
     m_q_t [1: 0] _mem;
-    writedata_format writedata_format1 (in[1], _mem[1]);
-    writedata_format writedata_format0 (in[0], _mem[0]);
+    dbus_wrten_t [1: 0] _write_en;
+    writedata_format writedata_format1 (in[1], _mem[1], _write_en[1]);
+    writedata_format writedata_format0 (in[0], _mem[0], _write_en[0]);
     assign dmem_addr = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (in[1].result) : (in[0].result);
     assign dmem_size = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_mem[1].size) : (_mem[0].size);
     assign dmem_wt = (in[1].instr.ctl.memwrite | in[0].instr.ctl.memwrite);
     assign dmem_wd = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_mem[1].wd) : (_mem[0].wd);
     assign dmem_en = (out[1].instr.ctl.memwrite | out[1].instr.ctl.memtoreg) | 
     				 (out[0].instr.ctl.memwrite | out[0].instr.ctl.memtoreg);
+    assign dmem_write_en = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_write_en[1]) : (_write_en[0]);    				   				 
 	
 	logic dmem_addr_ok_h;    				 
 	assign dmem_req = dmem_en & ~dmem_addr_ok_h;

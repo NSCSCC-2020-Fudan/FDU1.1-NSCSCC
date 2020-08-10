@@ -1,4 +1,5 @@
 `include "mips.svh"
+`include "instr_bus.svh"
 
 module quickfetch (
     input logic clk, reset, flushF, stallF,
@@ -7,11 +8,6 @@ module quickfetch (
     output word_t pc,
     input logic pc_new_commit, 
     //to branch_control
-    output word_t addr,
-    input logic hit, 
-    input word_t [1: 0] data,
-    input logic dataOK,
-    //to imem
     output fetch_data_t [1: 0] fetch_data,
     output logic [1: 0] hitF,
     output logic finishF,
@@ -19,11 +15,17 @@ module quickfetch (
     output word_t [1: 0] pc_predictF,
     input bpb_result_t [1: 0] destpc_predictF,
     //to bpb
+    /*
     output logic inst_ibus_req,
     input logic inst_ibus_addr_ok,
     input logic inst_ibus_data_ok,
     input logic [63: 0] inst_ibus_data,
     input logic inst_ibus_index,
+    */
+    output ibus_req_t  imem_req,
+    input ibus_resp_t imem_resp,
+    output dbus_req_t  dmem_req,
+    input dbus_resp_t dmem_resp,
     //to ibus
     output logic [1: 0] jrp_pushF, jrp_popF,
     output word_t [1: 0] pc_jrpredictF,
@@ -59,21 +61,24 @@ module quickfetch (
     logic [1: 0] ien_predict_pcf;  
     bpb_result_t [1: 0] destpc_predict_pcf;                          
     pcfetch pcfetch(.clk, .reset, .stall, .flush(1'b0),
-                    .pc_new, .addr,
+                    .pc_new, 
+                    .addr(imem_req.addr),
                     .pc(pc_pcf), .pcplus4(pcplus4_pcf), .pcplus8(pcplus8_pcf),
-                    .inst_ibus_addr_ok,
-                    .inst_ibus_req, .finish_pc,
+                    .inst_ibus_addr_ok(imem_resp.addr_ok),
+                    .inst_ibus_req(imem_req.req), 
+                    .finish_pc,
                     .pc_predictF,
-                    .destpc_predictF_in(destpc_predictF), .destpc_predictF_out(destpc_predict_pcf));
+                    .destpc_predictF_in(destpc_predictF), 
+                    .destpc_predictF_out(destpc_predict_pcf));
     assign pc = pc_pcf;                    
     
     logic finish_instr;
     bpb_result_t destpc_predict_sel_isf;
     instrfetch instrfetch(.clk, .reset, .stall, .flush(1'b0),
                           .pc_pcf, .pcplus4_pcf, .pcplus8_pcf,
-                          .inst_ibus_data_ok,
-                          .inst_ibus_data,
-                          .inst_ibus_index,
+                          .inst_ibus_data_ok(imem_resp.data_ok),
+                          .inst_ibus_data(imem_resp.data),
+                          .inst_ibus_index(imem_resp.index),
                           .fetch_data,
                           .hitF,                           
                           .finish_instr,
@@ -101,7 +106,7 @@ module quickfetch (
             last_predict_h_ = last_predict_h;
             destpc_predict_sel_h_ = destpc_predict_sel_h;
             pc_stop_ = pc_stop;
-            if (inst_ibus_addr_ok)
+            if (imem_resp.addr_ok)
                 no_addr_ok_ = 1'b0;
             if (pc_upd)
                 begin
