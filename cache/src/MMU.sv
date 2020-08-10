@@ -47,6 +47,10 @@ module MMU(
         .op_resp(tu_op_resp)
     );
 
+    logic i_uncached, d_uncached;
+    assign i_uncached = i_resp.is_uncached && !imem_req.cache_op.req;
+    assign d_uncached = d_resp.is_uncached && !dmem_req.cache_op.req;
+
     // dispatch dcache/uncached accesses
     // NOTE: two stage pipeline here
     // split variables
@@ -68,7 +72,7 @@ module MMU(
     logic cur_ready;     // can stage 1 step into stage 2?
     logic last_ready;    // stage 2 ok in current clock cycle?
 
-    assign real_addr_ok = d_resp.is_uncached ? uncached_resp.addr_ok : dcache_resp.addr_ok;
+    assign real_addr_ok = d_uncached ? uncached_resp.addr_ok : dcache_resp.addr_ok;
     assign cur_ready    = last_ready && (cur_finished || real_addr_ok);
     assign last_ready   = last_finished || dmem_data_ok;
 
@@ -105,7 +109,7 @@ module MMU(
             if (cur_ready) begin
                 cur_finished    <= 0;
                 last_finished   <= 0;
-                last_d_uncached <= d_resp.is_uncached;
+                last_d_uncached <= d_uncached;
             end else if (!cur_finished)
                 cur_finished <= real_addr_ok;
         end
@@ -122,6 +126,6 @@ module MMU(
      * unused
      */
     logic __unused_ok = &{1'b0,
-        i_resp.is_uncached,
+        i_uncached,
     1'b0};
 endmodule
