@@ -29,7 +29,7 @@ typedef struct packed {
 typedef struct packed {
     logic[8:0]PTEbase;              // Page Table Entry, R/W
 
-    logic[18:0]badVPN2;
+    logic[18:0]badvpn2;
     // This field is written by hardware on a TLB exception. 
     // It contains bits VA 31..13 of the virtual address that caused the exception.
     // R
