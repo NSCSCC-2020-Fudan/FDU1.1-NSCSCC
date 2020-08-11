@@ -161,7 +161,7 @@ module tlb_lut (
     assign tlblut_resp.hit = |hit_mask;
     assign tlblut_resp.dirty = vaddr[12] ? tlb_table[hit_addr].D1 : tlb_table[hit_addr].D0;
     assign tlblut_resp.valid = vaddr[12] ? tlb_table[hit_addr].V1 : tlb_table[hit_addr].V0;
-    assign tlblut_resp.cache_flag = vaddr[12] ? tlb_table[hit_addr].C1 : tlb_table[hit_addr].C0;
+    assign tlblut_resp.C = vaddr[12] ? tlb_table[hit_addr].C1 : tlb_table[hit_addr].C0;
 endmodule
 
 `endif
