@@ -3,6 +3,7 @@
 module cp0(
         input logic clk, reset,
         input rf_w_t [1: 0] cwrite,//write
+        input logic[2:0][1:0] sel,
         input creg_addr_t [1: 0] ra,
         output word_t [1: 0] rd,
         //read or write
@@ -47,23 +48,45 @@ module cp0(
     end
     // read
     always_comb begin
-        case (ra[1])
+        if ( sel[1] == 3'b1 && ra[1] == 5'd16 ) begin
+            rd[1] = cp0.config_1;
+        end else case (ra[1])
+            5'd0:   rd[1] = cp0.index;
+            5'd1:   rd[1] = cp0.random;
+            5'd2:   rd[1] = cp0.entrylo0;
+            5'd3:   rd[1] = cp0.entrylo1;
+            5'd4:   rd[1] = cp0.context_;
+            5'd6:   rd[1] = cp0.wired;
             5'd8:   rd[1] = cp0.badvaddr;
             5'd9:   rd[1] = cp0.count;
+            5'd10:  rd[1] = cp0.entryhi;
+            5'd11:  rd[1] = cp0.compare;
             5'd12:  rd[1] = cp0.status;
             5'd13:  rd[1] = cp0.cause;
             5'd14:  rd[1] = cp0.epc;
+            5'd15:  rd[1] = cp0.prid;
             5'd16:  rd[1] = cp0.config_;
             default:rd[1] = '0;
         endcase
     end
     always_comb begin
-        case (ra[0])
+        if ( sel[0] == 3'b1 && ra[0] == 5'd16 ) begin
+            rd[0] = cp0.config_1;
+        end else case (ra[0])
+            5'd0:   rd[0] = cp0.index;
+            5'd1:   rd[0] = cp0.random;
+            5'd2:   rd[0] = cp0.entrylo0;
+            5'd3:   rd[0] = cp0.entrylo1;
+            5'd4:   rd[0] = cp0.context_;
+            5'd6:   rd[0] = cp0.wired;
             5'd8:   rd[0] = cp0.badvaddr;
             5'd9:   rd[0] = cp0.count;
+            5'd10:  rd[0] = cp0.entryhi;
+            5'd11:  rd[0] = cp0.compare;
             5'd12:  rd[0] = cp0.status;
             5'd13:  rd[0] = cp0.cause;
             5'd14:  rd[0] = cp0.epc;
+            5'd15:  rd[0] = cp0.prid;
             5'd16:  rd[0] = cp0.config_;
             default:rd[0] = '0;
         endcase
@@ -84,9 +107,19 @@ module cp0(
         cp0_new.count = cp0_new.count + count_switch;
         
         // write
-        if (cwrite[1].wen) begin
+        if (cwrite[1].wen && sel[1] == 3'd0) begin
             case (cwrite[1].addr)
+                5'd0:   cp0_new.index.index = cwrite[1].wd[4:0];
+                5'd2:   cp0_new.entrylo0[29:0] = cwrite[1].wd[29:0];
+                5'd3:   cp0_new.entrylo1[29:0] = cwrite[1].wd[29:0];
+                5'd4:   cp0_new.context_.ptebase = cwrite[1].wd[31:23];
+                5'd6:   cp0_new.wired.wired = cwrite[1].wd[TLB_INDEX-1:0];
                 5'd9:   cp0_new.count   = cwrite[1].wd;
+                5'd10: 
+                begin
+                        cp0_new.entryhi.vpn2 = cwrite[1].wd[31:13];
+                        cp0_new.entryhi.asid = cwrite[1].wd[7:0];
+                end 
                 5'd11:  cp0_new.compare = cwrite[1].wd;
                 5'd12:
                 begin
@@ -96,14 +129,29 @@ module cp0(
                 end
                 5'd13:  cp0_new.cause.IP[1:0] = cwrite[1].wd[9:8];
                 5'd14:  cp0_new.epc = cwrite[1].wd;
+                5'd16: 
+                begin
+                        cp0_new.config_[30:25] = cwrite[1].wd[30:25];
+                        cp0_new.config_.K0 = cwrite[1].wd[2:0];
+                end
                 default: ;
             endcase
         end
-        if (cwrite[0].wen) begin
+        if (cwrite[0].wen && sel[0] == 3'd0) begin
             case (cwrite[0].addr)
+                5'd0:   cp0_new.index.index = cwrite[0].wd[4:0];
+                5'd2:   cp0_new.entrylo0[29:0] = cwrite[0].wd[29:0];
+                5'd3:   cp0_new.entrylo1[29:0] = cwrite[0].wd[29:0];
+                5'd4:   cp0_new.context_.ptebase = cwrite[0].wd[31:23];
+                5'd6:   cp0_new.wired.wired = cwrite[0].wd[TLB_INDEX-1:0];
                 5'd9:   cp0_new.count   = cwrite[0].wd;
+                5'd10: 
+                begin
+                        cp0_new.entryhi.vpn2 = cwrite[0].wd[31:13];
+                        cp0_new.entryhi.asid = cwrite[0].wd[7:0];
+                end 
                 5'd11:  cp0_new.compare = cwrite[0].wd;
-                5'd12:
+                5'd02:
                 begin
                         cp0_new.status.IM = cwrite[0].wd[15:8];
                         cp0_new.status.EXL = cwrite[0].wd[1];
@@ -111,6 +159,11 @@ module cp0(
                 end
                 5'd13:  cp0_new.cause.IP[1:0] = cwrite[0].wd[9:8];
                 5'd14:  cp0_new.epc = cwrite[0].wd;
+                5'd16: 
+                begin
+                        cp0_new.config_[30:25] = cwrite[0].wd[30:25];
+                        cp0_new.config_.K0 = cwrite[0].wd[2:0];
+                end
                 default: ;
             endcase
         end
