@@ -92,7 +92,8 @@ module datapath(
     word_t [4: 0] reg_dataRP, reg_dataC;
     word_t [1: 0] hiloRP, hiloC;
     
-    logic wait_ex;
+    logic wait_ex, tlb_ex;
+
     quickfetch quickfetch(.clk, .reset, .flushF(1'b0), .stallF,
                           .fetch(pc_new), .pc, .pc_new_commit,
                           .fetch_data, .hitF(hitF_out), 
@@ -154,7 +155,7 @@ module datapath(
                    			 .jrp_reset(jrp_rstC), .jrp_top(jrp_topC),
                    			 //.llwrite,
                    			 .cp0_data,
-                   			 .wait_ex,
+                   			 .wait_ex, .tlb_ex,
                    			 .reg_addrC, .reg_dataC, .hiloC,
 							 .cp0_addrC, .cp0_dataC,
                              .cp0w    
@@ -191,8 +192,8 @@ module datapath(
                               .hiR(hiW), .loR(loW));                   
     
     control control (.clk, .reset,
-                     .finishF, .finishE, .finishC, .data_hazardI, .queue_ofI, .pcF(pc_mC),
-                     .is_eret, .exception_valid, .wait_ex,
+                     .finishF, .finishE, .finishC, .data_hazardI, .queue_ofI, .pcF(pc_mC), 
+                     .is_eret, .exception_valid, .wait_ex, .tlb_ex,
                      .stallF, .stallD, .flushD, .stallI, .flushI, 
                      .stallE, .flushE, .stallC, .flushC, .stallR, .flushR, .pc_new_commit, .flush_ex);
     

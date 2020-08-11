@@ -527,8 +527,8 @@ typedef struct packed{
 } bypass_upd_t;
 
 typedef struct packed{
-    logic exception_valid, is_eret, branch, jump, jr;
-    word_t pcexception, epc, pcbranch, pcjump, pcjr; 
+    logic exception_valid, is_eret, tlb_ex, branch, jump, jr;
+    word_t pcexception, epc, pctlb, pcbranch, pcjump, pcjr; 
 } pc_data_t;
 
 `define JR_STACK_INIT {                                                                                             \
