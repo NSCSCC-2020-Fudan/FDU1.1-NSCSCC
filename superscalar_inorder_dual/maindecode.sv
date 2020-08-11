@@ -375,7 +375,7 @@ module maindecode (
                 srcregb = rt;
                 destreg = '0;
             end 
-            `OP_ERET: begin
+            `OP_PRIV: begin
                 case (instr[25:21])
                     `C_MFC0: begin
                         op = MFC0;
@@ -391,7 +391,7 @@ module maindecode (
                         op = MTC0;
                         ctl.cp0write = 1'b1;
                         ctl.alufunc = ALU_PASSB;
-                        ctl.cp0_modify = 1'b1;
+                        ctl.is_priv = 1'b1;
                         srcrega = '0;
                         srcregb = rt;
                         destreg = '0;
@@ -400,6 +400,7 @@ module maindecode (
                         case (instr[5: 0])
                             `C_ERET: begin
                                 op = ERET;
+                                ctl.is_priv = 1'b1;
                                 ctl.is_eret = 1'b1;
                                 srcrega = '0;
                                 srcregb = '0;
@@ -407,6 +408,28 @@ module maindecode (
                             end
                             `C_WAIT: begin
                                 op = WAIT_EX;
+                                ctl.is_priv = 1'b1;
+                                srcrega = '0;
+                                srcregb = '0;
+                                destreg = '0;
+                            end
+                            `C_TLBP: begin
+                                op = TLBP;
+                                ctl.is_priv = 1'b1;
+                                srcrega = '0;
+                                srcregb = '0;
+                                destreg = '0;
+                            end 
+                            `C_TLBR: begin
+                                op = TLBR;
+                                ctl.is_priv = 1'b1;
+                                srcrega = '0;
+                                srcregb = '0;
+                                destreg = '0;
+                            end
+                            `C_TLBWI: begin
+                                op = TLBWI;
+                                ctl.is_priv = 1'b1;
                                 srcrega = '0;
                                 srcregb = '0;
                                 destreg = '0;

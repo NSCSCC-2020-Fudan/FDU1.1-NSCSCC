@@ -62,7 +62,6 @@ module exceptioncommit(
     //assign bypass.memtoreg = {in[1].instr.ctl.memtoreg, in[0].instr.ctl.memtoreg};
     assign bypass.ready = {out[1].state.ready, out[0].state.ready};
     assign bypass.wen = {out[1].instr.ctl.regwrite, out[0].instr.ctl.regwrite};
-    assign bypass.cp0_modify = {in[1].instr.ctl.cp0_modify, in[0].instr.ctl.cp0_modify};
     
     m_q_t [1: 0] _mem;
     dbus_wrten_t [1: 0] _write_en;

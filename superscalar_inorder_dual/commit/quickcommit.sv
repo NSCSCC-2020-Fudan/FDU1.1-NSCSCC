@@ -39,11 +39,13 @@ module quickcommit(
         //to jr predict
         input cp0_regs_t cp0_data,
         output rf_w_t [1: 0] cp0w,
-        output logic wait_ex,
+        output logic wait_ex, tlb_ex,
         //cp0
         output creg_addr_t [3: 0] reg_addrC,
         input word_t [3: 0] reg_dataC,
-        input word_t [1: 0] hiloC
+        input word_t [1: 0] hiloC,
+		output creg_addr_t [1: 0] cp0_addrC,
+		input word_t [1: 0] cp0_dataC
         //delay execute
     );
     
@@ -130,7 +132,8 @@ module quickcommit(
         				  .dmem_data_ok(dmem_resp.data_ok),
         				  .finish_cdata,
         				  .cp0_epc(cp0_data.epc),
-        				  .reg_addrC, .reg_dataC, .hiloC);
+        				  .reg_addrC, .reg_dataC, .hiloC,
+						  .cp0_addrC, .cp0_dataC);
 	
 	assign finishC = finish_exception & finish_cdata;   
 	assign exception_valid = exception_valid_dt;	

@@ -5,7 +5,7 @@ module decode_to_issue_t(
         input word_t hi, lo,
         input word_t reg_dataa, reg_datab,
         input logic reg_readya, reg_readyb,
-        input word_t cp0_data, 
+        //input word_t cp0_data, 
         output issue_data_t out,
         input logic BJp,
         input logic is_link
@@ -20,7 +20,7 @@ module decode_to_issue_t(
     assign out.cp0_addr = in.cp0_addr;
     // assign out.exception_of = 'b0;
     assign out.srca = (in.instr.ctl.hitoreg)           ? (hi)         : (
-                      (in.instr.ctl.cp0toreg)          ? (cp0_data)   : (
+                      (in.instr.ctl.cp0toreg)          ? ('0)         : (
                       (is_link && in.srcrega == 5'd31) ? (in.pcplus4) : reg_dataa));
 
     assign out.srcb = (in.instr.ctl.lotoreg)           ? (lo)         : (
@@ -37,7 +37,7 @@ module decode_to_issue_t(
     assign out.srclo = lo;
     assign out.jrtop = in.jrtop;
     
-    assign out.state.readya = reg_readya;
+    assign out.state.readya = reg_readya & ~in.instr.ctl.cp0toreg;
     assign out.state.readyb = reg_readyb;
     assign out.state.ready = 1'b0;
 

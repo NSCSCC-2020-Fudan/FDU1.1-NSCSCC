@@ -16,8 +16,8 @@ module issue(
         input word_t [3: 0] reg_dataI,
         output logic [1: 0] hiloreadI, 
         input word_t [1: 0] hilodataI,
-        output creg_addr_t [1: 0] cp0_addrI,
-        input word_t [1: 0] cp0_dataI,
+        //output creg_addr_t [1: 0] cp0_addrI,
+        //input word_t [1: 0] cp0_dataI,
         input logic [3: 0] reg_readyI,
         // data_forward
         output logic first_cycpeE
@@ -49,8 +49,7 @@ module issue(
                     (aD.instr.ctl.lowrite && bD.instr.ctl.lotoreg);
     assign RAW_reg = (aD.instr.ctl.regwrite && aD.destreg == bD.srcrega) || 
                      (aD.instr.ctl.regwrite && aD.destreg == bD.srcregb);
-    assign RAW_cp0 = (aD.instr.ctl.cp0write && aD.cp0_addr == bD.cp0_addr && bD.instr.ctl.cp0toreg); 
-    assign RAW = RAW_hl | RAW_reg | RAW_cp0;
+    assign RAW = RAW_hl | RAW_reg;
     //read after write
                          
     assign BJa = aD.instr.ctl.branch || aD.instr.ctl.jump || aD.instr.ctl.jr;
@@ -60,7 +59,7 @@ module issue(
     //issue together
     
     logic PRIV;
-    assign PRIV = aD.instr.ctl.cp0_modify;
+    assign PRIV = aD.instr.ctl.is_priv || bD.instr.ctl.is_priv;
     //an instr changes epc before ERET
     //an instr changes cause/status before exception 
     
@@ -246,18 +245,18 @@ module issue(
     assign hiloreadI = {aD.instr.ctl.hitoreg || bD.instr.ctl.hitoreg, 
                         aD.instr.ctl.lotoreg || bD.instr.ctl.lotoreg};
     assign {hi, lo} = hilodataI;
-    assign cp0_addrI = {aD.cp0_addr, bD.cp0_addr};
+    //assign cp0_addrI = {aD.cp0_addr, bD.cp0_addr};
 
     decode_to_issue_t decode_to_issue_t1(aD, 
                                          hi, lo, 
                                          reg_dataI[3], reg_dataI[2], reg_readyI[3], reg_readyI[2], 
-                                         cp0_dataI[1], 
+                                         //cp0_dataI[1], 
                                          aI, 
                                          'b0, 'b0);
     decode_to_issue_t decode_to_issue_t0(bD, 
                                          hi, lo, 
                                          reg_dataI[1], reg_dataI[0], reg_readyI[1], reg_readyI[0], 
-                                         cp0_dataI[0], 
+                                         //cp0_dataI[0], 
                                          bI, 
                                          BJa, aD.instr.ctl.is_link);
 

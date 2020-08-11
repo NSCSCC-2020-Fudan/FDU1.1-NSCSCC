@@ -4,7 +4,8 @@ module delayFU(
         input exec_data_t in,
         output exec_data_t out,
         input word_t reg_dataa, reg_datab,
-        input word_t hi_data, lo_data
+        input word_t hi_data, lo_data,
+        input word_t cp0_data
     );
 
     decoded_op_t op;
@@ -13,8 +14,9 @@ module delayFU(
     assign func = in.instr.ctl.alufunc;
     
     word_t srca, srcb;
-    assign srca = (in.state.readya)      ? (in.srca) : (                  
-                  (in.instr.ctl.hitoreg) ? (hi_data) : (reg_dataa));
+    assign srca = (in.state.readya)       ? (in.srca)  : (                  
+                  (in.instr.ctl.hitoreg)  ? (hi_data)  : (
+                  (in.instr.ctl.cp0toreg) ? (cp0_data) : (reg_dataa)));
     assign srcb = (in.state.readyb)      ? (in.srcb) : (
                   (in.instr.ctl.lotoreg) ? (lo_data) : (reg_datab));
     

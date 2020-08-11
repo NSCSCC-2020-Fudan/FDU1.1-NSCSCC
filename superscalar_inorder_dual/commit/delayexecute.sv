@@ -5,18 +5,25 @@ module delayexecute(
         output exec_data_t [1: 0] out,
         output creg_addr_t [3: 0] reg_addrC,
         input word_t [3: 0] reg_dataC,
-        input word_t srchi, srclo
+        input word_t srchi, srclo,
+        output creg_addr_t [1: 0] cp0_addrC,
+        input word_t [1: 0] cp0_dataC
     );
     
     logic [1: 0] FU_finish;
     exec_data_t [1: 0] FU_result;
     
     assign reg_addrC = {in[1].srcrega, in[1].srcregb, in[0].srcrega, in[0].srcregb};
-    
-    delayFU delayFU1(in[1], FU_result[1],
-                     reg_dataC[3], reg_dataC[2], srchi, srclo);
-    delayFU delayFU0(in[0], FU_result[0],
-                     reg_dataC[1], reg_dataC[0], srchi, srclo);
+    assign cp0_addrC = {in[1].cp0_addr, in[0].cp0_addr};
+
+    delayFU delayFU1(.in(in[1]), .out(FU_result[1]),
+                     .reg_dataa(reg_dataC[3]), .reg_datab(reg_dataC[2]), 
+                     .hi_data(srchi), .lo_data(srclo), 
+                     .cp0_data(cp0_dataC[1]));
+    delayFU delayFU0(.in(in[0]), .out(FU_result[0]),
+                     .reg_dataa(reg_dataC[1]), .reg_datab(reg_dataC[0]), 
+                     .hi_data(srchi), .lo_data(srclo), 
+                     .cp0_data(cp0_dataC[0]));
     assign out[1] = FU_result[1];
     assign out[0] = FU_result[0];
     
