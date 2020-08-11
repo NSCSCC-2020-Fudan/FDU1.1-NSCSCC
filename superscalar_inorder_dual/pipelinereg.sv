@@ -40,7 +40,11 @@ module creg(
         input logic stallC, flushC,
         input exec_data_t [1: 0] in,
         output exec_data_t [1: 0] out,
-        output logic first_cycleC
+        output logic first_cycleC,
+        input logic [5: 0] ext_int_in,
+        output logic [5: 0] ext_int_out,
+        input logic timer_interrupt_in,
+        output logic timer_interrupt_out
     );
     
     always_ff @(posedge clk)
@@ -49,12 +53,16 @@ module creg(
                 begin
                     out <= '0;
                     first_cycleC <= '1;
+                    ext_int_out <= '0;
+                    timer_interrupt_out <= '0;
                 end
             else
                 if (flushC)
                     begin
                         out <= '0;
                         first_cycleC <= '1;
+                        ext_int_out <= '0;
+                        timer_interrupt_out <= '0;
                     end 
                 else
                     begin
@@ -62,11 +70,15 @@ module creg(
                             begin
                                 out <= in;
                                 first_cycleC <= '1;
+                                ext_int_out <= ext_int_in;
+                                timer_interrupt_out <= timer_interrupt_in;
                             end
                         else
                             begin
                                 out <= out;
                                 first_cycleC <= '0;
+                                ext_int_out <= ext_int_out;
+                                timer_interrupt_out <= timer_interrupt_out;
                             end
                     end                                                
         end

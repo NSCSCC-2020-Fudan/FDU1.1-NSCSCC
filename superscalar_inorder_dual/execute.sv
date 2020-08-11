@@ -54,6 +54,5 @@ module execute(
     //assign bypass.memtoreg = {out[1].instr.ctl.memtoreg, out[0].instr.ctl.memtoreg};
     assign bypass.ready = {out[1].state.ready, out[0].state.ready};
     assign bypass.wen = {out[1].instr.ctl.regwrite, out[0].instr.ctl.regwrite};
-    assign bypass.cp0_modify = {out[1].instr.ctl.cp0_modify, out[0].instr.ctl.cp0_modify};
     
 endmodule

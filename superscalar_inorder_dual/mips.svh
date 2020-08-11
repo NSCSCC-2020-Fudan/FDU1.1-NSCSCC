@@ -72,7 +72,7 @@ typedef enum logic [3: 0] {
 `define OP_SB           6'b101000
 `define OP_SH           6'b101001
 `define OP_SW           6'b101011
-`define OP_ERET         6'b010000
+`define OP_PRIV         6'b010000
 // `define OP_MFC0         6'b010000
 // `define OP_MTC0         6'b010000
 `define OP_MUL          6'b011100
@@ -134,10 +134,9 @@ typedef enum logic [3: 0] {
 `define C_MTC0          5'b00100
 `define C_ERET          6'b011000
 `define C_WAIT          6'b100000
-
-`define TLB_WI          6'b000010
-`define TLB_R           6'b000001
-`define TLB_P           6'b001000
+`define C_TLBR          6'b000001
+`define C_TLBP          6'b001000
+`define C_TLBWI         6'b000010
 
 typedef enum logic[1:0] { REGB, IMM} alusrcb_t;
 typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_t;
@@ -189,7 +188,7 @@ typedef struct packed {
     logic hitoreg, lotoreg, cp0toreg;
     logic is_link, is_like;
     logic mul_div_r;
-    logic llwrite, cp0_modify;
+    logic llwrite, is_priv;
     logic delayen;
 } control_t;
 
@@ -525,7 +524,6 @@ typedef struct packed{
     logic [1: 0] wen;
     logic [1: 0] lowrite, hiwrite;
     word_t [1: 0] hidata, lodata;
-    logic [1: 0] cp0_modify;
 } bypass_upd_t;
 
 typedef struct packed{

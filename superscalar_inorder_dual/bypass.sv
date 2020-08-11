@@ -5,8 +5,8 @@ module bypass(
         output word_t [3: 0] reg_dataI,
         input logic [1: 0] hiloreadI, 
         output word_t [1: 0] hilodataI,
-        input creg_addr_t [1: 0] cp0_addrI,
-        output word_t [1: 0] cp0_dataI,
+        //input creg_addr_t [1: 0] cp0_addrI,
+        //output word_t [1: 0] cp0_dataI,
         input logic [3: 0] dhazard_maskI,
         output logic [3: 0] data_hazardI,
         output logic [3: 0] readyI,
@@ -19,18 +19,15 @@ module bypass(
         output creg_addr_t [3: 0] reg_addrR,
         input word_t [3: 0] reg_dataR,
         output logic [1: 0] hiloreadR, 
-        input word_t hiR, loR,
-        output creg_addr_t [1: 0] cp0_addrR,
-        input word_t [1: 0] cp0_dataR
+        input word_t hiR, loR
+        //output creg_addr_t [1: 0] cp0_addrR,
+        //input word_t [1: 0] cp0_dataR
         //registers 
     );
     
     assign reg_addrR = reg_addrI;
     assign hiloreadR = hiloreadI;
-    assign cp0_addrR = cp0_addrI;
     
-    word_t [1: 0] _cp0_dataI;
-    cp0_regs_t cp0_mask_and, cp0_mask_or;
     //assign cp0_mask_and = `CP0_MASK_AND;
     //assign cp0_mask_or = `CP0_MASK_OR;
     
@@ -40,11 +37,17 @@ module bypass(
     regbypass bypss_reg1 (reg_addrI[1], execute, commitex, commitdt, retire, reg_dataR[1], hazard[1], reg_dataI[1]);
     regbypass bypss_reg0 (reg_addrI[0], execute, commitex, commitdt, retire, reg_dataR[0], hazard[0], reg_dataI[0]);
     hlbypass bypass_hilo (execute, commitex, commitdt, retire, hiR, loR, hilodataI[1], hilodataI[0]);
+    /*
     cp0bypass bypass_cp01 (cp0_addrI[1], execute, commitex, commitdt, retire, cp0_dataR[1], _cp0_dataI[1]);
     cp0bypass bypass_cp00 (cp0_addrI[0], execute, commitex, commitdt, retire, cp0_dataR[0], _cp0_dataI[0]);
-    
-    assign cp0_hazardI = execute.cp0_modify[1] | execute.cp0_modify[0] |
+    */
+
+
+    assign cp0_hazardI = 1'b0;
+                         /*
+                         execute.cp0_modify[1] | execute.cp0_modify[0] |
                          commitex.cp0_modify[1] | commitex.cp0_modify[0];
+                         */
                          
     assign data_hazardI = (hazard[3] & dhazard_maskI[3]) | 
                           (hazard[2] & dhazard_maskI[2]) | 
@@ -59,6 +62,6 @@ module bypass(
     
     //assign cp0_dataI[1] = (_cp0_dataI[1] & _cp0_mask_and[1]) | _cp0_mask_or[1];
     //assign cp0_dataI[0] = (_cp0_dataI[0] & _cp0_mask_and[0]) | _cp0_mask_or[0];
-    assign cp0_dataI = _cp0_dataI;
+    //assign cp0_dataI = '0;
 
 endmodule

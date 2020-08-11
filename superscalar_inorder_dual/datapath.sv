@@ -54,8 +54,8 @@ module datapath(
     logic [1: 0] hiloreadI, hiloreadW;
     word_t [1: 0] hilodataI;
     word_t hiW, loW;
-    creg_addr_t [1: 0] cp0_addrI, cp0_addrW;
-    word_t [1: 0] cp0_dataI, cp0_dataW;
+    creg_addr_t [1: 0] cp0_addrI, cp0_addrW, cp0_addrC;
+    word_t [1: 0] cp0_dataI, cp0_dataW, cp0_dataC;
     rf_w_t [1: 0] rfw, cp0w;
     word_t [1: 0] rt_pc;
     hilo_w_t hlw;
@@ -120,7 +120,6 @@ module datapath(
                  .dhazard_maskI,
                  .reg_addrI, .reg_dataI, 
                  .hiloreadI, .hilodataI,
-                 .cp0_addrI, .cp0_dataI,
                  .first_cycpeE);  
     
     execute execute (clk, reset, first_cycpeE,
@@ -130,10 +129,14 @@ module datapath(
                      exec_bypass,
                      mul_timeok, div_timeok);
     
+    logic [5: 0] ext_intC;
+    logic timer_interruptC;
     logic first_cycleC;
     bypass_upd_t commitex_bypass, commitdt_bypass;
-    creg creg (clk, reset, stallC, flushC,
-               exec_data_out, commit_data_in, first_cycleC);
+    creg creg (.clk, .reset, .stallC, .flushC,
+               .in(exec_data_out), .out(commit_data_in), .first_cycleC,
+               .ext_int_in(ext_int), .ext_int_out(ext_intC),
+               .timer_interrupt_in(timer_interrupt), .timer_interrupt_out(timer_interruptC));
 	quickcommit quickcommit (.clk, .reset, .flushC, 
                    			 .in(commit_data_in),
                    			 .out(commit_data_out), 
@@ -142,8 +145,8 @@ module datapath(
         					 .dmem_resp,
                    			 .fetch(pc_new),
                    			 .bypass0(commitex_bypass), .bypass1(commitdt_bypass),
-                   			 .ext_int, 
-                   			 .timer_interrupt,
+                   			 .ext_int(ext_intC), 
+                   			 .timer_interrupt(timer_interruptC),
                    			 .exception_valid, 
                    			 .exception_data(exceptionE),
                    			 .is_eret,
@@ -153,6 +156,7 @@ module datapath(
                    			 .cp0_data,
                    			 .wait_ex,
                    			 .reg_addrC, .reg_dataC, .hiloC,
+							 .cp0_addrC, .cp0_dataC,
                              .cp0w    
                    			 /*
                    			 .TLB_req
@@ -169,14 +173,14 @@ module datapath(
     
     bypass bypass (.reg_addrI, .reg_dataI, 
                    .hiloreadI, .hilodataI,
-                   .cp0_addrI, .cp0_dataI,
+                   //.cp0_addrI, .cp0_dataI,
                    .dhazard_maskI, .data_hazardI,
                    .execute(exec_bypass),
                    .commitex(commitex_bypass), .commitdt(commitdt_bypass),
                    .retire(retire_bypass),
                    .reg_addrR(reg_addrW), .reg_dataR(reg_dataW),
                    .hiloreadR(hiloreadW), .hiR(hiW), .loR(loW),
-                   .cp0_addrR(cp0_addrW), .cp0_dataR(cp0_dataW),
+                   //.cp0_addrR(cp0_addrW), .cp0_dataR(cp0_dataW),
                    .readyI(reg_readyI));
                        
     retirebypass retirebypass(.reg_addrC, .reg_dataC,
@@ -202,7 +206,8 @@ module datapath(
     
     cp0 cp0(clk, reset,
             cp0w,
-            cp0_addrW, cp0_dataW,
+            //cp0_addrW, cp0_dataW,
+			cp0_addrC, cp0_dataC,
             is_eret, 
             timer_interrupt,
             exceptionE,

@@ -19,7 +19,6 @@ module retire(
     //assign bypass.memtoreg = {in[1].instr.ctl.memtoreg, in[0].instr.ctl.memtoreg};
     assign bypass.wen = {in[1].instr.ctl.regwrite, in[0].instr.ctl.regwrite};
     assign bypass.ready = {in[1].state.ready, in[0].state.ready};
-    assign bypass.cp0_modify = {in[1].instr.ctl.cp0_modify, in[0].instr.ctl.cp0_modify};
     // signalretire signalretire [1: 0] (in[1], rfout, hiloout, cp0out);
     
     assign rfw[1].addr = in[1].destreg;
