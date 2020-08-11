@@ -85,6 +85,8 @@ module exception(
             end
         endcase
     end
+    assign exc_info = pipe.exc_info;
+
     assign exception_valid = |exc_info;
     assign exception.location = `EXC_ENTRY;
     assign exception.valid = (interrupt_valid | exception_valid) & reset;
@@ -93,13 +95,13 @@ module exception(
     assign exception.in_delay_slot = in_delay_slot;
     assign exception.badvaddr = vaddr;
 
-    assign exception_instr = pipe.exception_instr;
-    assign exception_ri = pipe.exception_ri;
-    assign exception_of = pipe.exception_of;
-    assign exception_load =  pipe.exception_load;
-    assign exception_bp = pipe.exception_bp;
-    assign exception_sys = pipe.exception_sys;
-    assign exception_save = pipe.exception_save;
+    // assign exception_instr = pipe.exception_instr;
+    // assign exception_ri = pipe.exception_ri;
+    // assign exception_of = pipe.exception_of;
+    // assign exception_load =  pipe.exception_load;
+    // assign exception_bp = pipe.exception_bp;
+    // assign exception_sys = pipe.exception_sys;
+    // assign exception_save = pipe.exception_save;
     assign vaddr = pipe.vaddr;
     assign pc = pipe.pc;
     assign in_delay_slot = pipe.in_delay_slot;

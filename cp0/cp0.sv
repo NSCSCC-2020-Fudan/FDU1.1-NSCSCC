@@ -14,8 +14,15 @@ module cp0(
         //exception
         output cp0_cause_t cp0_cause,
         output cp0_status_t cp0_status,
-        output word_t cp0_epc
+        output word_t cp0_epc,
         //bypass
+        input tu_op_resp_t tlb_resp,
+        input logic is_tlbr,
+        input logic is_tlbp,
+        output cp0_entryhi_t cp0_entryhi,
+        output cp0_entrylo_t cp0_entrylo0, cp0_entrylo1,
+        output cp0_index_t cp0_index,
+        output logic k0_uncached 
     );
 
     cp0_regs_t cp0, cp0_new;
@@ -108,6 +115,15 @@ module cp0(
             endcase
         end
 
+        // tlb
+        if (is_tlbr) begin
+            cp0_new.entryhi = tlb_resp.entryhi;
+            cp0_new.entrylo0 = tlb_resp.entrylo0;
+            cp0_new.entrylo1 = tlb_resp.entrylo1;
+        end 
+        if (is_tlbp) begin
+            cp0_new.index = tlb_resp.index;
+        end
         // exception
         if (exception.valid) begin
             if (~cp0.status.EXL) begin
@@ -126,6 +142,13 @@ module cp0(
             if (exception.code == `CODE_ADEL || exception.code == `CODE_ADES) begin
                 cp0_new.badvaddr = exception.badvaddr;
             end
+
+            // TLB
+            if (exception.code == `CODE_TLBL || exception.code == `CODE_MOD || exception.code == `CODE_TLBS) begin
+                cp0_new.badvaddr = exception.badvaddr;
+				cp0_new.context_badvpn2 = exception.badvaddr[31:13];
+				cp0_new.entryhi.vpn2 = exception.badvaddr[31:13];  
+            end
         end
 
         // eret
@@ -142,5 +165,9 @@ module cp0(
     assign cp0_status = cp0.status;
     assign cp0_cause = cp0.cause;
     assign cp0_epc = cp0.epc;
-
+    assign cp0_entryhi = cp0.entryhi;
+    assign cp0_entrylo0 = cp0.entrylo0;
+    assign cp0_entrylo1 = co0.entrylo1;
+    assign cp0_index = cp0_index;
+    assign k0_uncached = cp0.config_.K0 == 3'b011;
 endmodule
