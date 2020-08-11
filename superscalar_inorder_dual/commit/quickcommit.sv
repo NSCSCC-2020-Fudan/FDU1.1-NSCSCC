@@ -133,11 +133,12 @@ module quickcommit(
         				  .finish_cdata,
         				  .cp0_epc(cp0_data.epc),
         				  .reg_addrC, .reg_dataC, .hiloC,
-						  .cp0_addrC, .cp0_dataC);
+						  .cp0_addrC, .cp0_dataC,
+						  .tlb_ex);
 	
 	assign finishC = finish_exception & finish_cdata;   
 	assign exception_valid = exception_valid_dt;	
-	assign pc_mC = fetch.branch | fetch.jump | fetch.jr | fetch.exception_valid | fetch.is_eret;
+	assign pc_mC = fetch.branch | fetch.jump | fetch.jr | fetch.exception_valid | fetch.is_eret | fetch.tlb_ex;
 	assign is_eret = fetch.is_eret;						
 
     assign jrp_reset = pc_mC;

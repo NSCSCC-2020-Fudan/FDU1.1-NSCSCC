@@ -38,8 +38,10 @@ module quickfetch (
     pc_cmtselect pc_cmtselect(clk, reset, 
                               fetch.exception_valid, fetch.is_eret,
                               fetch.branch, fetch.jump, fetch.jr,
+                              fetch.tlb_ex,
                               fetch.pcexception, fetch.epc, 
                               fetch.pcbranch, fetch.pcjump, fetch.pcjr,
+                              fetch.pctlb,
                               pc_cmt, pc_upd);
     logic [1: 0] ien;     
     assign ien = hitF; 
