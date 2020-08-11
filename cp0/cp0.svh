@@ -3,7 +3,7 @@
 
 typedef logic [4:0] cp0_addr_t;
 
-parameter TLB_INDEX = 3;
+parameter TLB_INDEX = 5;
 typedef struct packed {
     logic P;                    // 31, Probe Failure, R
     logic [30:TLB_INDEX] zero;  // [30:n], always 0
@@ -16,7 +16,7 @@ typedef struct packed {
                                   // with special upper and lower bound 
 } cp0_random_t;
 
-parameter PABITS = 16;          // physical address bits
+parameter PABITS = 36;          // physical address bits
 typedef struct packed {
     logic [31:PABITS - 6] fill;     // always 0, R
     logic [PABITS-7:6] pfn;         // page frame number, R/W
@@ -27,7 +27,7 @@ typedef struct packed {
 } cp0_entrylo_t;
 
 typedef struct packed {
-    logic[8:0]PTEbase;              // Page Table Entry, R/W
+    logic[8:0]ptebase;              // Page Table Entry, R/W
 
     logic[18:0]badvpn2;
     // This field is written by hardware on a TLB exception. 
@@ -177,6 +177,7 @@ typedef struct packed {
 } cp0_regs_t;
 
 `define CP0_INIT {                                      \
+    32'b00_11111_000_101_111_000_101_011_0000000,       \
     32'b0,                                              \
     32'b0,                                              \
     32'b0,                                              \
@@ -192,8 +193,8 @@ typedef struct packed {
     32'b0,                                              \
     32'b0,                                              \
     32'b0,                                              \
-    32'b0,                                              \
-    32'b0,                                              \
+    32'h80000080,                                       \
+    32'h4220,                                           \
     32'b0,                                              \
     32'b0,                                              \
     32'b0000_0000_0100_0000_0000_0000_0000_0000,        \
