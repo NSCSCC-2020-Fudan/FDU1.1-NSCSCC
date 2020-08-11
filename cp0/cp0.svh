@@ -19,7 +19,7 @@ typedef struct packed {
 parameter PABITS = 16;          // physical address bits
 typedef struct packed {
     logic [31:PABITS - 6] fill;     // always 0, R
-    logic [PABITS-7:6] PFN;         // page frame number, R/W
+    logic [PABITS-7:6] pfn;         // page frame number, R/W
     logic [2:0] C;                  // Cacheability and Coherency Attribute of the page R/W
     logic D;                        // Dirty bit, R/W
     logic V;                        // Valid bit, R/W
@@ -56,7 +56,7 @@ typedef struct packed {
 } cp0_wired_t;
 
 typedef struct packed {
-    logic[18:0]VPN2;
+    logic[18:0]vpn2;
     /*
     VA 31..13 of the virtual address (virtual page number / 2).
     This field is written by hardware on a TLB exception or
@@ -65,7 +65,7 @@ typedef struct packed {
     R/W
     */
     logic[4:0]zero;
-    logic[7:0]ASID;
+    logic[7:0]asid;
     /*
     Address space identifier. This field is written by hard-
     ware on a TLB read and by software to establish the cur-
