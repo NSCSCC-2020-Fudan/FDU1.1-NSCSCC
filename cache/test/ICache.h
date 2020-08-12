@@ -12,6 +12,10 @@ inline u64 remap(int a, int b) {
     return (static_cast<u64>(remap(b)) << 32) | remap(a);
 }
 
+int _i(int i) {
+    return i << 2;
+}
+
 class CacheBusSlave : public ICacheBusSlave {
 public:
     CacheBusSlave(VTop *inst) : _inst(inst) {}
@@ -66,6 +70,10 @@ public:
 
         inst->clk = 0;
         inst->resetn = 1;
+        inst->ibus_req_x_cache_op_x_req = 0;
+        inst->ibus_req_x_cache_op_x_funct_x_as_index = 0;
+        inst->ibus_req_x_cache_op_x_funct_x_invalidate = 0;
+        inst->ibus_req_x_cache_op_x_funct_x_writeback = 0;
         inst->ibus_req_vaddr_x_aligned_x_shamt = 0;
         inst->ibus_req_vaddr_x_aligned_x_zeros = 0;
         inst->ibus_req_vaddr_x_index = 0;
@@ -93,6 +101,28 @@ public:
         cmem->eval();
     }
 
+    void issue_cop(int addr, int vaddr, int opcode) {
+        int zeros = vaddr & 0x3;
+        int shamt = (vaddr & 0x4) >> 2;
+        int offset = (vaddr & 0x18) >> 3;
+        int index = (vaddr & 0x60) >> 5;
+        int tag = (vaddr & 0xffffff80) >> 7;
+
+        inst->ibus_req_x_req = 1;
+        inst->ibus_req_x_cache_op_x_req = 1;
+        inst->ibus_req_x_cache_op_x_funct_x_as_index = (opcode >> 2) & 1;
+        inst->ibus_req_x_cache_op_x_funct_x_invalidate = (opcode >> 1) & 1;
+        inst->ibus_req_x_cache_op_x_funct_x_writeback = (opcode >> 0) & 1;
+        inst->ibus_req_x_addr = addr;
+        inst->ibus_req_vaddr_x_aligned_x_zeros = zeros;
+        inst->ibus_req_vaddr_x_aligned_x_shamt = shamt;
+        inst->ibus_req_vaddr_x_offset = offset;
+        inst->ibus_req_vaddr_x_index = index;
+        inst->ibus_req_vaddr_x_tag = tag;
+
+        inst->eval();
+    }
+
     void issue_read(int addr, int vaddr) {
         int zeros = vaddr & 0x3;
         int shamt = (vaddr & 0x4) >> 2;
@@ -101,6 +131,10 @@ public:
         int tag = (vaddr & 0xffffff80) >> 7;
 
         inst->ibus_req_x_req = 1;
+        inst->ibus_req_x_cache_op_x_req = 0;
+        inst->ibus_req_x_cache_op_x_funct_x_as_index = 1;
+        inst->ibus_req_x_cache_op_x_funct_x_invalidate = 1;
+        inst->ibus_req_x_cache_op_x_funct_x_writeback = 1;
         inst->ibus_req_x_addr = addr;
         inst->ibus_req_vaddr_x_aligned_x_zeros = zeros;
         inst->ibus_req_vaddr_x_aligned_x_shamt = shamt;
@@ -115,6 +149,11 @@ public:
         issue_read(addr, addr);
     }
 
+    void reset_req() {
+        inst->ibus_req_x_req = 0;
+        inst->eval();
+    }
+
 private:
     CacheBusSlave *_bus;
 };
@@ -123,13 +162,23 @@ class Pipeline {
 public:
     Pipeline(Top *top) : _top(top) {}
 
+    void cop(int paddr, int opcode, int vaddr = -1) {
+        if (vaddr < 0)
+            vaddr = paddr;
+
+        _rd_fifo.push({opcode, paddr, vaddr, 0, 0});
+
+        if (!in_req())
+            _top->issue_cop(paddr, vaddr, opcode);
+    }
+
     void expect32(int paddr, u32 data, int vaddr = -1) {
         if (vaddr < 0)
             vaddr = paddr;
 
         int offset = ((paddr & 7) * 8);
         u64 mask = 0xffffffffLU << offset;
-        _rd_fifo.push({paddr, vaddr, mask, static_cast<u64>(data) << offset});
+        _rd_fifo.push({0, paddr, vaddr, mask, static_cast<u64>(data) << offset});
 
         if (!in_req())
             _top->issue_read(paddr, vaddr);
@@ -141,7 +190,7 @@ public:
 
         int offset = ((paddr & 7) * 8);
         u64 mask = 0xffffffffffffffff << offset;
-        _rd_fifo.push({paddr, vaddr, mask, data});
+        _rd_fifo.push({0, paddr, vaddr, mask, data});
 
         if (!in_req())
             _top->issue_read(paddr, vaddr);
@@ -182,11 +231,17 @@ public:
         if (data_ok) {
             assert(!_wt_fifo.empty());
             auto u = _wt_fifo.front();
-            info(
-                "addr 0x%x (v:0x%x), expect \"%016llx\", got \"%016llx\" (raw: %016llx, index: %d, mask: %016llx)\n",
-                u.paddr, u.vaddr, u.data, data, raw_data, index, u.mask
-            );
-            assert((u.data & u.mask) == (data & u.mask));
+
+            if (u.cop)
+                info("cop %x, vaddr 0x%08x, paddr 0x%08x\n", u.cop, u.paddr, u.vaddr);
+            else {
+                info(
+                    "addr 0x%x (v:0x%x), expect \"%016llx\", got \"%016llx\" (raw: %016llx, index: %d, mask: %016llx)\n",
+                    u.paddr, u.vaddr, u.data, data, raw_data, index, u.mask
+                );
+                assert((u.data & u.mask) == (data & u.mask));
+            }
+
             _wt_fifo.pop();
         }
 
@@ -195,7 +250,11 @@ public:
             _top->eval();
         } else {
             auto u = _rd_fifo.front();
-            _top->issue_read(u.paddr, u.vaddr);
+
+            if (u.cop)
+                _top->issue_cop(u.paddr, u.vaddr, u.cop);
+            else
+                _top->issue_read(u.paddr, u.vaddr);
         }
     }
 
@@ -209,6 +268,7 @@ public:
 
 private:
     struct _task_t {
+        int cop;
         int paddr;
         int vaddr;
         u64 mask;

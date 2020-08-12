@@ -59,7 +59,6 @@ WITH {
     top->issue_cop(0, 0, 0b010);
     assert(top->inst->dbus_resp_x_addr_ok == 1);
     top->reset_req();
-    top->eval();
     assert(top->inst->dbus_resp_x_addr_ok == 0);
 } AS("fake cop 2");
 

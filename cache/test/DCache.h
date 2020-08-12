@@ -109,6 +109,7 @@ public:
 
     void reset_req() {
         inst->dbus_req_x_req = 0;
+        inst->eval();
     }
 
     void issue_cop(int addr, int vaddr, int opcode) {
