@@ -34,7 +34,8 @@ module datapath(
         input dbus_resp_t dmem_resp,
         //bus
         output tu_op_req_t  tu_op_req,
-        input tu_op_resp_t tu_op_resp
+        input tu_op_resp_t tu_op_resp,
+        output logic k0_uncached
     );
     
     
@@ -94,6 +95,7 @@ module datapath(
     word_t jrp_destpcF;
     word_t [1: 0] pc_jrpredictF;
     
+    logic [1: 0][2: 0] cp0_selC;
     creg_addr_t [4: 0] reg_addrRP, reg_addrC;
     word_t [4: 0] reg_dataRP, reg_dataC;
     word_t [1: 0] hiloRP, hiloC;
@@ -164,8 +166,9 @@ module datapath(
                    			 .cp0_data,
                    			 .wait_ex, .tlb_ex,
                    			 .reg_addrC, .reg_dataC, .hiloC,
-							 .cp0_addrC, .cp0_dataC,
                              .cp0w,    
+                             .cp0_selC,
+                             .cp0_addrC, .cp0_dataC,
                    			 .tu_op_req, .tu_op_resp,
                    			 .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC));                               
     
@@ -211,7 +214,7 @@ module datapath(
                      reg_addrRP, reg_dataRP);               
     
     cp0 cp0(.clk, .reset,
-            .cwrite(cp0w), .sel(cp0w_sel),
+            .cwrite(cp0w), .sel(cp0_selC),
             //cp0_addrW, cp0_dataW,
 			.ra(cp0_addrC), .rd(cp0_dataC),
             .is_eret, 
@@ -219,7 +222,7 @@ module datapath(
             .exception(exceptionE),
             .cp0_data,
             .tlb_resp(tu_op_resp), 
-            .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC));        
+            .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC), .k0_uncached);        
     
     /*            
     cp0status_bypass cp0status_bypass(exec_bypass, commitex_bypass, commitdt_bypass, retire_bypass, 

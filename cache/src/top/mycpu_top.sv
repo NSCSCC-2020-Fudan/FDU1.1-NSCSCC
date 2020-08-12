@@ -61,6 +61,7 @@ module mycpu_top(
 
     tu_op_req_t  tu_op_req;
     tu_op_resp_t tu_op_resp;
+    logic k0_uncached;
 
     mycpu #(.DO_ADDR_TRANSLATION(0)) mycpu(
         .clk(aclk), .resetn(aresetn), .*

@@ -23,7 +23,8 @@ module MMU(
     output dbus_req_t  dcache_req,
     input  dbus_resp_t dcache_resp,
     output dbus_req_t  uncached_req,
-    input  dbus_resp_t uncached_resp
+    input  dbus_resp_t uncached_resp,
+    input logic k0_uncached
 );
     /**
      * address translation
@@ -31,7 +32,11 @@ module MMU(
     tu_addr_req_t  i_req,  d_req;
     tu_addr_resp_t i_resp, d_resp;
 
+<<<<<<< HEAD
     assign i_req.req   = imem_req.req && !imem_req.cache_op.req;
+=======
+    assign i_req.req = imem_req.req;
+>>>>>>> b141fa7... pass normal-func
     assign i_req.vaddr = imem_req.addr;
     assign d_req.req   = dmem_req.req && !dmem_req.cache_op.req;
     assign d_req.vaddr = dmem_req.addr;
@@ -40,7 +45,8 @@ module MMU(
         .clk(aclk), .resetn(aresetn),
         .i_req, .i_resp, .d_req, .d_resp,
         .op_req(tu_op_req),
-        .op_resp(tu_op_resp)
+        .op_resp(tu_op_resp),
+        .k0_uncached
     );
 
     logic i_uncached, d_uncached;

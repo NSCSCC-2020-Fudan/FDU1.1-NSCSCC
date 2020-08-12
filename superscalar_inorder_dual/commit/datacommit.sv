@@ -29,7 +29,7 @@ module datacommit(
         output creg_addr_t [4: 0] reg_addrC,
         input word_t [4: 0] reg_dataC,
         input word_t [1: 0] hiloC,
-        output creg_addr_t [1: 0] cp0_addrC,
+        //output creg_addr_t [1: 0] cp0_addrC,
         input word_t [1: 0] cp0_dataC,
         //cp0
         output logic tlb_ex
@@ -108,7 +108,8 @@ module datacommit(
                               .reg_addrC(reg_addrC[3: 0]), 
                               .reg_dataC(reg_dataC[3: 0]), 
                               .srchi(hiloC[1]), .srclo(hiloC[0]),
-                              .cp0_addrC, .cp0_dataC);                              
+                              //.cp0_addrC, 
+                              .cp0_dataC);                              
                               
     assign out[1] = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? mem_out[1] : alu_out[1];
     assign out[0] = (in[0].instr.ctl.memwrite | in[0].instr.ctl.memtoreg) ? mem_out[0] : alu_out[0];

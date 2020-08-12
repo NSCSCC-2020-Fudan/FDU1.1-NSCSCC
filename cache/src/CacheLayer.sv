@@ -55,7 +55,8 @@ module CacheLayer(
 
     // TU (inside MMU)
     input  tu_op_req_t  tu_op_req,
-    output tu_op_resp_t tu_op_resp
+    output tu_op_resp_t tu_op_resp,
+    input logic k0_uncached
 );
     /**
      * address translations & request dispatching

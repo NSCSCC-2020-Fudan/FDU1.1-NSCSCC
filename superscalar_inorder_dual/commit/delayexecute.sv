@@ -6,7 +6,7 @@ module delayexecute(
         output creg_addr_t [3: 0] reg_addrC,
         input word_t [3: 0] reg_dataC,
         input word_t srchi, srclo,
-        output creg_addr_t [1: 0] cp0_addrC,
+        //output creg_addr_t [1: 0] cp0_addrC,
         input word_t [1: 0] cp0_dataC
     );
     
@@ -14,7 +14,7 @@ module delayexecute(
     exec_data_t [1: 0] FU_result;
     
     assign reg_addrC = {in[1].srcrega, in[1].srcregb, in[0].srcrega, in[0].srcregb};
-    assign cp0_addrC = {in[1].cp0_addr, in[0].cp0_addr};
+    //assign cp0_addrC = {in[1].cp0_addr, in[0].cp0_addr};
 
     delayFU delayFU1(.in(in[1]), .out(FU_result[1]),
                      .reg_dataa(reg_dataC[3]), .reg_datab(reg_dataC[2]), 

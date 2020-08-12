@@ -18,6 +18,7 @@ module mem_to_reg(
     assign out.destreg = in.destreg;
     assign out.srcrega = in.srcrega;
     assign out.srcregb = in.srcregb;
+    assign out.cp0_sel = in.cp0_sel;
     assign out.result = (in.instr.ctl.memtoreg) ? (mem.rd) : (in.result);
     assign out.hiresult = in.hiresult;
     assign out.loresult = in.loresult;

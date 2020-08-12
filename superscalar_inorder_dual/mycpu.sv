@@ -36,6 +36,7 @@ module mycpu #(
     
     output tu_op_req_t  tu_op_req,
     input tu_op_resp_t tu_op_resp,
+    output logic k0_uncached,
     //debug
     output word_t debug_wb_pc,
     output rwen_t debug_wb_rf_wen,
@@ -65,6 +66,7 @@ module mycpu #(
                       .imem_req, .imem_resp, 
                       .dmem_req, .dmem_resp,
                       .tu_op_req, .tu_op_resp,
+                      .k0_uncached,
                       .stallF_out(stallF), .flush_ex(flushE)
                       /*
                       .inst_ibus_req, .inst_ibus_addr_ok, 
