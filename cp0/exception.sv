@@ -32,38 +32,6 @@ module exception(
                         //    & (~cp0.debug.DM)
                            & (~cp0_status.EXL)
                            & (~cp0_status.ERL);
-//    assign interrupt_valid = '0;
-
-    // always_comb begin
-    //     if (interrupt_valid) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_INT;
-    //     end else if (exception_instr) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_ADEL;
-    //     end else if (exception_ri) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_RI;
-    //     end else if (exception_of) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_OV;
-    //     end else if (exception_sys) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_SYS;
-    //     end else if (exception_bp) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_BP;
-    //     end else if (exception_load) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_ADEL;
-    //     end else if (exception_save) begin
-    //         exception_valid = 1'b1;
-    //         exccode = `CODE_ADES;
-    //     end else begin
-    //         exception_valid = 1'b0;
-    //         exccode = '0;
-    //     end
-    // end
     always_comb begin
         priority case (1'b1)
             interrupt_valid : exc_code = `CODE_INT;

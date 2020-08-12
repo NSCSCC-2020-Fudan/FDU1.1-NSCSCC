@@ -1,4 +1,5 @@
 `include "mips.svh"
+`include "tu.svh"
 `include "instr_bus.svh"
 
 module quickfetch (
@@ -30,7 +31,10 @@ module quickfetch (
     output logic [1: 0] jrp_pushF, jrp_popF,
     output word_t [1: 0] pc_jrpredictF,
     input logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF, 
-    input word_t jrp_destpcF 
+    input word_t jrp_destpcF,
+    //jr predict
+    input tu_op_resp_t tu_op_resp
+    //tlb 
 );
     
     logic pc_upd, pc_upd_h, stop, stop_h;
@@ -58,7 +62,8 @@ module quickfetch (
     assign pc_new = (pc_upd)                      ? (pc_cmt)    : (
                     (pc_upd_h)                    ? (pc_cmt_h)  : (
                     (stop | stop_h)               ? (pc_stop)   : (pc_seq)));                 
-                           
+
+    logic tlb_ex_pcf;                           
     logic finish_pc, no_addr_ok;
     logic [1: 0] ien_predict_pcf;  
     bpb_result_t [1: 0] destpc_predict_pcf;                          
@@ -71,10 +76,13 @@ module quickfetch (
                     .finish_pc,
                     .pc_predictF,
                     .destpc_predictF_in(destpc_predictF), 
-                    .destpc_predictF_out(destpc_predict_pcf));
+                    .destpc_predictF_out(destpc_predict_pcf),
+                    .tu_op_resp, 
+                    .tlb_ex(tlb_ex_pcf));
     assign pc = pc_pcf;                    
     
     logic finish_instr;
+    logic inst_tlb_ex_isf;
     bpb_result_t destpc_predict_sel_isf;
     instrfetch instrfetch(.clk, .reset, .stall, .flush(1'b0),
                           .pc_pcf, .pcplus4_pcf, .pcplus8_pcf,
@@ -89,7 +97,8 @@ module quickfetch (
                           .destpc_predict_sel(destpc_predict_sel_isf),
                           .last_predict_in(last_predict), .next_predict,
                           .jrp_pushF, .jrp_popF,
-                          .jrp_topF, .jrp_destpcF);
+                          .jrp_topF, .jrp_destpcF,
+                          .tlb_ex_pcf);
     assign pc_jrpredictF = {pc_isf, pcplus4_isf};                                                                   
     
     logic enF, debug;

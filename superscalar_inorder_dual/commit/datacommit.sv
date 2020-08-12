@@ -37,7 +37,7 @@ module datacommit(
 
     
     assign exception_data_out = exception_data_in;
-    assign tlb_ex = (in[1].op == TLBR) || (in[1].op == TLBWI);
+    assign tlb_ex = (in[1].instr.op == TLBR) || (in[1].instr.op == TLBWI);
     //to exception
     
     assign fetch.exception_valid = exception_valid;
@@ -50,7 +50,7 @@ module datacommit(
     assign fetch.pcbranch = (in[1].pred.taken) ? (in[0].pcplus4) : (in[1].instr.pcbranch);
     assign fetch.pcjr = in[1].srca;
     assign fetch.pcjump = in[1].instr.pcjump;
-    assign fetch.tlb_ex = (in[1].op == TLBR) || (in[1].op == TLBWI);
+    assign fetch.tlb_ex = (in[1].instr.op == TLBR) || (in[1].instr.op == TLBWI);
     assign fetch.pctlb = in[1].pcplus4;
     //to fetch
     

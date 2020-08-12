@@ -1,4 +1,5 @@
 `include "mips.svh"
+`include "tu.svh"
 `include "data_bus.svh"
 
 module quickcommit(
@@ -37,16 +38,22 @@ module quickcommit(
         output logic jrp_reset,
         output logic [`JR_ENTRY_WIDTH - 1: 0] jrp_top,
         //to jr predict
-        input cp0_regs_t cp0_data,
         output rf_w_t [1: 0] cp0w,
+        //cp0 write
         output logic wait_ex, tlb_ex,
-        //cp0
         output creg_addr_t [3: 0] reg_addrC,
         input word_t [3: 0] reg_dataC,
         input word_t [1: 0] hiloC,
 		output creg_addr_t [1: 0] cp0_addrC,
-		input word_t [1: 0] cp0_dataC
+		input word_t [1: 0] cp0_dataC,
         //delay execute
+        output tu_op_req_t tu_op_req,
+        input tu_op_resp_t tu_op_resp,
+        output logic is_tlbr, 
+        output logic is_tlbp,
+        //tlb
+        input cp0_regs_t cp0_data
+        //cp0
     );
     
     logic llwrite_ex;
@@ -73,7 +80,9 @@ module quickcommit(
         							.llwrite(llwrite_ex),
         							.llbit, .wait_ex,
         							.cp0_status(cp0_data.status), 
-        							.cp0_cause(cp0_data.cause));
+        							.cp0_cause(cp0_data.cause),
+        							.tu_op_req, .tu_op_resp,
+        							.is_tlbr, .is_tlbp);
         							
     assign cp0w[1].addr = exception_out[1].cp0_addr;
     assign cp0w[1].wd = exception_out[1].result;

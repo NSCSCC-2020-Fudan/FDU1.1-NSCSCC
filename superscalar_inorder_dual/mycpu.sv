@@ -33,6 +33,9 @@ module mycpu #(
     input ibus_resp_t imem_resp,
     output dbus_req_t  dmem_req,
     input dbus_resp_t dmem_resp,
+    
+    output tu_op_req_t  tu_op_req,
+    input tu_op_resp_t tu_op_resp,
     //debug
     output word_t debug_wb_pc,
     output rwen_t debug_wb_rf_wen,
@@ -61,6 +64,7 @@ module mycpu #(
                       .rfw_out(rfw_out), .rt_pc_out(rt_pc_out),
                       .imem_req, .imem_resp, 
                       .dmem_req, .dmem_resp,
+                      .tu_op_req, .tu_op_resp,
                       .stallF_out(stallF), .flush_ex(flushE)
                       /*
                       .inst_ibus_req, .inst_ibus_addr_ok, 

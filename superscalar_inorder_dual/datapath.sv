@@ -1,4 +1,5 @@
 `include "mips.svh"
+`include "tu.svh"
 `include "data_bus.svh"
 `include "instr_bus.svh"
 
@@ -30,7 +31,10 @@ module datapath(
         output ibus_req_t  imem_req,
         input ibus_resp_t imem_resp,
         output dbus_req_t  dmem_req,
-        input dbus_resp_t dmem_resp
+        input dbus_resp_t dmem_resp,
+        //bus
+        output tu_op_req_t  tu_op_req,
+        input tu_op_resp_t tu_op_resp
     );
     
     
@@ -57,6 +61,7 @@ module datapath(
     creg_addr_t [1: 0] cp0_addrI, cp0_addrW, cp0_addrC;
     word_t [1: 0] cp0_dataI, cp0_dataW, cp0_dataC;
     rf_w_t [1: 0] rfw, cp0w;
+    logic [1: 0][2: 0] cp0w_sel;
     word_t [1: 0] rt_pc;
     hilo_w_t hlw;
     
@@ -77,6 +82,7 @@ module datapath(
     logic [1: 0] hitF_out, hitD_in, hitD_out;
     
     logic predict_wenC;
+    logic is_tlbrC, is_tlbpC;
     word_t pc_commitC;
     bpb_result_t destpc_commitC;
     word_t [1: 0] pc_predictF;
@@ -101,7 +107,8 @@ module datapath(
                           .pc_predictF, .destpc_predictF,
                           .imem_req, .imem_resp,
                           .jrp_pushF, .jrp_popF, .pc_jrpredictF,
-                          .jrp_topF, .jrp_destpcF);                     
+                          .jrp_topF, .jrp_destpcF, 
+                          .tu_op_resp);                     
     
     dreg dreg (clk, reset, stallD, flushD,
                fetch_data, decode_data_in,
@@ -158,11 +165,9 @@ module datapath(
                    			 .wait_ex, .tlb_ex,
                    			 .reg_addrC, .reg_dataC, .hiloC,
 							 .cp0_addrC, .cp0_dataC,
-                             .cp0w    
-                   			 /*
-                   			 .TLB_req
-                   			 .TLB_res
-                   			 */);                               
+                             .cp0w,    
+                   			 .tu_op_req, .tu_op_resp,
+                   			 .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC));                               
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,
@@ -193,7 +198,7 @@ module datapath(
     
     control control (.clk, .reset,
                      .finishF, .finishE, .finishC, .data_hazardI, .queue_ofI, .pcF(pc_mC), 
-                     .is_eret, .exception_valid, .wait_ex, .tlb_ex,
+                     .is_eret, .exception_valid, .wait_ex, //.tlb_ex,
                      .stallF, .stallD, .flushD, .stallI, .flushI, 
                      .stallE, .flushE, .stallC, .flushC, .stallR, .flushR, .pc_new_commit, .flush_ex);
     
@@ -205,15 +210,16 @@ module datapath(
                      reg_addrW, reg_dataW,
                      reg_addrRP, reg_dataRP);               
     
-    cp0 cp0(clk, reset,
-            cp0w,
+    cp0 cp0(.clk, .reset,
+            .cwrite(cp0w), .sel(cp0w_sel),
             //cp0_addrW, cp0_dataW,
-			cp0_addrC, cp0_dataC,
-            is_eret, 
-            timer_interrupt,
-            exceptionE,
-            cp0_causeW, cp0_statusW, cp0_epcW,
-            cp0_data);        
+			.ra(cp0_addrC), .rd(cp0_dataC),
+            .is_eret, 
+            .timer_interrupt,
+            .exception(exceptionE),
+            .cp0_data,
+            .tlb_resp(tu_op_resp), 
+            .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC));        
     
     /*            
     cp0status_bypass cp0status_bypass(exec_bypass, commitex_bypass, commitdt_bypass, retire_bypass, 
