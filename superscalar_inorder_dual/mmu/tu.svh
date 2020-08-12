@@ -20,6 +20,8 @@ typedef struct packed {
     logic i_tlb_modified; // && is store
     logic d_tlb_invalid; // && req
     logic d_tlb_modified; // && is store
+    logic i_tlb_refill;
+    logic d_tlb_refill;
 } tu_op_resp_t;
 
 parameter TLB_ENTRIES = 32;

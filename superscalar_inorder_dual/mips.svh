@@ -232,7 +232,7 @@ typedef struct packed {
     logic[2:0]zero_0;
     logic[15:0]mask;
     /*
-    The Mask field is a bit mask in which a â€?1â€? bit
+    The Mask field is a bit mask in which a ï¿½?1ï¿½? bit
     indicates that the corresponding bit of the vir-
     tual address should not participate in the TLB
     match.
@@ -447,6 +447,7 @@ typedef struct packed {
     word_t instr_;
     word_t pcplus4;
     logic exception_instr, exception_instr_tlb;
+    logic tlb_refill_instr;
     logic en;
     bpb_result_t pred;
     logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;
@@ -486,6 +487,7 @@ typedef struct packed{
     logic in_delay_slot;
     interrupt_info_t interrupt_info; 
     word_t vaddr, pc;
+    logic tlb_refill;
 } exception_pipeline_t;
 
 `define CODE_INT   5'h00  // Interrupt

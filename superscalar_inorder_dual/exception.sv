@@ -32,31 +32,34 @@ module exception(
                         //    & (~cp0.debug.DM)
                            & (~cp0_status.EXL)
                            & (~cp0_status.ERL);
+
+    logic tlb_refill;
     always_comb begin
         priority case (1'b1)
-            interrupt_valid : exc_code = `CODE_INT;
-            exc_info.instr : exc_code = `CODE_ADEL;
-            exc_info.instr_tlb : exc_code = `CODE_TLBL;
-            exc_info.cpu: exc_code = `CODE_CPU;
-            exc_info.ri: exc_code = `CODE_RI;
-            exc_info.of: exc_code = `CODE_OF;
-            exc_info.bp: exc_code = `CODE_BP;
-            exc_info.sys: exc_code = `CODE_SYS;
-            exc_info.tr: exc_code = `CODE_TR;
-            exc_info.load: exc_code = `CODE_ADEL;
-            exc_info.save: exc_code = `CODE_ADES;
-            exc_info.load_tlb: exc_code = `CODE_TLBL;
-            exc_info.save_tlb: exc_code = `CODE_TLBS;
-            exc_info.mod: exc_code = `CODE_MOD;
+            interrupt_valid : begin exc_code = `CODE_INT; tlb_refill = 1'b0;end
+            exc_info.instr : begin exc_code = `CODE_ADEL;tlb_refill = 1'b0;end
+            exc_info.instr_tlb : begin exc_code = `CODE_TLBL;tlb_refill = pipe.tlb_refill;end
+            exc_info.cpu: begin exc_code = `CODE_CPU;tlb_refill = 1'b0;end
+            exc_info.ri: begin exc_code = `CODE_RI;tlb_refill = 1'b0;end
+            exc_info.of: begin exc_code = `CODE_OF;tlb_refill = 1'b0;end
+            exc_info.bp: begin exc_code = `CODE_BP;tlb_refill = 1'b0;end
+            exc_info.sys: begin exc_code = `CODE_SYS;tlb_refill = 1'b0;end
+            exc_info.tr: begin exc_code = `CODE_TR;tlb_refill = 1'b0;end
+            exc_info.load: begin exc_code = `CODE_ADEL;tlb_refill = 1'b0;end
+            exc_info.save: begin exc_code = `CODE_ADES;tlb_refill = 1'b0;end
+            exc_info.load_tlb: begin exc_code = `CODE_TLBL;tlb_refill = pipe.tlb_refill;end
+            exc_info.save_tlb: begin exc_code = `CODE_TLBS;tlb_refill = pipe.tlb_refill;end
+            exc_info.mod: begin exc_code = `CODE_MOD;tlb_refill = 1'b0;end
             default: begin
                 exc_code = '0;
+                tlb_refill = 1'b0;
             end
         endcase
     end
         assign exc_info = pipe.exc_info;
 
     assign exception_valid = ((|exc_info) | interrupt_valid) & reset;
-    assign exception.location = `EXC_ENTRY;
+    assign exception.location = tlb_refill ? 32'hbfc00200 : `EXC_ENTRY;
     assign exception.valid = (exception_valid);
     assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exc_code);
     assign exception.pc = pc;
@@ -74,6 +77,6 @@ module exception(
     assign pc = pipe.pc;
     assign in_delay_slot = pipe.in_delay_slot;
     
-    assign pcexception = `EXC_ENTRY;
+    assign pcexception = tlb_refill ? 32'hbfc00200 : `EXC_ENTRY;
     
 endmodule
