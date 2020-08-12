@@ -214,7 +214,7 @@ module DCache #(
 
     assign req_to_hit   =  req_hit && (!cop.req && dbus_req.req && req_miss_ready);
     assign req_to_miss  = !req_hit && (!cop.req && dbus_req.req && miss_avail);
-    assign req_to_flush = 0;  // TODO
+    // assign req_to_flush = 0;  // see COP section
 
     /**
      * the BRAM
@@ -243,10 +243,13 @@ module DCache #(
      * cache operations
      */
     logic  cop_busy;
+    logic  cop_ready;
     idx_t  cop_raw_idx;
     idx_t  cop_idx;
     addr_t cop_flush_addr;
 
+    assign cop_busy    = miss_busy;
+    assign cop_ready   = cop.req && !cop_busy;
     assign cop_raw_idx = idx_t'(req_vaddr.tag);
     assign cop_idx     = cop.funct.as_index ? cop_raw_idx : req_idx;
 
@@ -255,6 +258,10 @@ module DCache #(
     assign cop_flush_addr.offset = 0;
     assign cop_flush_addr.zeros  = 0;
 
+    assign req_to_flush =
+        cop.req && cop.funct.writeback &&
+        ram_meta[cop_idx].dirty && !cop_busy;
+
     /**
      * pipelining & state transitions
      */
@@ -262,11 +269,11 @@ module DCache #(
     assign ram_new_select = req_to_hit ? req_new_select : ram_select;
 
     always_comb
-    unique if (cop.req) begin
+    unique if (cop_ready) begin
         for (int i = 0; i < NUM_WAYS; i++) begin
             if (cop_idx == idx_t'(i)) begin
-                ram_new_meta[i].valid = cop.funct.invalidate ? 0 : 1;
-                ram_new_meta[i].dirty = ram_meta[i].dirty;
+                ram_new_meta[i].valid = cop.funct.invalidate ? 0 : ram_meta[i].valid;
+                ram_new_meta[i].dirty = cop.funct.writeback  ? 0 : ram_meta[i].dirty;
             end else
                 ram_new_meta[i] = ram_meta[i];
         end
@@ -305,7 +312,7 @@ module DCache #(
     always_ff @(posedge clk)
     if (resetn) begin
         // to hit stage
-        hit_data_ok <= req_to_hit;
+        hit_data_ok <= req_to_hit || cop_ready;
 
         // update miss stage
         // some changes may be overwritten by "req_to_miss"
@@ -393,7 +400,6 @@ module DCache #(
             // miss_vwrten     <= 0;
         end
     end else begin
-        cop_busy    <= 0;
         hit_data_ok <= 0;
         miss_state  <= IDLE;
         miss_vwrten <= 0;
