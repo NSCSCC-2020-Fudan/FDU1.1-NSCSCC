@@ -27,9 +27,9 @@ module TranslationUnit(
     assign i_resp.paddr = i_mapped ? inst_paddr_tlb : inst_paddr_direct;
     assign d_resp.paddr = d_mapped ? data_paddr_tlb : data_paddr_direct;
     assign op_resp.i_tlb_invalid = i_mapped & i_invalid;
-    assign op_resp.i_tlb_modified = i_mapped & ~i_invalid & i_dirty;
+    assign op_resp.i_tlb_modified = i_mapped & ~i_invalid & ~i_dirty;
     assign op_resp.d_tlb_invalid = d_mapped & d_invalid;
-    assign op_resp.d_tlb_modified = d_mapped & ~d_invalid & d_dirty;
+    assign op_resp.d_tlb_modified = d_mapped & ~d_invalid & ~d_dirty;
     assign op_resp.i_tlb_refill = i_mapped & ~i_hit;
     assign op_resp.d_tlb_refill = d_mapped & ~d_hit;
     DirectMappedAddr i_map_inst(
@@ -38,13 +38,15 @@ module TranslationUnit(
         .is_uncached(i_resp.is_uncached),
         .k0_uncached
     );
-
+    logic d_uncached;
     DirectMappedAddr d_map_inst(
         .vaddr(d_req.vaddr),
         .paddr(data_paddr_direct),
-        .is_uncached(d_resp.is_uncached),
+        .is_uncached(d_uncached),
         .k0_uncached
     );
+    logic[2:0] d_cache_flag;
+    assign d_resp.is_uncached = d_uncached || (d_mapped && d_cache_flag == 3'd2);
     tlbwrite_t tlbw;
     assign tlbw.valid = op_req.is_tlbwi;
     assign tlbw.addr = op_req.index.index;
@@ -90,6 +92,7 @@ module TranslationUnit(
         .i_invalid, .d_invalid,
         .i_dirty, .d_dirty,
         .i_hit, .d_hit,
+        .d_cache_flag,
         .entryhi(op_req.entryhi),
         .index(op_resp.index)
     );
@@ -110,6 +113,7 @@ module tlb (
     output logic i_invalid, d_invalid, 
     output logic i_dirty, d_dirty,
     output logic i_hit, d_hit,
+    output logic [2:0] d_cache_flag,
     // TLBP
     input cp0_entryhi_t entryhi,
     output cp0_index_t index
@@ -151,6 +155,7 @@ module tlb (
     assign d_dirty = d_resp.dirty;
     assign i_hit = i_resp.hit;
     assign d_hit = d_resp.hit;
+    assign d_cache_flag = d_resp.cache_flag;
 endmodule
 
 module tlb_lut (
