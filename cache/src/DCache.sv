@@ -254,7 +254,7 @@ module DCache #(
     assign cop_raw_idx = idx_t'(req_vaddr.tag);
     assign cop_idx     = cop.funct.as_index ? cop_raw_idx : req_idx;
 
-    assign cop_flush_addr.tag    = cop.funct.as_index ? ram_tags[cop_raw_idx] : req_vaddr.tag;
+    assign cop_flush_addr.tag    = cop.funct.as_index ? ram_tags[cop_raw_idx] : req_paddr.tag;
     assign cop_flush_addr.index  = req_vaddr.index;
     assign cop_flush_addr.offset = 0;
     assign cop_flush_addr.zeros  = 0;

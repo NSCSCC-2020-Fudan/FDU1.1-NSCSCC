@@ -64,6 +64,17 @@ WITH {
 
 WITH {
     Pipeline p(top);
+    p.write(0, 0x12345678, 0b1111, 0);
+    p.write(0x110, 0x87654321, 0b1111, 0x10);
+    p.cop(0, 0b001, 0);
+    p.cop(0x110, 0b001, 0x10);
+    p.tick(512);
+    assert(top->cmem->mem[0] == 0x12345678);
+    assert(top->cmem->mem[0x110 >> 2] == 0x87654321);
+} AS("physical addr");
+
+WITH {
+    Pipeline p(top);
     for (int i = 0; i < 65536; i++) {
         p.expect(_i(i), i);
     }
