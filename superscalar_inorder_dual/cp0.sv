@@ -111,8 +111,8 @@ module cp0(
         if (cwrite[1].wen && sel[1] == 3'd0) begin
             case (cwrite[1].addr)
                 5'd0:   cp0_new.index.index = cwrite[1].wd[4:0];
-                5'd2:   cp0_new.entrylo0[29:0] = cwrite[1].wd[29:0];
-                5'd3:   cp0_new.entrylo1[29:0] = cwrite[1].wd[29:0];
+                5'd2:   cp0_new.entrylo0[PABITS-7:0] = cwrite[1].wd[PABITS-7:0];
+                5'd3:   cp0_new.entrylo1[PABITS-7:0] = cwrite[1].wd[PABITS-7:0];
                 5'd4:   cp0_new.context_.ptebase = cwrite[1].wd[31:23];
                 5'd6:   cp0_new.wired.wired = cwrite[1].wd[TLB_INDEX-1:0];
                 5'd9:   cp0_new.count   = cwrite[1].wd;
@@ -141,8 +141,8 @@ module cp0(
         if (cwrite[0].wen && sel[0] == 3'd0) begin
             case (cwrite[0].addr)
                 5'd0:   cp0_new.index.index = cwrite[0].wd[4:0];
-                5'd2:   cp0_new.entrylo0[29:0] = cwrite[0].wd[29:0];
-                5'd3:   cp0_new.entrylo1[29:0] = cwrite[0].wd[29:0];
+                5'd2:   cp0_new.entrylo0[PABITS-7:0] = cwrite[0].wd[PABITS-7:0];
+                5'd3:   cp0_new.entrylo1[PABITS-7:0] = cwrite[0].wd[PABITS-7:0];
                 5'd4:   cp0_new.context_.ptebase = cwrite[0].wd[31:23];
                 5'd6:   cp0_new.wired.wired = cwrite[0].wd[TLB_INDEX-1:0];
                 5'd9:   cp0_new.count   = cwrite[0].wd;
