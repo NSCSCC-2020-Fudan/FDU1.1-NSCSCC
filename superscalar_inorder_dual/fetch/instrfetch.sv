@@ -23,10 +23,11 @@ module instrfetch(
         input logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF, 
         input word_t jrp_destpcF,
         //to jr predict
-        input logic tlb_ex_pcf 
+        input logic tlb_invalid_pcf, tlb_refill_pcf
     );
     
-    logic tlb_ex_, tlb_ex;
+    logic tlb_invalid_, tlb_invalid;
+    logic tlb_refill_, tlb_refill;
     logic finish_his_, finish_his;
     logic [1: 0] ien_his_, ien_his, ien;
     logic [63: 0] data_his_, data_his, data;
@@ -38,7 +39,8 @@ module instrfetch(
     always_comb 
         begin
             pc_ = pc;
-            tlb_ex_ = tlb_ex;
+            tlb_invalid_ = tlb_invalid;
+            tlb_refill_ = tlb_refill;
             pcplus4_ = pcplus4;
             pcplus8_ = pcplus8;
             finish_his_ = finish_his;
@@ -55,7 +57,8 @@ module instrfetch(
                 end
             if (~stall)
                 begin
-                    tlb_ex_ = tlb_ex;
+                    tlb_invalid_ = tlb_invalid_pcf;
+                    tlb_refill_ = tlb_refill_pcf;
                     pc_ = pc_pcf;
                     pcplus4_ = pcplus4_pcf;
                     pcplus8_ = pcplus8_pcf;
@@ -68,7 +71,9 @@ module instrfetch(
         begin
             if (~reset)
                 begin
-                    tlb_ex <= 1'b0;
+                    tlb_invalid <= 1'b0;
+                    tlb_refill <= 1'b0;
+
                     finish_his <= 1'b0;
                     data_his <= '0;
                     ien_his <= 2'b11;
@@ -77,6 +82,9 @@ module instrfetch(
                 end
             else
                 begin
+                    tlb_invalid <= tlb_invalid_;
+                    tlb_refill <= tlb_refill_;
+
                     last_predict <= last_predict_in;
                     finish_his <= finish_his_;
                     data_his <= data_his_;
@@ -85,11 +93,10 @@ module instrfetch(
                     pcplus4 <= pcplus4_;
                     pcplus8 <= pcplus8_;
                     destpc_predict_np <= destpc_predict_;
-                    tlb_ex <= tlb_ex_;
                 end
         end
                     
-    assign finish_instr = finish_his | inst_ibus_data_ok;
+    assign finish_instr = finish_his | inst_ibus_data_ok;// | tlb_invalid | tlb_refill;
     assign pc_isf = pc;        
     assign pcplus4_isf = pcplus4;
     assign pcplus8_isf = pcplus8;
@@ -111,8 +118,8 @@ module instrfetch(
                          jrp_pushF_[0], jrp_popF_[0], jrp_destpcF,
                          jrp_topF, jrp_topF_[0]);
     
-    assign fetch_data[1].instr_ = instr[0];
-    assign fetch_data[0].instr_ = instr[1];
+    assign fetch_data[1].instr_ = (tlb_refill | tlb_invalid) ? ('0) : (instr[0]);
+    assign fetch_data[0].instr_ = (tlb_refill | tlb_invalid) ? ('0) : (instr[1]);
     assign fetch_data[1].pcplus4 = pcplus4;
     assign fetch_data[0].pcplus4 = pcplus8;
     assign fetch_data[1].en = hitF[1];
@@ -123,8 +130,10 @@ module instrfetch(
     assign fetch_data[0].pred = (hitF[0]) ? destpc_predict[0] : ('0);
     assign fetch_data[1].jrtop = jrp_topF_[1];
     assign fetch_data[0].jrtop = jrp_topF_[0];
-    assign fetch_data[1].exception_instr_tlb = tlb_ex;
-    assign fetch_data[0].exception_instr_tlb = tlb_ex;// ??
+    assign fetch_data[1].instr_tlb_invalid = tlb_invalid;
+    assign fetch_data[0].instr_tlb_invalid = tlb_invalid;// ??
+    assign fetch_data[1].instr_tlb_refill = tlb_refill;
+    assign fetch_data[0].instr_tlb_refill = tlb_refill;// ??
     //assign fetch_data[1].pred = '0;
     //assign fetch_data[0].pred = '0;
     

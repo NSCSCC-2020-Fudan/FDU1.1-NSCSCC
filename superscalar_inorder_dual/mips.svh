@@ -446,7 +446,7 @@ typedef struct packed {
 typedef struct packed {
     word_t instr_;
     word_t pcplus4;
-    logic exception_instr, exception_instr_tlb;
+    logic exception_instr, instr_tlb_invalid, instr_tlb_refill;
     logic tlb_refill_instr;
     logic en;
     bpb_result_t pred;
@@ -513,7 +513,7 @@ typedef struct packed {
     word_t pcplus4;
     logic [2: 0] cp0_sel;
     creg_addr_t srcrega, srcregb, destreg, cp0_addr;
-    logic exception_instr, exception_ri, exception_instr_tlb;
+    logic exception_instr, exception_ri, instr_tlb_invalid, instr_tlb_refill;
     logic in_delay_slot;
     bpb_result_t pred;
     //cp0_cause_t cp0_cause;
@@ -532,7 +532,7 @@ typedef struct packed {
     logic valid;
     decoded_instr_t instr;
     word_t pcplus4;
-    logic exception_instr, exception_ri, exception_instr_tlb;
+    logic exception_instr, exception_ri, instr_tlb_invalid, instr_tlb_refill;
     logic taken; 
     bpb_result_t pred;
     word_t srca, srcb;
@@ -549,7 +549,7 @@ typedef struct packed {
     logic valid;
     decoded_instr_t instr;
     word_t pcplus4;
-    logic exception_instr, exception_ri, exception_of, exception_instr_tlb;
+    logic exception_instr, exception_ri, exception_of, instr_tlb_invalid, instr_tlb_refill;
     logic taken;
     bpb_result_t pred;
     word_t srca, srcb;

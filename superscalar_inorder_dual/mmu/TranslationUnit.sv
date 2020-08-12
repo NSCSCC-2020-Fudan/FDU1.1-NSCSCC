@@ -128,7 +128,7 @@ module tlb (
 
     tlblut_resp_t i_resp, d_resp, tlbp_resp;
     assign inst_paddr_tlb = i_resp.paddr;
-    assign data_vaddr_tlb = d_resp.paddr;
+    assign data_paddr_tlb = d_resp.paddr;
     assign index.P = ~tlbp_resp.hit;
     assign index.index = tlbp_resp.tlb_addr;
     assign index.zero = '0;
@@ -177,7 +177,7 @@ module tlb_lut (
     end
 
     assign tlblut_resp.paddr = {
-        vaddr[12] ? tlb_table[hit_addr].pfn1[19:0] : tlb_table[hit_addr].pfn0[19:0],
+        vaddr[12] ? tlb_table[hit_addr].pfn1 : tlb_table[hit_addr].pfn0,
         vaddr[11:0]
     };
     assign tlblut_resp.tlb_addr = hit_addr;

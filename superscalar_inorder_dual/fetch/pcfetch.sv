@@ -12,7 +12,7 @@ module pcfetch(
         input bpb_result_t [1: 0] destpc_predictF_in,
         output bpb_result_t [1: 0] destpc_predictF_out,
         input tu_op_resp_t tu_op_resp,
-        output tlb_ex
+        output tlb_invalid, tlb_refill
     );    
                       
     logic finish_his;                
@@ -43,13 +43,14 @@ module pcfetch(
                             inst_ibus_req = 1'b1;       
                 end
         end                      
-    assign finish_pc = finish_his | inst_ibus_addr_ok | tlb_ex;
+    assign finish_pc = finish_his | inst_ibus_addr_ok;
     //assign inst_ibus_req = ~finish_pc;
     
     assign addr = pc;
     assign pcplus4 = pc + 5'b00100;
     assign pcplus8 = pc + 5'b01000;
-    assign tlb_ex = tu_op_resp.i_tlb_invalid;
+    assign tlb_invalid = tu_op_resp.i_tlb_invalid;
+    assign tlb_refill = tu_op_resp.i_tlb_refill;
                                       
     assign pc_predictF = {pc, pcplus4};
     assign destpc_predictF_out = destpc_predictF_in;

@@ -28,6 +28,7 @@ module mem_to_reg(
     assign out.jrtop = in.jrtop;
     
     assign out.state = 3'b1;
-    assign out.exception_instr_tlb = in.exception_instr_tlb;
+    assign out.instr_tlb_invalid = in.instr_tlb_invalid;
+    assign out.instr_tlb_refill = in.instr_tlb_refill;
     
 endmodule

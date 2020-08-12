@@ -68,6 +68,7 @@ module delayFU(
     assign out.loresult = (in.instr.ctl.delayen) ? (result_alu) : (in.loresult);//mul/div or HTHI
     assign out.result = result;
     assign out.exception_of = in.exception_of;
-    assign out.exception_instr_tlb = in.exception_instr_tlb;
+    assign out.instr_tlb_invalid = in.instr_tlb_invalid;
+    assign out.instr_tlb_refill = in.instr_tlb_refill;
 
 endmodule

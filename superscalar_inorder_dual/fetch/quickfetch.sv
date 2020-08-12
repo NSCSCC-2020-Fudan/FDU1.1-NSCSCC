@@ -63,7 +63,7 @@ module quickfetch (
                     (pc_upd_h)                    ? (pc_cmt_h)  : (
                     (stop | stop_h)               ? (pc_stop)   : (pc_seq)));                 
 
-    logic tlb_ex_pcf;                           
+    logic tlb_invalid_pcf, tlb_refill_pcf;                           
     logic finish_pc, no_addr_ok;
     logic [1: 0] ien_predict_pcf;  
     bpb_result_t [1: 0] destpc_predict_pcf;                          
@@ -78,7 +78,7 @@ module quickfetch (
                     .destpc_predictF_in(destpc_predictF), 
                     .destpc_predictF_out(destpc_predict_pcf),
                     .tu_op_resp, 
-                    .tlb_ex(tlb_ex_pcf));
+                    .tlb_invalid(tlb_invalid_pcf), .tlb_refill(tlb_refill_pcf));
     assign pc = pc_pcf;                    
     
     logic finish_instr;
@@ -98,7 +98,7 @@ module quickfetch (
                           .last_predict_in(last_predict), .next_predict,
                           .jrp_pushF, .jrp_popF,
                           .jrp_topF, .jrp_destpcF,
-                          .tlb_ex_pcf);
+                          .tlb_invalid_pcf, .tlb_refill_pcf);
     assign pc_jrpredictF = {pc_isf, pcplus4_isf};                                                                   
     
     logic enF, debug;
