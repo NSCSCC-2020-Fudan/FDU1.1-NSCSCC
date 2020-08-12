@@ -37,9 +37,10 @@ module exception_checker(
     assign exception_sys = (data.instr.op == SYSCALL);
     assign exception_bp = (data.instr.op == BREAK);
     
-    logic data_is_read, data_is_write;
+    logic data_is_read, data_is_write, data_bus_en;
     assign data_is_write = data.instr.ctl.memwrite;
     assign data_is_read = data.instr.ctl.memtoreg;
+    assign data_bus_en = data.instr.ctl.memwrite | data.instr.ctl.memtoreg;
               
     exception_pipeline_t pipe;             
     assign pipe.exc_info.tr = 1'b0;
@@ -47,7 +48,8 @@ module exception_checker(
     assign pipe.exc_info.mod = tu_op_resp.d_tlb_modified & data_is_write;
     assign pipe.exc_info.load_tlb = tu_op_resp.d_tlb_invalid & data_is_read;//to be continue
     assign pipe.exc_info.save_tlb = tu_op_resp.d_tlb_invalid & data_is_write;//to be continue
-    assign pipe.exc_info.instr_tlb = data.exception_instr_tlb;//to be continue   
+    assign pipe.exc_info.instr_tlb = data.instr_tlb_invalid;//to be continue   
+    assign pipe.tlb_refill = data.instr_tlb_refill | (tu_op_resp.d_tlb_refill & data_bus_en);//to be continue
                  
     assign pipe.exc_info.instr = data.exception_instr;
     assign pipe.exc_info.ri =  data.exception_ri;

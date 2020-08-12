@@ -42,7 +42,7 @@ module datacommit(
     
     assign fetch.exception_valid = exception_valid;
     assign fetch.is_eret = (in[1].instr.op == ERET) | (in[0].instr.op == ERET); 
-    assign fetch.pcexception = `EXC_ENTRY; 
+    assign fetch.pcexception = exception_data_in.location; 
     assign fetch.epc = cp0_epc;//(in[1].instr.op == ERET) ? (in[1].cp0_epc) : (in[0].cp0_epc);
     assign fetch.branch = (in[1].instr.ctl.branch) & (in[1].taken != in[1].pred.taken);
     assign fetch.jump = 1'b0;//(in[1].instr.ctl.jump) & (~in[1].pred.taken);  

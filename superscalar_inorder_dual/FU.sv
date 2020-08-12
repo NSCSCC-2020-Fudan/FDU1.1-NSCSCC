@@ -94,7 +94,8 @@ module FU(
     assign out.state.ready = in.state.readya & in.state.readyb & (
                              ~(in.instr.ctl.memtoreg || in.instr.op == SC));
     
-    assign out.exception_instr_tlb = in.exception_instr_tlb;                             
+    assign out.instr_tlb_invalid = in.instr_tlb_invalid;   
+    assign out.instr_tlb_refill = in.instr_tlb_refill;                          
     
     word_t pcplus8;
     adder adderpcplus8(in.pcplus4, 32'b0100, pcplus8);

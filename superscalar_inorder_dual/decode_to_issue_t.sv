@@ -42,6 +42,7 @@ module decode_to_issue_t(
     assign out.state.readyb = reg_readyb;
     assign out.state.ready = 1'b0;
     
-    assign out.exception_instr_tlb = in.exception_instr_tlb;
+    assign out.instr_tlb_invalid = in.instr_tlb_invalid;
+    assign out.instr_tlb_refill = in.instr_tlb_refill;
 
 endmodule
