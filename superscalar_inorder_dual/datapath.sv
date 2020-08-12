@@ -105,7 +105,7 @@ module datapath(
     word_t [4: 0] reg_dataRP, reg_dataC;
     word_t [1: 0] hiloRP, hiloC;
     
-    logic wait_ex, tlb_ex;
+    logic wait_ex, tlb_ex, tlb_free;
 
     quickfetch quickfetch(.clk, .reset, .flushF(1'b0), .stallF,
                           .fetch(pc_new), .pc, .pc_new_commit,
@@ -115,7 +115,8 @@ module datapath(
                           .imem_req, .imem_resp,
                           .jrp_pushF, .jrp_popF, .pc_jrpredictF,
                           .jrp_topF, .jrp_destpcF, 
-                          .tu_op_resp);                     
+                          .tu_op_resp,
+                          .tlb_free);                     
     
     dreg dreg (clk, reset, stallD, flushD,
                fetch_data, decode_data_in,
@@ -175,7 +176,8 @@ module datapath(
                              .cp0_selC,
                              .cp0_addrC, .cp0_dataC,
                    			 .tu_op_req, .tu_op_resp,
-                   			 .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC));                               
+                   			 .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC),
+                   			 .tlb_free);                               
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,

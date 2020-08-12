@@ -96,7 +96,7 @@ module instrfetch(
                 end
         end
                     
-    assign finish_instr = finish_his | inst_ibus_data_ok;// | tlb_invalid | tlb_refill;
+    assign finish_instr = finish_his | inst_ibus_data_ok | (tlb_invalid | tlb_refill);// | tlb_invalid | tlb_refill;
     assign pc_isf = pc;        
     assign pcplus4_isf = pcplus4;
     assign pcplus8_isf = pcplus8;

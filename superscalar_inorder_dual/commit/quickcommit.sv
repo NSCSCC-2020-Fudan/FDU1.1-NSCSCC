@@ -52,8 +52,9 @@ module quickcommit(
         output logic is_tlbr, 
         output logic is_tlbp,
         //tlb
-        input cp0_regs_t cp0_data
+        input cp0_regs_t cp0_data,
         //cp0
+        input logic tlb_free
     );
     
     logic llwrite_ex;
@@ -86,7 +87,8 @@ module quickcommit(
                                     .cp0_entrylo0(cp0_data.entrylo0),
                                     .cp0_index(cp0_data.index),
         							.tu_op_req, .tu_op_resp,
-        							.is_tlbr, .is_tlbp);
+        							.is_tlbr, .is_tlbp,
+        							.tlb_free);
         							
     assign cp0w[1].addr = exception_out[1].cp0_addr;
     assign cp0w[1].wd = exception_out[1].result;
