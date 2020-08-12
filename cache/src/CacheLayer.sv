@@ -4,7 +4,6 @@
 `include "instr_bus.svh"
 `include "data_bus.svh"
 `include "cache.svh"
-`include "tu.svh"
 
 module CacheLayer(
     input  logic aclk, aresetn,
@@ -47,27 +46,15 @@ module CacheLayer(
     input  logic        bvalid,
     output logic        bready,
 
-    // CPU requests
-    input  ibus_req_t  imem_req,
-    output ibus_resp_t imem_resp,
-    input  dbus_req_t  dmem_req,
-    output dbus_resp_t dmem_resp,
+    // ICache, DCache & uncached req/resp
+    input  ibus_req_t  icache_req,
+    output ibus_resp_t icache_resp,
+    input  dbus_req_t  dcache_req,  uncached_req,
+    output dbus_resp_t dcache_resp, uncached_resp,
 
-    // TU (inside MMU)
-    input  tu_op_req_t  tu_op_req,
-    output tu_op_resp_t tu_op_resp,
-    input logic k0_uncached
+    // virtual addresses
+    input addr_t imem_req_vaddr, dmem_req_vaddr
 );
-    /**
-     * address translations & request dispatching
-     */
-    ibus_req_t  icache_req;
-    ibus_resp_t icache_resp;
-    dbus_req_t  dcache_req,  uncached_req;
-    dbus_resp_t dcache_resp, uncached_resp;
-
-    MMU mmu_inst(.*);
-
     /**
      * buffers or caches
      */
@@ -85,7 +72,7 @@ module CacheLayer(
     ) icache_buf_inst(
         .clk(aclk), .resetn(aresetn),
 
-        .m_req_vaddr(imem_req.addr),
+        .m_req_vaddr(imem_req_vaddr),
         .m_req(icache_req),
         .m_resp(icache_resp),
         .s_req_vaddr(buf_imem_req_vaddr),
@@ -119,7 +106,7 @@ module CacheLayer(
     ) dcache_buf_inst(
         .clk(aclk), .resetn(aresetn),
 
-        .m_req_vaddr(dmem_req.addr),
+        .m_req_vaddr(dmem_req_vaddr),
         .m_req(dcache_req),
         .m_resp(dcache_resp),
         .s_req_vaddr(buf_dmem_req_vaddr),
