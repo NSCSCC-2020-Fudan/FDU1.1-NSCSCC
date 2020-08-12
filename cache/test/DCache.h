@@ -289,6 +289,12 @@ public:
         }
     }
 
+    void tick(int cnt) {
+        while (cnt--) {
+            tick();
+        }
+    }
+
     auto in_req() -> u8& {
         return _top->inst->dbus_req_x_req;
     }

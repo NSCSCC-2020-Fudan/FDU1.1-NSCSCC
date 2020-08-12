@@ -126,6 +126,73 @@ WITH {
 } AS("range invalidate");
 
 WITH SKIP {
+    constexpr int T = 500000;
+
+    Pipeline p(top);
+    for (int _t = 0; _t < T; _t++) {
+        int i = randu(0, MEMORY_SIZE - 1);
+        p.expect(_i(i), i);
+        p.wait(256);
+        top->issue_read(_i(i));
+        assert(top->inst->dbus_resp_x_addr_ok == 1);
+        top->reset_req();
+        p.cop(_i(i), 0b010);
+        p.wait(256);
+        top->issue_read(_i(i));
+        assert(top->inst->dbus_resp_x_addr_ok == 0);
+        top->reset_req();
+    }
+} AS("random invalidate");
+
+WITH LOG {
+    Pipeline p(top);
+
+    p.write(0, 0x19260817, 0b1111);
+    p.cop(0, 0b001);
+    p.tick(256);
+    assert(top->cmem->mem[0] == 0x19260817);
+
+    p.write(48, 0xabcd4321, 0b1111);
+    p.wait(256);
+    top->issue_cop(48, 48, 0b001);
+    assert(top->inst->dbus_resp_x_addr_ok == 0);
+    top->reset_req();
+    p.cop(48, 0b001);
+    p.tick(256);
+    assert(top->cmem->mem[12] == 0xabcd4321);
+
+    // test dirty flag
+    top->cmem->mem[12] = 0;
+    p.cop(48, 0b001);
+    p.tick(256);
+    assert(top->cmem->mem[12] == 0);
+} AS("simple writeback");
+
+WITH SKIP {
+    constexpr int T = 100000;
+
+    Pipeline p(top);
+    for (int _t = 0; _t < T; _t++) {
+        int i = randu(0, MEMORY_SIZE - 1);
+        u32 data = randu();
+        p.write(_i(i), data, 0b1111);
+        p.cop(_i(i), 0b001);
+        p.tick(64);
+        assert(top->cmem->mem[i] == data);
+    }
+} AS("random writeback");
+
+WITH LOG {
+    Pipeline p(top);
+    p.write(4, 0xabcdef12, 0b1111);
+    p.cop(4, 0b011);
+    p.tick(256);
+    assert(top->cmem->mem[1] == 0xabcdef12);
+    top->issue_read(0);
+    assert(top->inst->dbus_resp_x_addr_ok == 0);
+} AS("invalidate and writeback");
+
+WITH SKIP {
     Pipeline p(top);
     for (int i = 0; i < MEMORY_SIZE; i++) {
         p.expect(_i(i), i);
@@ -269,3 +336,40 @@ WITH SKIP {
 
     p.wait();
 } AS("random read/write");
+
+WITH SKIP {
+    std::vector<u32> ref;
+    ref.resize(MEMORY_SIZE);
+    std::iota(ref.begin(), ref.end(), 0);
+
+    constexpr int T = 2000000;
+
+    Pipeline p(top);
+    for (int _t = 0; _t < T; _t++) {
+        int addr = randu(0, MEMORY_SIZE - 1);
+        int op = randu(1, 9);
+
+        if (2 <= op && op <= 5) {
+            u32 v = randu();
+            ref[addr] = v;
+            p.write(_i(addr), v, 0b1111);
+        }
+        if (6 <= op && op <= 9) {
+            p.expect(_i(addr), ref[addr]);
+        }
+        if (op == 1) {
+            p.wait();
+        }
+    }
+
+    for (int i = 0; i < 8; i++)
+    for (int j = 0; j < 4; j++) {
+        p.cop((i << 6) | (j << 4), 0b101);
+    }
+
+    p.wait();
+
+    for (int i = 0; i < MEMORY_SIZE; i++) {
+        assert(ref[i] == top->cmem->mem[i]);
+    }
+} AS("random read/write with writeback");
