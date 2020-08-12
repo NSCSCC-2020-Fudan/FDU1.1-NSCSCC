@@ -168,3 +168,42 @@ Cache 部分只会修改 CPU 顶层模块的代码。代码位于 `code/mycpu_to
 * `vaddr`：`→`。需要翻译的虚拟地址。
 * `paddr`：`←`。翻译后的物理地址。
 * `is_uncached`：`←`。指示该地址的访问是否不经过 cache。
+
+## Cache 指令支持
+
+MIPS32 Release 1 中规定必须支持 Index/Hit 索引的 Invalidate/Invlidate Writeback/Store Tag。由于 Store Tag 只规定了必须实现 tag 清零，个人认为可以不用把 tag 全部清零，只用 invalidate 就可以达到一样的效果，因此目前的实现中没有提供 Store Tag 的支持。
+
+所有的 cache 操作是在 IBus 和 DBus 中传递的，其操作的请求的结构在 `cache.svh` 中定义了，名称为 `cache_op_t`：
+
+```
+typedef struct packed {
+    logic as_index;
+    logic invalidate;
+    logic writeback;
+} cache_funct_t;
+
+typedef struct packed {
+    logic         req;
+    cache_funct_t funct;
+} cache_op_t;
+```
+
+CPU 方面如果要发出请求，需要填入 `funct` 字段，然后将 cache 请求的地址写入原总线的 `addr` 字段（注意 VIPT 的虚地址信号也要写），并且将总线请求（`ibus_req` 或者是 `dbus_req`）的 `req` 信号设为 1，并且把 `cache_op_t` 内的 `req` 信号也设为 1，这样就表示这个总线请求是一个 cache 请求。示例 SystemVerilog 代码：
+
+```
+assign ibus_req.req = 1;
+assign ibus_req.cache_op.req = 1;
+assign ibus_req.cache_op.funct = 3'b111;
+assign ibus_req.addr = 0x19260817;
+assign ibus_req_vaddr = 0xcccccccc;
+```
+
+Cache 方面对 cache 请求的返回依然是通过总线的 `addr_ok` 和 `data_ok` 信号，并且不会在同一个周期同时返回两个信号（除非它们来自不同的请求），与普通的访存行为一致。
+
+对 `cache_funct_t` 的说明：
+
+* `as_index`：给出的地址是否是 Index 格式？如果为 0，则会用给定的地址取查询 cache 内部的 tag 存储。
+* `invalidate`：指定操作为将对应的 cache line 的 `valid` 位设为 0。
+* `writeback`：如果对应的 cache line 的 `dirty` 位为 1，则将这条 cache line 的所有内容写回内存，并且将 `dirty` 设为 0。
+
+注意以上三个 flag 之间是独立的，可以全部同时全部设为 1。
