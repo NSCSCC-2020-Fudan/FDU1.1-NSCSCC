@@ -207,7 +207,7 @@ typedef struct packed {
                                   // with special upper and lower bound 
 } cp0_random_t;
 
-parameter PABITS = 36;          // physical address bits
+parameter PABITS = 32;          // physical address bits
 typedef struct packed {
     logic [31:PABITS - 6] fill;     // always 0, R
     logic [PABITS-7:6] pfn;         // page frame number, R/W
@@ -232,7 +232,7 @@ typedef struct packed {
     logic[2:0]zero_0;
     logic[15:0]mask;
     /*
-    The Mask field is a bit mask in which a ‚Äú1‚Äù bit
+    The Mask field is a bit mask in which a ‚Ä?1‚Ä? bit
     indicates that the corresponding bit of the vir-
     tual address should not participate in the TLB
     match.
