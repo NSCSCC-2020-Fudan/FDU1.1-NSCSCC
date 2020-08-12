@@ -26,7 +26,7 @@ module DataBusToAXI(
     // parse request
     req_t new_req;
     assign new_req.addr  = dbus_req.addr;
-    assign new_req.size  = axi_burst_size'($clog2(DBUS_DATA_BYTES));
+    assign new_req.size  = axi_burst_size'(dbus_req.size);
     assign new_req.strb  = dbus_req.write_en;
     assign new_req.wdata = dbus_req.data;
 

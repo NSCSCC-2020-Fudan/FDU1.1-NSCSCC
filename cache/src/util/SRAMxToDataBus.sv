@@ -9,6 +9,7 @@ module SRAMxToDataBus(
 );
     assign dbus_req.req      = sramx_req.req;
     assign dbus_req.is_write = sramx_req.wr;
+    assign dbus_req.size     = sramx_req.size;
     assign dbus_req.addr     = sramx_req.addr;
     assign dbus_req.data     = sramx_req.wdata;
 

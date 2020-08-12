@@ -426,6 +426,6 @@ module DCache #(
      * unused (for Verilator)
      */
     logic __unused_ok = &{1'b0,
-        req_vaddr, dbus_req,
+        req_vaddr, dbus_req.size,
     1'b0};
 endmodule
