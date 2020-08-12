@@ -12,7 +12,7 @@ auto parse_vaddr(int vaddr) -> std::tuple<int, int, int, int> {
     int zeros = vaddr & 0x3;
     int offset = (vaddr >> 2) & 0x3;
     int index = (vaddr >> 4) & 0x3;
-    int tag = (vaddr >> 6) & 0xffffffc;
+    int tag = (vaddr >> 6) & 0x3ffffff;
     return std::make_tuple(tag, index, offset, zeros);
 }
 
@@ -107,6 +107,32 @@ public:
         cmem->eval();
     }
 
+    void reset_req() {
+        inst->dbus_req_x_req = 0;
+    }
+
+    void issue_cop(int addr, int vaddr, int opcode) {
+        // format: {as_index, invalidate, writeback}
+
+        std::tie(
+            inst->dbus_req_vaddr_x_tag,
+            inst->dbus_req_vaddr_x_index,
+            inst->dbus_req_vaddr_x_offset,
+            inst->dbus_req_vaddr_x_zeros
+        ) = parse_vaddr(vaddr);
+        inst->dbus_req_x_req = 1;
+        inst->dbus_req_x_cache_op_x_req = 1;
+        inst->dbus_req_x_cache_op_x_funct_x_as_index = (opcode >> 2) & 1;
+        inst->dbus_req_x_cache_op_x_funct_x_invalidate = (opcode >> 1) & 1;
+        inst->dbus_req_x_cache_op_x_funct_x_writeback = (opcode >> 0) & 1;
+        inst->dbus_req_x_addr = addr;
+        inst->dbus_req_x_data = 0xcccccccd;
+        inst->dbus_req_x_is_write = 1;
+        inst->dbus_req_x_write_en = 0b1111;
+
+        inst->eval();
+    }
+
     void issue_read(int addr, int vaddr) {
         std::tie(
             inst->dbus_req_vaddr_x_tag,
@@ -115,6 +141,10 @@ public:
             inst->dbus_req_vaddr_x_zeros
         ) = parse_vaddr(vaddr);
         inst->dbus_req_x_req = 1;
+        inst->dbus_req_x_cache_op_x_req = 0;
+        inst->dbus_req_x_cache_op_x_funct_x_as_index = 1;
+        inst->dbus_req_x_cache_op_x_funct_x_invalidate = 1;
+        inst->dbus_req_x_cache_op_x_funct_x_writeback = 1;
         inst->dbus_req_x_is_write = 0;
         inst->dbus_req_x_write_en = 0;  // must be zeros if "is_write" is zero
         inst->dbus_req_x_addr = addr;
@@ -131,6 +161,10 @@ public:
             inst->dbus_req_vaddr_x_zeros
         ) = parse_vaddr(vaddr);
         inst->dbus_req_x_req = 1;
+        inst->dbus_req_x_cache_op_x_req = 0;
+        inst->dbus_req_x_cache_op_x_funct_x_as_index = 1;
+        inst->dbus_req_x_cache_op_x_funct_x_invalidate = 1;
+        inst->dbus_req_x_cache_op_x_funct_x_writeback = 1;
         inst->dbus_req_x_is_write = 1;
         inst->dbus_req_x_write_en = mask;
         inst->dbus_req_x_addr = addr;
@@ -159,7 +193,7 @@ public:
         if (vaddr < 0)
             vaddr = paddr;
 
-        _a_fifo.push({paddr, vaddr, 0, data, nullptr});
+        _a_fifo.push({0, paddr, vaddr, 0, data, nullptr});
 
         if (!in_req())
             _top->issue_read(paddr, vaddr);
@@ -169,7 +203,7 @@ public:
         if (vaddr < 0)
             vaddr = paddr;
 
-        _a_fifo.push({paddr, vaddr, 0, 0, dest});
+        _a_fifo.push({0, paddr, vaddr, 0, 0, dest});
 
         if (!in_req())
             _top->issue_read(paddr, vaddr);
@@ -179,10 +213,20 @@ public:
         if (vaddr < 0)
             vaddr = paddr;
 
-        _a_fifo.push({paddr, vaddr, mask, data, nullptr});
+        _a_fifo.push({0, paddr, vaddr, mask, data, nullptr});
 
         if (!in_req())
             _top->issue_write(paddr, vaddr, data, mask);
+    }
+
+    void cop(int paddr, int op, int vaddr = -1) {
+        if (vaddr < 0)
+            vaddr = paddr;
+
+        _a_fifo.push({op, paddr, vaddr, 0, 0, nullptr});
+
+        if (!in_req())
+            _top->issue_cop(paddr, vaddr, op);
     }
 
     void wait(int max_count = -1) {
@@ -206,21 +250,27 @@ public:
             _d_fifo.push(_a_fifo.front());
             _a_fifo.pop();
         }
+
         if (data_ok) {
             assert(!_d_fifo.empty());
             auto u = _d_fifo.front();
-            info(
-                "addr 0x%x (v:0x%x), %s \"%08x\", got \"%08x\" (mask:0x%x, dest:%s)\n",
-                u.paddr, u.vaddr,
-                (u.is_read() ? "expect" : "write"),
-                u.data, data, u.mask,
-                (u.dest ? "yes" : "no")
-            );
 
-            if (u.dest)
-                *u.dest = data;
-            else if (u.is_read())
-                assert(u.data == data);
+            if (u.is_cop())
+                info("cop 0x%x, paddr 0x%08x, vaddr 0x%08x\n", u.cop, u.paddr, u.vaddr);
+            else {
+                info(
+                    "addr 0x%x (v:0x%x), %s \"%08x\", got \"%08x\" (mask:0x%x, dest:%s)\n",
+                    u.paddr, u.vaddr,
+                    (u.is_read() ? "expect" : "write"),
+                    u.data, data, u.mask,
+                    (u.dest ? "yes" : "no")
+                );
+
+                if (u.dest)
+                    *u.dest = data;
+                else if (u.is_read())
+                    assert(u.data == data);
+            }
 
             _d_fifo.pop();
         }
@@ -230,7 +280,9 @@ public:
             _top->eval();
         } else {
             auto u = _a_fifo.front();
-            if (u.mask)
+            if (u.is_cop())
+                _top->issue_cop(u.paddr, u.vaddr, u.cop);
+            else if (u.mask)
                 _top->issue_write(u.paddr, u.vaddr, u.data, u.mask);
             else
                 _top->issue_read(u.paddr, u.vaddr);
@@ -247,14 +299,19 @@ public:
 
 private:
     struct _task_t {
+        int cop;
         int paddr;
         int vaddr;
         int mask;
         u32 data;
         u32 *dest;
 
+        bool is_cop() const {
+            return cop;
+        }
+
         bool is_read() const {
-            return !mask;
+            return !is_cop() && !mask;
         }
     };
 

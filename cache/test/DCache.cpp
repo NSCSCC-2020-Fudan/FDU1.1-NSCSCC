@@ -22,10 +22,10 @@ WITH LOG {
 WITH {
     for (int addr = 0; addr < 8192; addr++) {
         top->issue_read(_i(addr));
-        top->inst->dbus_req_x_req = 0;
+        top->reset_req();
         top->eval();
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < 128; i++) {
             assert(top->inst->req_hit == 0);
             assert(top->inst->dbus_resp_x_data_ok == 0);
             top->tick();
@@ -36,16 +36,94 @@ WITH {
 WITH {
     for (int addr = 0; addr < 8192; addr++) {
         top->issue_write(_i(addr), randu());
-        top->inst->dbus_req_x_req = 0;
+        top->reset_req();
         top->eval();
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < 128; i++) {
             assert(top->inst->req_hit == 0);
             assert(top->inst->dbus_resp_x_data_ok == 0);
             top->tick();
         }
     }
 } AS("fake write");
+
+WITH {
+    top->issue_cop(0, 0, 0b010);
+    assert(top->inst->dbus_resp_x_addr_ok == 1);
+    top->inst->dbus_req_x_cache_op_x_req = 0;
+    top->eval();
+    assert(top->inst->dbus_resp_x_addr_ok == 0);
+} AS("fake cop 1");
+
+WITH {
+    top->issue_cop(0, 0, 0b010);
+    assert(top->inst->dbus_resp_x_addr_ok == 1);
+    top->reset_req();
+    top->eval();
+    assert(top->inst->dbus_resp_x_addr_ok == 0);
+} AS("fake cop 2");
+
+WITH {
+    Pipeline p(top);
+    for (int i = 0; i < 65536; i++) {
+        p.expect(_i(i), i);
+    }
+    p.wait();
+} AS("naïve sequential read");
+
+WITH LOG {
+    Pipeline p(top);
+    p.expect(0, 0);
+    // p.cop(0, 0b010);
+    p.wait(64);
+    top->issue_read(0);
+    assert(top->inst->dbus_resp_x_addr_ok == 1);
+    top->reset_req();
+
+    p.expect(0, 0);
+    p.cop(0, 0b010);
+    p.wait(64);
+    top->issue_read(0);
+    assert(top->inst->dbus_resp_x_addr_ok == 0);
+} AS("simple invalidate");
+
+WITH {
+    Pipeline p(top);
+    auto fill = [&p] {
+        for (int i = 0; i < 128; i++) {
+            p.expect(_i(i), i);
+        }
+        p.wait(8192);
+        for (int i = 0; i < 128; i++) {
+            top->issue_read(_i(i));
+            assert(top->inst->dbus_resp_x_addr_ok == 1);
+        }
+        top->reset_req();
+    };
+
+    fill();
+    for (int i = 0; i < 128; i++) {
+        p.cop(_i(i), 0b010);
+    }
+    p.wait(8192);
+    for (int i = 0; i < 128; i++) {
+        top->issue_read(_i(i));
+        assert(top->inst->dbus_resp_x_addr_ok == 0);
+    }
+    top->reset_req();
+
+    fill();
+    for (int i = 0; i < 8; i++)
+    for (int j = 0; j < 4; j++) {
+        p.cop((i << 6) | (j << 4), 0b110);
+    }
+    p.wait(8192);
+    for (int i = 0; i < 128; i++) {
+        top->issue_read(_i(i));
+        assert(top->inst->dbus_resp_x_addr_ok == 0);
+    }
+    top->reset_req();
+} AS("range invalidate");
 
 WITH SKIP {
     Pipeline p(top);
@@ -90,7 +168,7 @@ WITH SKIP {
     p.wait();
 } AS("memcpy");
 
-WITH {
+WITH SKIP {
     Pipeline p(top);
     for (int i = 0; i < MEMORY_SIZE; i++) {
         u32 v = randu();
@@ -100,7 +178,7 @@ WITH {
     p.wait();
 } AS("read/write repeat");
 
-WITH {
+WITH SKIP {
     Pipeline p(top);
     for (int i = 0; i < MEMORY_SIZE; i++) {
         int op = randu(0, 1);
@@ -113,7 +191,7 @@ WITH {
     p.wait();
 } AS("read/write interleave");
 
-WITH {
+WITH SKIP {
     Pipeline p(top);
     for (int i = MEMORY_SIZE - 1; i >= 0; i--) {
         p.expect(_i(i), i);
@@ -121,7 +199,7 @@ WITH {
     p.wait();
 } AS("backward read");
 
-WITH {
+WITH SKIP {
     Pipeline p(top);
     for (int i = MEMORY_SIZE - 1; i >= 0; i--) {
         p.write(_i(i), 0xcccccccc, 0b1111);

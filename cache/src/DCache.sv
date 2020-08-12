@@ -65,7 +65,8 @@ module DCache #(
 );
     // shortuct for cache operations
     cache_op_t cop;
-    assign cop = dbus_req.cache_op;
+    assign cop.req   = dbus_req.req && dbus_req.cache_op.req;
+    assign cop.funct = dbus_req.cache_op.funct;
 
     /**
      * storages for cache tags & records

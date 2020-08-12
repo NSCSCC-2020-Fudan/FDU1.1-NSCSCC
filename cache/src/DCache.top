@@ -36,3 +36,9 @@ hit_pos
 hit_rdata
 hit_wdata
 hit_write_en
+
+cop_busy
+cop_ready
+cop_raw_idx
+cop_idx
+cop_flush_addr
