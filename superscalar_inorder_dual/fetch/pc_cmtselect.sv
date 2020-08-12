@@ -7,7 +7,7 @@ module pc_cmtselect(
         output word_t pc_new,
         output logic pc_upd
     );
-    assign pc_upd = exception_valid | is_eret | branch | jr | jump;
+    assign pc_upd = exception_valid | is_eret | branch | jr | jump | tlb_ex;
     assign pc_new = exception_valid      ? pcexception : (
                     is_eret              ? epc         : (
                     tlb_ex               ? pctlb       : (
