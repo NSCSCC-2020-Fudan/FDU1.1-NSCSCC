@@ -28,17 +28,22 @@ module datapath(
         output word_t [1: 0] rt_pc_out,
         output logic stallF_out, flush_ex,
         //output word_t pc
-        output ibus_req_t  imem_req,
-        input ibus_resp_t imem_resp,
-        output dbus_req_t  dmem_req,
-        input dbus_resp_t dmem_resp,
-        //bus
-        output tu_op_req_t  tu_op_req,
-        input tu_op_resp_t tu_op_resp,
-        output logic k0_uncached
+        output ibus_req_t  icache_req,
+        input ibus_resp_t icache_resp,
+        output dbus_req_t  dcache_req, uncached_req,
+        input dbus_resp_t dcache_resp, uncached_resp,
+        output word_t imem_req_vaddr, dmem_req_vaddr
+        
     );
-    
-    
+    ibus_req_t  imem_req;
+    ibus_resp_t imem_resp;
+    dbus_req_t  dmem_req;
+    dbus_resp_t dmem_resp;
+    tu_op_req_t  tu_op_req;
+    tu_op_resp_t tu_op_resp;
+    logic k0_uncached;
+    assign imem_req_vaddr = imem_req.addr;
+    assign dmem_req_vaddr = dmem_req.addr;
     fetch_data_t [1: 0] fetch_data, decode_data_in;
     decode_data_t [1: 0] decode_data_out;
     issue_data_t [1: 0] issue_data_out;
@@ -248,4 +253,7 @@ module datapath(
     
     assign rfw_out = rfw;
     assign rt_pc_out = rt_pc;                                                                                                                                    
+
+    MMU mmu_inst(.*, .resetn(reset));
+
 endmodule
