@@ -79,6 +79,10 @@ module ICache #(
     output cbus_req_t  cbus_req,
     input  cbus_resp_t cbus_resp
 );
+    cache_op_t cop;
+    assign cop.req   = ibus_req.req && ibus_req.cache_op.req;
+    assign cop.funct = ibus_req.cache_op.funct;
+
     /**
      * storages for cache tags & records
      */
@@ -250,8 +254,8 @@ module ICache #(
     assign req_miss_ready = !req_in_miss || miss_ready[req_count];
 
     logic req_to_hit, req_to_miss;
-    assign req_to_hit  = req_hit && (ibus_req.req && req_miss_ready);
-    assign req_to_miss = !req_hit && (ibus_req.req && miss_avail);
+    assign req_to_hit  =  req_hit && (!cop.req && ibus_req.req && req_miss_ready);
+    assign req_to_miss = !req_hit && (!cop.req && ibus_req.req && miss_avail);
 
     /**
      * the BRAM
@@ -293,13 +297,35 @@ module ICache #(
     // assign hit_data = bram_data[0];
 
     /**
+     * cache operations
+     */
+    logic cop_busy;
+    logic cop_ready;
+    idx_t cop_raw_idx;
+    idx_t cop_idx;
+
+    assign cop_busy    = miss_busy;
+    assign cop_ready   = cop.req && !cop_busy;
+    assign cop_raw_idx = idx_t'(req_vaddr.tag);
+    assign cop_idx     = cop.funct.as_index ? cop_raw_idx : req_idx;
+
+    /**
      * pipelining & state transitions
      */
     // LUTRAM updates
     assign ram_new_select = req_to_hit ? req_new_select : ram_select;
 
     always_comb
-    if (req_to_miss) begin
+    unique if (cop_ready) begin
+        for (int i = 0; i < NUM_WAYS; i++) begin
+            if (cop_idx == idx_t'(i))
+                ram_new_meta[i].valid = cop.funct.invalidate ? 0 : ram_meta[i].valid;
+            else
+                ram_new_meta[i] = ram_meta[i];
+        end
+
+        ram_new_tags = ram_tags;
+    end else if (req_to_miss) begin
         for (int i = 0; i < NUM_WAYS; i++) begin
             if (req_victim_idx == idx_t'(i)) begin
                 ram_new_meta[i] = 1;
@@ -320,7 +346,7 @@ module ICache #(
         // bram_out_port <= (bram_addr_eq && bram_on_write) ? 1 : 0;
 
         // to hit stage
-        hit_data_ok    <= req_to_hit;
+        hit_data_ok    <= req_to_hit || cop_ready;
         hit_resp_index <= req_paddr.aligned.shamt;
 
         // update miss stage
@@ -353,7 +379,7 @@ module ICache #(
     /**
      * instr bus driver
      */
-    assign ibus_resp.addr_ok = req_hit && req_miss_ready;
+    assign ibus_resp.addr_ok = cop.req ? !cop_busy : (req_hit && req_miss_ready);
     assign ibus_resp.data_ok = hit_data_ok;
     assign ibus_resp.data    = hit_data;
     assign ibus_resp.index   = hit_resp_index;
