@@ -45,6 +45,7 @@ module signaldecode (
 	assign dataD.pred = dataF.pred;
 	assign dataD.pcplus4 = dataF.pcplus4;
 	assign dataD.exception_instr = dataF.exception_instr;
+	assign dataD.exception_instr_tlb = dataF.exception_instr_tlb;
 /*
 	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),.alusrcaE(hazard.alusrcaE),
 					  .forward(hazard.forwardAD), .ctl(dataD.instr.ctl), 

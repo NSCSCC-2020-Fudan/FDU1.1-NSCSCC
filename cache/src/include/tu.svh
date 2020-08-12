@@ -16,6 +16,10 @@ typedef struct packed {
     cp0_entryhi_t entryhi;
     cp0_entrylo_t entrylo0, entrylo1;
     cp0_index_t index;
+    logic i_tlb_invalid; // && req
+    logic i_tlb_modified; // && is store
+    logic d_tlb_invalid; // && req
+    logic d_tlb_modified; // && is store
 } tu_op_resp_t;
 
 parameter TLB_ENTRIES = 32;

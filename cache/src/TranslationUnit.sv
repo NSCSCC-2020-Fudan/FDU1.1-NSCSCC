@@ -25,10 +25,10 @@ module TranslationUnit(
     word_t inst_paddr_tlb, data_paddr_tlb, inst_paddr_direct, data_paddr_direct;
     assign i_resp.paddr = i_mapped ? inst_paddr_tlb : inst_paddr_direct;
     assign d_resp.paddr = d_mapped ? data_paddr_tlb : data_paddr_direct;
-    assign i_resp.tlb_invalid = i_mapped & i_invalid;
-    assign i_resp.tlb_modified = i_mapped & ~i_invalid & i_dirty;
-    assign d_resp.tlb_invalid = d_mapped & d_invalid;
-    assign d_resp.tlb_modified = d_mapped & ~d_invalid & d_dirty;
+    assign op_resp.i_tlb_invalid = i_mapped & i_invalid;
+    assign op_resp.i_tlb_modified = i_mapped & ~i_invalid & i_dirty;
+    assign op_resp.i_tlb_invalid = d_mapped & d_invalid;
+    assign op_resp.i_tlb_modified = d_mapped & ~d_invalid & d_dirty;
     DirectMappedAddr i_map_inst(
         .vaddr(i_req.vaddr),
         .paddr(inst_paddr_direct),
@@ -100,7 +100,7 @@ module tlb (
     // addr
     input logic[7:0] asid,
     input word_t inst_vaddr, data_vaddr,
-    output word_t inst_paddr_tlb, data_vaddr_tlb,
+    output word_t inst_paddr_tlb, data_paddr_tlb,// ??
     output logic i_invalid, d_invalid, 
     output logic i_dirty, d_dirty,
     // TLBP
@@ -175,7 +175,7 @@ module tlb_lut (
     assign tlblut_resp.hit = |hit_mask;
     assign tlblut_resp.dirty = vaddr[12] ? tlb_table[hit_addr].D1 : tlb_table[hit_addr].D0;
     assign tlblut_resp.valid = vaddr[12] ? tlb_table[hit_addr].V1 : tlb_table[hit_addr].V0;
-    assign tlblut_resp.C = vaddr[12] ? tlb_table[hit_addr].C1 : tlb_table[hit_addr].C0;
+    assign tlblut_resp.cache_flag = vaddr[12] ? tlb_table[hit_addr].C1 : tlb_table[hit_addr].C0;// ??
 endmodule
 
 `endif

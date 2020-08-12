@@ -1,4 +1,5 @@
 `include "mips.svh"
+`include "tu.svh"
 `include "data_bus.svh"
 
 module exceptioncommit(
@@ -26,9 +27,27 @@ module exceptioncommit(
         input logic llbit,
         //other
         input cp0_status_t cp0_status,
-        input cp0_cause_t cp0_cause
+        input cp0_cause_t cp0_cause,
+        input cp0_entryhi_t cp0_entryhi,
+        input cp0_entrylo_t cp0_entrylo1, cp0_entrylo0,
+        input cp0_index_t cp0_index,
         //cp0
+        output tu_op_req_t tu_op_req,
+        input tu_op_resp_t tu_op_resp,
+        output logic is_tlbr, 
+        output logic is_tlbp
     );
+    
+    exec_data_t [1: 0] tin;
+    assign tin = (mask) ? ('0) : (in);
+    
+    assign is_tlbr = (tin[1].instr.op == TLBR);
+    assign is_tlbp = (tin[1].instr.op == TLBP);
+    assign tu_op_req.is_tlbwi = (tin[1].instr.op == TLBWI);
+    assign tu_op_req.entryhi = cp0_entryhi;
+    assign tu_op_req.entrylo0 = cp0_entrylo0;
+    assign tu_op_req.entrylo0 = cp0_entrylo1;
+    assign tu_op_req.index = cp0_index;
     
     logic [1: 0] _exception_valid;
     word_t [1: 0] _pcexception;
@@ -40,14 +59,16 @@ module exceptioncommit(
                                           .exception_valid(_exception_valid[1]), .pcexception(_pcexception[1]), 
                                           .exception_data(_exception_data[1]),
                                           ._out(out[1]), //.llbit,
-                                          .cp0_status, .cp0_cause);
+                                          .cp0_status, .cp0_cause,
+                                          .tu_op_resp);
     exception_checker exception_checker0 (.reset, .flush((_exception_valid[1]) | (in[1].instr.op == ERET) | (mask)),
                                           .in(in[0]),
                                           .ext_int, .timer_interrupt,
                                           .exception_valid(_exception_valid[0]), .pcexception(_pcexception[0]), 
                                           .exception_data(_exception_data[0]),
                                           ._out(out[0]), //.llbit,
-                                          .cp0_status, .cp0_cause);
+                                          .cp0_status, .cp0_cause,
+                                          .tu_op_resp);
                                           
     assign exception_valid = _exception_valid[1] | _exception_valid[0];
     assign exception_data = (_exception_valid[1]) ? (_exception_data[1]) : (_exception_data[0]);    

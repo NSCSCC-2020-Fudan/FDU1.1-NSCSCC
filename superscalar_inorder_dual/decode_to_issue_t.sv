@@ -40,5 +40,7 @@ module decode_to_issue_t(
     assign out.state.readya = reg_readya & ~in.instr.ctl.cp0toreg;
     assign out.state.readyb = reg_readyb;
     assign out.state.ready = 1'b0;
+    
+    assign out.exception_instr_tlb = in.exception_instr_tlb;
 
 endmodule

@@ -21,9 +21,12 @@ module instrfetch(
         //to bpb
         output logic [1: 0] jrp_pushF, jrp_popF,
         input logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF, 
-        input word_t jrp_destpcF 
+        input word_t jrp_destpcF,
+        //to jr predict
+        input logic tlb_ex_pcf 
     );
     
+    logic tlb_ex_, tlb_ex;
     logic finish_his_, finish_his;
     logic [1: 0] ien_his_, ien_his, ien;
     logic [63: 0] data_his_, data_his, data;
@@ -35,6 +38,7 @@ module instrfetch(
     always_comb 
         begin
             pc_ = pc;
+            tlb_ex_ = tlb_ex;
             pcplus4_ = pcplus4;
             pcplus8_ = pcplus8;
             finish_his_ = finish_his;
@@ -51,6 +55,7 @@ module instrfetch(
                 end
             if (~stall)
                 begin
+                    tlb_ex_ = tlb_ex;
                     pc_ = pc_pcf;
                     pcplus4_ = pcplus4_pcf;
                     pcplus8_ = pcplus8_pcf;
@@ -63,6 +68,7 @@ module instrfetch(
         begin
             if (~reset)
                 begin
+                    tlb_ex <= 1'b0;
                     finish_his <= 1'b0;
                     data_his <= '0;
                     ien_his <= 2'b11;
@@ -79,7 +85,7 @@ module instrfetch(
                     pcplus4 <= pcplus4_;
                     pcplus8 <= pcplus8_;
                     destpc_predict_np <= destpc_predict_;
-                    //destpc_predict <= '0;
+                    tlb_ex <= tlb_ex_;
                 end
         end
                     
@@ -117,6 +123,8 @@ module instrfetch(
     assign fetch_data[0].pred = (hitF[0]) ? destpc_predict[0] : ('0);
     assign fetch_data[1].jrtop = jrp_topF_[1];
     assign fetch_data[0].jrtop = jrp_topF_[0];
+    assign fetch_data[1].exception_instr_tlb = tlb_ex;
+    assign fetch_data[0].exception_instr_tlb = tlb_ex;// ??
     //assign fetch_data[1].pred = '0;
     //assign fetch_data[0].pred = '0;
     
