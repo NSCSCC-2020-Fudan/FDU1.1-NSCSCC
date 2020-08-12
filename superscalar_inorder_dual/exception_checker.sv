@@ -38,13 +38,13 @@ module exception_checker(
     assign exception_bp = (data.instr.op == BREAK);
     
     logic data_is_read, data_is_write;
-    assign data_is_write = data.memwrite;
-    assign data_is_read = data.memtoreg;
+    assign data_is_write = data.instr.ctl.memwrite;
+    assign data_is_read = data.instr.ctl.memtoreg;
               
     exception_pipeline_t pipe;             
     assign pipe.exc_info.tr = 1'b0;
     assign pipe.exc_info.cpu = 1'b0;
-    assign pipe.exc_info.mod = tu_op_resp.modified & data_is_write;
+    assign pipe.exc_info.mod = tu_op_resp.d_tlb_modified & data_is_write;
     assign pipe.exc_info.load_tlb = tu_op_resp.d_tlb_invalid & data_is_read;//to be continue
     assign pipe.exc_info.save_tlb = tu_op_resp.d_tlb_invalid & data_is_write;//to be continue
     assign pipe.exc_info.instr_tlb = data.exception_instr_tlb;//to be continue   
