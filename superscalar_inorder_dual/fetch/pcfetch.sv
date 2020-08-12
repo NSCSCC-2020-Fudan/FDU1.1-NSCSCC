@@ -15,20 +15,23 @@ module pcfetch(
         output tlb_invalid, tlb_refill
     );    
                       
-    logic finish_his;                
+    logic finish_his;    
+    logic inst_ibus_req_normal;            
     always_ff @(posedge clk) 
         begin
             if (~reset)
                 begin
                     pc <= 32'Hbfc00000;
                     finish_his <= 1'b0;
-                    inst_ibus_req <= 1'b1;
+                    //inst_ibus_req <= 1'b1;
+                    inst_ibus_req_normal <= 1'b1;
                 end
             else
                 begin
                     if (inst_ibus_addr_ok)
                         begin
-                            inst_ibus_req = 1'b0;
+                            //inst_ibus_req = 1'b0;
+                            inst_ibus_req_normal <= 1'b0;
                             finish_his = 1'b1; 
                         end
                         
@@ -36,15 +39,20 @@ module pcfetch(
                         begin
                             pc <= pc_new;
                             finish_his = 1'b0;
-                            inst_ibus_req = 1'b1;
+                            //inst_ibus_req = 1'b1;
+                            inst_ibus_req_normal <= 1'b1;
                         end
                      else
                         if (~finish_pc)
-                            inst_ibus_req = 1'b1;       
+                            begin
+                                //inst_ibus_req = 1'b1;
+                                inst_ibus_req_normal <= 1'b1;
+                            end       
+                            
                 end
         end                      
-    assign finish_pc = finish_his | inst_ibus_addr_ok;
-    //assign inst_ibus_req = ~finish_pc;
+    assign finish_pc = finish_his | inst_ibus_addr_ok | (tlb_invalid | tlb_refill);
+    assign inst_ibus_req = inst_ibus_req_normal & ~(tlb_invalid | tlb_refill);
     
     assign addr = pc;
     assign pcplus4 = pc + 5'b00100;

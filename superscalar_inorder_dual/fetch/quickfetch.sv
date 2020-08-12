@@ -33,7 +33,8 @@ module quickfetch (
     input logic [`JR_ENTRY_WIDTH - 1: 0] jrp_topF, 
     input word_t jrp_destpcF,
     //jr predict
-    input tu_op_resp_t tu_op_resp
+    input tu_op_resp_t tu_op_resp,
+    output logic tlb_free
     //tlb 
 );
     
@@ -192,5 +193,7 @@ module quickfetch (
     assign debug = (no_addr_ok) ? (1'b1) : (finish_instr);
     assign stall = (~finish_pc) || (~debug);                            
     assign finishF = finish_instr && finish_pc && enF;   
+    
+    assign tlb_free = finish_pc;
              
 endmodule
