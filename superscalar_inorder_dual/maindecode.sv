@@ -16,6 +16,9 @@ module maindecode (
     always_comb begin
         exception_ri = 1'b0;
         ctl = '0;
+        srcrega = '0;
+        srcregb = '0;
+        destreg = '0;
         case (op_)
             `OP_MUL: begin
                 case (func)
@@ -82,6 +85,13 @@ module maindecode (
                         srcrega = rs;
                         srcregb = '0;
                         destreg = rd;
+                    end
+                    default: begin
+                        exception_ri = 1'b1;
+                        op = RESERVED;
+                        srcrega = '0;
+                        srcregb = '0;
+                        destreg = '0;
                     end
                 endcase
             end
