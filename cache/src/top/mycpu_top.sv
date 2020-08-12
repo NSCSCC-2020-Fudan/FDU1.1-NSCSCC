@@ -1,5 +1,4 @@
 // `include "mips.svh"
-`include "tu.svh"
 `include "instr_bus.svh"
 `include "data_bus.svh"
 
@@ -54,14 +53,11 @@ module mycpu_top(
     output creg_addr_t debug_wb_rf_wnum,
     output word_t debug_wb_rf_wdata
 );
-    ibus_req_t  imem_req;
-    ibus_resp_t imem_resp;
-    dbus_req_t  dmem_req;
-    dbus_resp_t dmem_resp;
-
-    tu_op_req_t  tu_op_req;
-    tu_op_resp_t tu_op_resp;
-    logic k0_uncached;
+    ibus_req_t  icache_req;
+    ibus_resp_t icache_resp;
+    dbus_req_t  dcache_req,     uncached_req;
+    dbus_resp_t dcache_resp,    uncached_resp;
+    addr_t      imem_req_vaddr, dmem_req_vaddr;
 
     mycpu #(.DO_ADDR_TRANSLATION(0)) mycpu(
         .clk(aclk), .resetn(aresetn), .*
