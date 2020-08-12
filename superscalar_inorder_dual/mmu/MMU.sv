@@ -8,7 +8,7 @@
  * redirecting, as they did in NonTrivialMIPS.
  */
 module MMU(
-    input logic aclk, aresetn,
+    input logic clk, resetn,
 
     input  tu_op_req_t  tu_op_req,
     output tu_op_resp_t tu_op_resp,
@@ -42,7 +42,7 @@ module MMU(
     assign d_req.vaddr = dmem_req.addr;
 
     TranslationUnit tu_inst(
-        .clk(aclk), .resetn(aresetn),
+        .clk(clk), .resetn(resetn),
         .i_req, .i_resp, .d_req, .d_resp,
         .op_req(tu_op_req),
         .op_resp(tu_op_resp),
@@ -118,8 +118,8 @@ module MMU(
         end
     end
 
-    always_ff @(posedge aclk)
-    if (aresetn) begin
+    always_ff @(posedge clk)
+    if (resetn) begin
         if (dmem_req.req) begin
             if (cur_ready) begin
                 cur_finished    <= 0;

@@ -270,7 +270,7 @@ typedef struct packed {
     logic M;        // 31, reset as 1
     logic [2:0]K23; // [30:28], fixed mapping MMU?, R/W
     logic [2:0]KU;  // [27:25], fixed mapping MMU?, R/W
-    logic [9:0]zero_0; // [24:10]
+    logic [14:0]zero_0; // [24:10]
     logic [2:0]MT;  // [9:7] MMU Type, R
     logic [2:0]zero_1; // [6:4]
     logic VI;       // 3, Virtual instruction cache, R

@@ -29,14 +29,12 @@ module mycpu #(
     (*mark_debug = "true"*) input logic inst_ibus_index,
     */
     
-    output ibus_req_t  imem_req,
-    input ibus_resp_t imem_resp,
-    output dbus_req_t  dmem_req,
-    input dbus_resp_t dmem_resp,
-    
-    output tu_op_req_t  tu_op_req,
-    input tu_op_resp_t tu_op_resp,
-    output logic k0_uncached,
+    output ibus_req_t  icache_req,
+    input ibus_resp_t icache_resp,
+    output dbus_req_t  dcache_req, uncached_req,
+    input dbus_resp_t dcache_resp, uncached_resp,
+    output word_t imem_req_vaddr, dmem_req_vaddr,
+
     //debug
     output word_t debug_wb_pc,
     output rwen_t debug_wb_rf_wen,
@@ -63,10 +61,10 @@ module mycpu #(
     
     datapath datapath(.clk(clk_), .reset(resetn), .ext_int,
                       .rfw_out(rfw_out), .rt_pc_out(rt_pc_out),
-                      .imem_req, .imem_resp, 
-                      .dmem_req, .dmem_resp,
-                      .tu_op_req, .tu_op_resp,
-                      .k0_uncached,
+                      .icache_req, .icache_resp, 
+                      .dcache_req, .dcache_resp,
+                      .uncached_req, .uncached_resp,
+                      .imem_req_vaddr, .dmem_req_vaddr,
                       .stallF_out(stallF), .flush_ex(flushE)
                       /*
                       .inst_ibus_req, .inst_ibus_addr_ok, 
