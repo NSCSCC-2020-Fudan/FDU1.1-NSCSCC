@@ -20,6 +20,7 @@ module TranslationUnit(
     logic i_mapped, d_mapped;
     logic i_invalid, d_invalid;
     logic i_dirty, d_dirty;
+    logic i_hit, d_hit;
     assign i_mapped = ~i_req.vaddr[31] || (i_req.vaddr[31:30] == 2'b11);
     assign d_mapped = ~d_req.vaddr[31] || (d_req.vaddr[31:30] == 2'b11);
     word_t inst_paddr_tlb, data_paddr_tlb, inst_paddr_direct, data_paddr_direct;
@@ -29,6 +30,8 @@ module TranslationUnit(
     assign op_resp.i_tlb_modified = i_mapped & ~i_invalid & i_dirty;
     assign op_resp.d_tlb_invalid = d_mapped & d_invalid;
     assign op_resp.d_tlb_modified = d_mapped & ~d_invalid & d_dirty;
+    assign op_resp.i_tlb_refill = i_mapped & ~i_hit;
+    assign op_resp.d_tlb_refill = d_mapped & ~d_hit;
     DirectMappedAddr i_map_inst(
         .vaddr(i_req.vaddr),
         .paddr(inst_paddr_direct),
@@ -86,6 +89,7 @@ module TranslationUnit(
         .data_paddr_tlb,
         .i_invalid, .d_invalid,
         .i_dirty, .d_dirty,
+        .i_hit, .d_hit,
         .entryhi(op_req.entryhi),
         .index(op_resp.index)
     );
@@ -105,6 +109,7 @@ module tlb (
     output word_t inst_paddr_tlb, data_paddr_tlb,// ??
     output logic i_invalid, d_invalid, 
     output logic i_dirty, d_dirty,
+    output logic i_hit, d_hit,
     // TLBP
     input cp0_entryhi_t entryhi,
     output cp0_index_t index
@@ -144,6 +149,8 @@ module tlb (
     assign d_invalid = ~d_resp.valid;
     assign i_dirty = i_resp.dirty;
     assign d_dirty = d_resp.dirty;
+    assign i_hit = i_resp.hit;
+    assign d_hit = d_resp.hit;
 endmodule
 
 module tlb_lut (
