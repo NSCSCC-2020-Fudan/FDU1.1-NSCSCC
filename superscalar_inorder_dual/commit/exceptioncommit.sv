@@ -46,7 +46,7 @@ module exceptioncommit(
     assign tu_op_req.is_tlbwi = (tin[1].instr.op == TLBWI);
     assign tu_op_req.entryhi = cp0_entryhi;
     assign tu_op_req.entrylo0 = cp0_entrylo0;
-    assign tu_op_req.entrylo0 = cp0_entrylo1;
+    assign tu_op_req.entrylo1 = cp0_entrylo1;
     assign tu_op_req.index = cp0_index;
     
     logic [1: 0] _exception_valid;

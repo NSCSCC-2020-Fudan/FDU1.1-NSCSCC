@@ -54,6 +54,7 @@ module delayFU(
     assign out.destreg = in.destreg;
     assign out.srcrega = in.srcrega;
     assign out.srcregb = in.srcregb;
+    assign out.cp0_sel = in.cp0_sel;
     assign out.in_delay_slot = in.in_delay_slot;
     assign out.cp0_addr = in.cp0_addr;
     assign out.pred = in.pred;

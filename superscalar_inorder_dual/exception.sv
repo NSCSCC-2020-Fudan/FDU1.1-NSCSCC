@@ -55,9 +55,9 @@ module exception(
     end
         assign exc_info = pipe.exc_info;
 
-    assign exception_valid = |exc_info;
+    assign exception_valid = ((|exc_info) | interrupt_valid) & reset;
     assign exception.location = `EXC_ENTRY;
-    assign exception.valid = (interrupt_valid | exception_valid) & reset;
+    assign exception.valid = (exception_valid);
     assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exc_code);
     assign exception.pc = pc;
     assign exception.in_delay_slot = in_delay_slot;

@@ -27,8 +27,8 @@ module TranslationUnit(
     assign d_resp.paddr = d_mapped ? data_paddr_tlb : data_paddr_direct;
     assign op_resp.i_tlb_invalid = i_mapped & i_invalid;
     assign op_resp.i_tlb_modified = i_mapped & ~i_invalid & i_dirty;
-    assign op_resp.i_tlb_invalid = d_mapped & d_invalid;
-    assign op_resp.i_tlb_modified = d_mapped & ~d_invalid & d_dirty;
+    assign op_resp.d_tlb_invalid = d_mapped & d_invalid;
+    assign op_resp.d_tlb_modified = d_mapped & ~d_invalid & d_dirty;
     DirectMappedAddr i_map_inst(
         .vaddr(i_req.vaddr),
         .paddr(inst_paddr_direct),
@@ -66,6 +66,8 @@ module TranslationUnit(
     assign op_resp.entrylo0.C = tlbrd.C0;
     assign op_resp.entrylo0.D = tlbrd.D0;
     assign op_resp.entrylo0.V = tlbrd.V0;
+    assign op_resp.entrylo0.G = tlbrd.G;
+    assign op_resp.entrylo1.fill = '0;
     assign op_resp.entrylo1.pfn = tlbrd.pfn1;
     assign op_resp.entrylo1.C = tlbrd.C1;
     assign op_resp.entrylo1.D = tlbrd.D1;
@@ -75,7 +77,7 @@ module TranslationUnit(
     tlb tlb(
         .clk, .resetn,
         .tlbw,
-        .tlbra(op_req),
+        .tlbra(op_req.index.index),
         .tlbrd,
         .asid(op_req.entryhi.asid),
         .inst_vaddr(i_req.vaddr),

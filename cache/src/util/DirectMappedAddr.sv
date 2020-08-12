@@ -8,7 +8,7 @@ module DirectMappedAddr(
 );
     // 0x8/0x9: 1000/1001, 0xa/0xb: 1010/1011
     // assign is_uncached = vaddr[BITS_PER_WORD - 3];
-    assign is_uncached = ~(vaddr[31:29] == 3'b101 || (vaddr[31:29] == 3'b100 && k0_uncached));
+    assign is_uncached = (vaddr[31:29] == 3'b101 || (vaddr[31:29] == 3'b100 && k0_uncached));
     // assign paddr = {3'b000, vaddr[BITS_PER_WORD - 4:0]};
     assign paddr[27:0] = vaddr[27:0];
     always_comb begin

@@ -29,6 +29,7 @@ module decode_to_issue_t(
     assign out.destreg = in.destreg;
     assign out.srcrega = in.srcrega;
     assign out.srcregb = in.srcregb;
+    assign out.cp0_sel = in.cp0_sel;
     assign out.in_delay_slot = BJp;
     //assign out.cp0_status = cp0_statusI;
     //assign out.cp0_cause = cp0_causeI;
