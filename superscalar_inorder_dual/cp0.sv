@@ -95,7 +95,7 @@ module cp0(
     always_ff @(posedge clk) begin
         if (~reset) begin
             timer_interrupt <= 1'b0;
-        end else if (cp0_new.count == cp0_new.compare - 1) begin
+        end else if (cp0.count == cp0.compare - 1) begin
             timer_interrupt <= 1'b1;
         end else if ((cwrite[1].wen & cwrite[1].addr == 5'd11) | (cwrite[0].wen & cwrite[0].addr == 5'd11)) begin
             timer_interrupt <= 1'b0;

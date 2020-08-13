@@ -22,9 +22,11 @@ typedef struct packed {
     logic d_tlb_modified; // && is store
     logic i_tlb_refill;
     logic d_tlb_refill;
+    logic i_mapped;
+    logic d_mapped;
 } tu_op_resp_t;
 
-parameter TLB_ENTRIES = 32;
+parameter TLB_ENTRIES = 2 ** TLB_INDEX;
 
 typedef logic[$clog2(TLB_ENTRIES)-1:0] tlb_addr_t;
 

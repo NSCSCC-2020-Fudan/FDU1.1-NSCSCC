@@ -25,8 +25,8 @@ module MULALU(
             else
                 begin
                     finish_out <= 1'b0;
-                    a <= '0;
-                    b <= '0;
+                    //a <= '0;
+                    //b <= '0;
                     multmask <= 1'b0;
                 end
         end

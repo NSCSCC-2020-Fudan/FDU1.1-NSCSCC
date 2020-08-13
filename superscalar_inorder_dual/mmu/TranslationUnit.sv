@@ -24,14 +24,27 @@ module TranslationUnit(
     assign i_mapped = ~i_req.vaddr[31] || (i_req.vaddr[31:30] == 2'b11);
     assign d_mapped = ~d_req.vaddr[31] || (d_req.vaddr[31:30] == 2'b11);
     word_t inst_paddr_tlb, data_paddr_tlb, inst_paddr_direct, data_paddr_direct;
-    assign i_resp.paddr = i_mapped ? inst_paddr_tlb : inst_paddr_direct;
-    assign d_resp.paddr = d_mapped ? data_paddr_tlb : data_paddr_direct;
+    word_t inst_paddr_tlb_delayed, data_paddr_tlb_delayed;
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
+            inst_paddr_tlb_delayed <= '0;
+            data_paddr_tlb_delayed <= '0;
+        end
+        else begin
+            inst_paddr_tlb_delayed <= inst_paddr_tlb;
+            data_paddr_tlb_delayed <= data_paddr_tlb;
+        end
+    end
+    assign i_resp.paddr = i_mapped ? inst_paddr_tlb_delayed : inst_paddr_direct;
+    assign d_resp.paddr = d_mapped ? data_paddr_tlb_delayed : data_paddr_direct;
     assign op_resp.i_tlb_invalid = i_mapped & i_invalid;
     assign op_resp.i_tlb_modified = i_mapped & ~i_invalid & ~i_dirty;
     assign op_resp.d_tlb_invalid = d_mapped & d_invalid;
     assign op_resp.d_tlb_modified = d_mapped & ~d_invalid & ~d_dirty;
     assign op_resp.i_tlb_refill = i_mapped & ~i_hit;
     assign op_resp.d_tlb_refill = d_mapped & ~d_hit;
+    assign op_resp.i_mapped = i_mapped;
+    assign op_resp.d_mapped = d_mapped;
     DirectMappedAddr i_map_inst(
         .vaddr(i_req.vaddr),
         .paddr(inst_paddr_direct),
@@ -148,14 +161,26 @@ module tlb (
                      .vaddr(entryhi),
                      .asid,
                      .tlblut_resp(tlbp_resp));
-    
-    assign i_invalid = ~i_resp.valid;
-    assign d_invalid = ~d_resp.valid;
-    assign i_dirty = i_resp.dirty;
-    assign d_dirty = d_resp.dirty;
-    assign i_hit = i_resp.hit;
-    assign d_hit = d_resp.hit;
-    assign d_cache_flag = d_resp.cache_flag;
+    logic i_invalid_new, d_invalid_new; 
+    logic i_dirty_new, d_dirty_new;
+    logic i_hit_new, d_hit_new;
+    logic [2:0] d_cache_flag_new;
+    assign i_invalid_new = ~i_resp.valid;
+    assign d_invalid_new = ~d_resp.valid;
+    assign i_dirty_new = i_resp.dirty;
+    assign d_dirty_new = d_resp.dirty;
+    assign i_hit_new = i_resp.hit;
+    assign d_hit_new = d_resp.hit;
+    assign d_cache_flag_new = d_resp.cache_flag;
+    always_ff @(posedge clk) begin
+        if (~resetn) begin
+            {i_invalid, d_invalid, i_dirty, d_dirty, i_hit, d_hit, d_cache_flag} <= '0;
+        end
+        else begin
+            {i_invalid, d_invalid, i_dirty, d_dirty, i_hit, d_hit, d_cache_flag} <= 
+            {i_invalid_new, d_invalid_new, i_dirty_new, d_dirty_new, i_hit_new, d_hit_new, d_cache_flag_new};
+        end
+    end
 endmodule
 
 module tlb_lut (
