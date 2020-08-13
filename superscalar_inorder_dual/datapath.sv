@@ -153,7 +153,7 @@ module datapath(
                .in(exec_data_out), .out(commit_data_in), .first_cycleC,
                .ext_int_in(ext_int), .ext_int_out(ext_intC),
                .timer_interrupt_in(timer_interrupt), .timer_interrupt_out(timer_interruptC));
-	quickcommit quickcommit (.clk, .reset, .flushC, 
+	quickcommit quickcommit (.clk, .reset, .flushC, .first_cycleC,
                    			 .in(commit_data_in),
                    			 .out(commit_data_out), 
                    			 .finishC, .pc_mC,

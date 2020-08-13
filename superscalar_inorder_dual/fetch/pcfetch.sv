@@ -14,45 +14,63 @@ module pcfetch(
         input tu_op_resp_t tu_op_resp,
         output tlb_invalid, tlb_refill
     );    
-                      
-    logic finish_his;    
-    logic inst_ibus_req_normal;            
-    always_ff @(posedge clk) 
+
+    word_t pc_;                      
+    logic finish_his_, finish_his;    
+    logic inst_ibus_req_normal_, first_cycle_, inst_ibus_req_normal, first_cycle, fc_mask;
+    assign fc_mask = first_cycle & tu_op_resp.i_mapped;
+
+    always_comb 
         begin
+            pc_ = pc;
+            finish_his_ = finish_his;
+            inst_ibus_req_normal_ = inst_ibus_req_normal;
+            first_cycle_ = first_cycle;
             if (~reset)
                 begin
-                    pc <= 32'Hbfc00000;
-                    finish_his <= 1'b0;
+                    pc_ = 32'Hbfc00000;
+                    finish_his_ = 1'b0;
                     //inst_ibus_req <= 1'b1;
-                    inst_ibus_req_normal <= 1'b1;
+                    inst_ibus_req_normal_ = 1'b1;
+                    first_cycle_ = 1'b1;
                 end
             else
                 begin
-                    if (inst_ibus_addr_ok)
-                        begin
-                            //inst_ibus_req = 1'b0;
-                            inst_ibus_req_normal <= 1'b0;
-                            finish_his = 1'b1; 
-                        end
+                    if (finish_pc) 
+                        inst_ibus_req_normal_ = 1'b0;
+                    if (inst_ibus_addr_ok & ~fc_mask)
+                        finish_his_ = 1'b1; 
                         
                     if (~stall || flush)
                         begin
-                            pc <= pc_new;
-                            finish_his = 1'b0;
+                            pc_ = pc_new;
+                            finish_his_ = 1'b0;
                             //inst_ibus_req = 1'b1;
-                            inst_ibus_req_normal <= 1'b1;
+                            inst_ibus_req_normal_ = 1'b1;
+                            first_cycle_ = 1'b1;
                         end
                      else
-                        if (~finish_pc)
-                            begin
-                                //inst_ibus_req = 1'b1;
-                                inst_ibus_req_normal <= 1'b1;
-                            end       
-                            
+                         begin
+                             if (~finish_pc)
+                                begin
+                                     //inst_ibus_req = 1'b1;
+                                     inst_ibus_req_normal_ = 1'b1;
+                                 end       
+                            first_cycle_ = 1'b0;
+                         end  
                 end
+        end
+
+    always_ff @(posedge clk) 
+        begin
+            pc <= pc_;
+            finish_his <= finish_his_;
+            inst_ibus_req_normal <= inst_ibus_req_normal_;
+            first_cycle <= first_cycle_;
         end                      
-    assign finish_pc = finish_his | inst_ibus_addr_ok | (tlb_invalid | tlb_refill);
-    assign inst_ibus_req = inst_ibus_req_normal & ~(tlb_invalid | tlb_refill);
+
+    assign finish_pc = (finish_his | inst_ibus_addr_ok | (tlb_invalid | tlb_refill)) & (~fc_mask);
+    assign inst_ibus_req = inst_ibus_req_normal & ~(tlb_invalid | tlb_refill) & ~fc_mask;
     
     assign addr = pc;
     assign pcplus4 = pc + 5'b00100;

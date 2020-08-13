@@ -194,7 +194,7 @@ typedef struct packed {
 
 typedef logic [4:0] cp0_addr_t;
 
-parameter TLB_INDEX = 4;
+parameter TLB_INDEX = 5;
 typedef struct packed {
     logic P;                    // 31, Probe Failure, R
     logic [30:TLB_INDEX] zero;  // [30:n], always 0
