@@ -5,7 +5,6 @@ module readdata_format (
         output word_t rd,
         input logic[1:0] addr,
         input decoded_op_t op,
-        output creg_addr_t reg_addrC,
         input word_t reg_dataC
     );
     always_comb begin

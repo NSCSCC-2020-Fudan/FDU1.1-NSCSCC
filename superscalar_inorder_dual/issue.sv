@@ -64,7 +64,10 @@ module issue(
     //an instr changes cause/status before exception 
     
     logic DMULT;
-	assign DMULT = aD.instr.ctl.mul_div_r & bD.instr.ctl.mul_div_r;    			   
+	assign DMULT = aD.instr.ctl.mul_div_r & bD.instr.ctl.mul_div_r;  
+	
+	logic LWLR;
+	assign LWLR = aD.instr.ctl.regwrite && aD.destreg == bD.destreg && (bD.instr.op == LWL || bD.instr.op == LWR);   			   
     
     assign enb = ~(BJ || RAW || MM || PRIV || DMULT);
     //assign enb = 1'b0;

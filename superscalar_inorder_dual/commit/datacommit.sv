@@ -79,10 +79,11 @@ module datacommit(
 	assign op = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (in[1].instr.op) : (in[0].instr.op);
 	assign mem.size = dmem_size;
 	assign mem.addr = dmem_addr;
+	assign reg_addrC[4] = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (in[1].destreg) : (in[0].destreg);
 	readdata_format readdata_format(._rd(rd), .rd(mem.rd), 
 	                                .addr(mem.addr[1: 0]), 
 	                                .op(op),
-	                                .reg_addrC(reg_addrC[4]), .reg_dataC(reg_dataC[4]));
+	                                .reg_dataC(reg_dataC[4]));
 	mem_to_reg mem_to_reg1(in[1], mem, mem_out[1]);
     mem_to_reg mem_to_reg0(in[0], mem, mem_out[0]);
     
