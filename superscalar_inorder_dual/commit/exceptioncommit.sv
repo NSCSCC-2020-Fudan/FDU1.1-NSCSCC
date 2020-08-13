@@ -3,7 +3,7 @@
 `include "data_bus.svh"
 
 module exceptioncommit(
-		input logic clk, reset, flush, stall,
+		input logic clk, reset, flush, stall, first_cycleC,
 		input logic mask,
 		input exec_data_t [1: 0] in,
 		output exec_data_t [1: 0] out,
@@ -59,6 +59,17 @@ module exceptioncommit(
     word_t [1: 0] _pcexception;
     exception_t [1: 0] _exception_data;
     word_t pcexception;
+
+    logic fc_mask;
+    tu_op_resp_t tu_op_resp_mask;
+    assign fc_mask = first_cycleC & tu_op_resp.d_mapped;
+    always_comb begin
+        tu_op_resp_mask = tu_op_resp;
+        tu_op_resp_mask.d_tlb_invalid = tu_op_resp.d_tlb_invalid & ~fc_mask;
+        tu_op_resp_mask.d_tlb_modified = tu_op_resp.d_tlb_modified & ~fc_mask;
+        tu_op_resp_mask.d_tlb_refill = tu_op_resp.d_tlb_refill & ~fc_mask;
+    end
+
     exception_checker exception_checker1 (.reset, .flush(mask),
                                           .in(in[1]),
                                           .ext_int, .timer_interrupt,
@@ -66,7 +77,7 @@ module exceptioncommit(
                                           .exception_data(_exception_data[1]),
                                           ._out(out[1]), //.llbit,
                                           .cp0_status, .cp0_cause,
-                                          .tu_op_resp);
+                                          .tu_op_resp(tu_op_resp_mask));
     exception_checker exception_checker0 (.reset, .flush((_exception_valid[1]) | (in[1].instr.op == ERET) | (mask)),
                                           .in(in[0]),
                                           .ext_int, .timer_interrupt,
@@ -74,7 +85,7 @@ module exceptioncommit(
                                           .exception_data(_exception_data[0]),
                                           ._out(out[0]), //.llbit,
                                           .cp0_status, .cp0_cause,
-                                          .tu_op_resp);
+                                          .tu_op_resp(tu_op_resp_mask));
                                           
     assign exception_valid = _exception_valid[1] | _exception_valid[0];
     assign exception_data = (_exception_valid[1]) ? (_exception_data[1]) : (_exception_data[0]);    
@@ -102,8 +113,10 @@ module exceptioncommit(
     				 (out[0].instr.ctl.memwrite | out[0].instr.ctl.memtoreg);
     assign dmem_write_en = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_write_en[1]) : (_write_en[0]);    				   				 
 	
-	logic dmem_addr_ok_h;    				 
-	assign dmem_req = dmem_en & ~dmem_addr_ok_h;
+	logic dmem_addr_ok_h, dmem_req_normal;
+	assign dmem_req_normal = dmem_en & ~dmem_addr_ok_h;
+    assign dmem_req = dmem_req_normal & ~fc_mask;
+
 	always_ff @(posedge clk)
 		begin
 			if (~reset | flush | ~stall)
@@ -113,11 +126,11 @@ module exceptioncommit(
 			else
 				if (stall)
 					begin
-						dmem_addr_ok_h = dmem_addr_ok_h | dmem_addr_ok; 
+						dmem_addr_ok_h <= dmem_addr_ok_h | (dmem_addr_ok & ~fc_mask); 
 					end				
 		end    				 
     
-    assign finish_exception = (~dmem_en | dmem_addr_ok | dmem_addr_ok_h) & (~tlb_hazard);
+    assign finish_exception = (~dmem_en | ((dmem_addr_ok | dmem_addr_ok_h) & ~fc_mask)) & (~tlb_hazard);
     assign llwrite = out[1].instr.ctl.llwrite | out[0].instr.ctl.llwrite; 
     assign wait_ex = (out[1].instr.op == WAIT_EX) & (~exception_valid);
     

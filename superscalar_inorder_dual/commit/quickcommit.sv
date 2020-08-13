@@ -63,7 +63,7 @@ module quickcommit(
     logic exception_valid_ex, exception_valid_dt, finish_exception;
     logic dmem_en;
     //logic [1: 0] dmem_size;
-    exceptioncommit exceptioncommit(.clk, .reset, .flush(flushC), .stall(~finishC),
+    exceptioncommit exceptioncommit(.clk, .reset, .flush(flushC), .stall(~finishC), .first_cycleC,
     								.mask(pc_mC),
 									.in, .out(exception_out),
 									.dmem_addr_ok(dmem_resp.addr_ok), 
