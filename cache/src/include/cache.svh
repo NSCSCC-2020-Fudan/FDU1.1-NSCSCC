@@ -1,8 +1,6 @@
 `ifndef __CACHE_CACHE_SVH__
 `define __CACHE_CACHE_SVH__
 
-`include "defs.svh"
-
 // 8-way 32KB 64bytes-line dual-fetch
 parameter int ICACHE_IDX_BITS    = 3;  // id bits
 parameter int ICACHE_INDEX_BITS  = 6;  // index bits (set)

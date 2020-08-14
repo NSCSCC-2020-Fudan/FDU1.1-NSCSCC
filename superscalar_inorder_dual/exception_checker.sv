@@ -12,8 +12,7 @@ module exception_checker(
         output exec_data_t _out,
         input cp0_status_t cp0_status,
         input cp0_cause_t cp0_cause,
-        input tu_op_resp_t tu_op_resp,
-        input logic dcache_en, icache_en
+        input tu_op_resp_t tu_op_resp
     );
     
     logic exception_valid_;
@@ -38,10 +37,13 @@ module exception_checker(
     assign exception_sys = (data.instr.op == SYSCALL);
     assign exception_bp = (data.instr.op == BREAK);
     
+    logic dcache_en, icache_en;
     logic data_is_read, data_is_write, data_bus_en;
     assign data_is_write = data.instr.ctl.memwrite;
     assign data_is_read = data.instr.ctl.memtoreg;
     assign data_bus_en = data.instr.ctl.memwrite | data.instr.ctl.memtoreg;
+    assign dcache_en = data.instr.ctl.cache_op.d_req;
+    assign icache_en = data.instr.ctl.cache_op.i_req;
               
     exception_pipeline_t pipe;             
     assign pipe.exc_info.tr = 1'b0;
