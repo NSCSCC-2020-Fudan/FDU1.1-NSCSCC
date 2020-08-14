@@ -113,10 +113,10 @@ module quickcommit(
 
     assign cp0w[1].addr = exception_out[1].cp0_addr;
     assign cp0w[1].wd = exception_out[1].result;
-    assign cp0w[1].wen = exception_out[1].instr.ctl.cp0write & finishC;
+    assign cp0w[1].wen = exception_out[1].instr.ctl.cp0write & finishC & ~pc_mC;
     assign cp0w[0].addr = exception_out[0].cp0_addr;
     assign cp0w[0].wd = exception_out[0].result;
-    assign cp0w[0].wen = exception_out[0].instr.ctl.cp0write & finishC;    
+    assign cp0w[0].wen = exception_out[0].instr.ctl.cp0write & finishC & ~pc_mC;    
 	assign cp0_addrC = {exception_out[1].cp0_addr, exception_out[0].cp0_addr};
 	assign cp0_selC = {exception_out[1].cp0_sel, exception_out[0].cp0_sel};
 	

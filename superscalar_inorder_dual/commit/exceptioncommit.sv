@@ -55,12 +55,13 @@ module exceptioncommit(
     assign tin = (mask) ? ('0) : (in);
     
     logic tlb_modify, tlb_hazard;
-    assign tlb_modify = (tin[1].instr.op == TLBWI) || (tin[1].instr.ctl.cp0write && tin[1].cp0_addr == 5'd16);
+    assign tlb_modify = (tin[1].instr.op == TLBWI) || (tin[1].instr.ctl.cp0write && tin[1].cp0_addr == 5'd16) ||
+                        (tin[0].instr.op == TLBWI) || (tin[0].instr.ctl.cp0write && tin[0].cp0_addr == 5'd16);
     assign tlb_hazard = tlb_modify & (~tlb_free);
     
     assign is_tlbr = ((tin[1].instr.op == TLBR) || (tin[0].instr.op == TLBR)) & ~stall;
     assign is_tlbp = ((tin[1].instr.op == TLBP) || (tin[0].instr.op == TLBR)) & ~stall;
-    assign tu_op_req.is_tlbwi = (tin[1].instr.op == TLBWI || tin[0].instr.op == TLBWI) & (~tlb_hazard);
+    assign tu_op_req.is_tlbwi = (tin[1].instr.op == TLBWI || tin[0].instr.op == TLBWI) & (~tlb_hazard) & (~stall);
     assign tu_op_req.entryhi = cp0_entryhi;
     assign tu_op_req.entrylo0 = cp0_entrylo0;
     assign tu_op_req.entrylo1 = cp0_entrylo1;
