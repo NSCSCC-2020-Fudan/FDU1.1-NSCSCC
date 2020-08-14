@@ -12,7 +12,8 @@ module exception_checker(
         output exec_data_t _out,
         input cp0_status_t cp0_status,
         input cp0_cause_t cp0_cause,
-        input tu_op_resp_t tu_op_resp
+        input tu_op_resp_t tu_op_resp,
+        input logic dcache_en, icache_en
     );
     
     logic exception_valid_;
@@ -46,10 +47,13 @@ module exception_checker(
     assign pipe.exc_info.tr = 1'b0;
     assign pipe.exc_info.cpu = 1'b0;
     assign pipe.exc_info.mod = tu_op_resp.d_tlb_modified & data_is_write;
-    assign pipe.exc_info.load_tlb = tu_op_resp.d_tlb_invalid & data_is_read;//to be continue
+    assign pipe.exc_info.load_tlb = tu_op_resp.d_tlb_invalid & (data_is_read | dcache_en | icache_en);//to be continue
     assign pipe.exc_info.save_tlb = tu_op_resp.d_tlb_invalid & data_is_write;//to be continue
     assign pipe.exc_info.instr_tlb = data.instr_tlb_invalid;//to be continue   
-    assign pipe.tlb_refill = data.instr_tlb_refill | (tu_op_resp.d_tlb_refill & data_bus_en);//to be continue
+    assign pipe.tlb_refill = data.instr_tlb_refill                   | 
+                             (tu_op_resp.d_tlb_refill & data_bus_en) | 
+                             (tu_op_resp.d_tlb_refill & dcache_en)   | 
+                             (tu_op_resp.i_tlb_refill & icache_en);//to be continue
                  
     assign pipe.exc_info.instr = data.exception_instr;
     assign pipe.exc_info.ri =  data.exception_ri;

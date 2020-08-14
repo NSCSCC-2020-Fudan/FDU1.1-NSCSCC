@@ -88,7 +88,8 @@ module exceptioncommit(
                                           .exception_data(_exception_data[1]),
                                           ._out(out[1]), //.llbit,
                                           .cp0_status, .cp0_cause,
-                                          .tu_op_resp(tu_op_resp_mask));
+                                          .tu_op_resp(tu_op_resp_mask),
+                                          .dcache_en, .icache_en);
     exception_checker exception_checker0 (.reset, .flush((_exception_valid[1]) | (in[1].instr.op == ERET) | (mask)),
                                           .in(in[0]),
                                           .ext_int, .timer_interrupt,
@@ -96,7 +97,8 @@ module exceptioncommit(
                                           .exception_data(_exception_data[0]),
                                           ._out(out[0]), //.llbit,
                                           .cp0_status, .cp0_cause,
-                                          .tu_op_resp(tu_op_resp_mask));
+                                          .tu_op_resp(tu_op_resp_mask),
+                                          .dcache_en(1'b0), .icache_en(1'b0));
                                           
     assign exception_valid = _exception_valid[1] | _exception_valid[0];
     assign exception_data = (_exception_valid[1]) ? (_exception_data[1]) : (_exception_data[0]);    
