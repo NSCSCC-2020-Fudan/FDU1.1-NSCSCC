@@ -58,9 +58,9 @@ module exceptioncommit(
     assign tlb_modify = (tin[1].instr.op == TLBWI) || (tin[1].instr.ctl.cp0write && tin[1].cp0_addr == 5'd16);
     assign tlb_hazard = tlb_modify & (~tlb_free);
     
-    assign is_tlbr = (tin[1].instr.op == TLBR);
-    assign is_tlbp = (tin[1].instr.op == TLBP);
-    assign tu_op_req.is_tlbwi = (tin[1].instr.op == TLBWI) & (~tlb_hazard);
+    assign is_tlbr = ((tin[1].instr.op == TLBR) || (tin[0].instr.op == TLBR)) & ~stall;
+    assign is_tlbp = ((tin[1].instr.op == TLBP) || (tin[0].instr.op == TLBR)) & ~stall;
+    assign tu_op_req.is_tlbwi = (tin[1].instr.op == TLBWI || tin[0].instr.op == TLBWI) & (~tlb_hazard);
     assign tu_op_req.entryhi = cp0_entryhi;
     assign tu_op_req.entrylo0 = cp0_entrylo0;
     assign tu_op_req.entrylo1 = cp0_entrylo1;
@@ -124,15 +124,15 @@ module exceptioncommit(
     				 (out[0].instr.ctl.memwrite | out[0].instr.ctl.memtoreg);
     assign dmem_write_en = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_write_en[1]) : (_write_en[0]);    	
     
-    assign dcache_addr = in[1].result;
-    assign dcache_en = out[1].instr.ctl.cache_op.d_req;
-    assign icache_addr = in[1].result;
-    assign icache_en = out[1].instr.ctl.cache_op.i_req;
+    assign dcache_addr = (in[1].instr.ctl.cache_op.d_req) ? (in[1].result) : (in[0].result);
+    assign dcache_en = out[1].instr.ctl.cache_op.d_req | out[0].instr.ctl.cache_op.d_req;
+    assign icache_addr = (in[1].instr.ctl.cache_op.d_req) ? (in[1].result) : (in[0].result);
+    assign icache_en = out[1].instr.ctl.cache_op.i_req | out[0].instr.ctl.cache_op.i_req;
 
     cache_funct_t cache_func;
-    assign cache_func.as_index = in[1].instr.ctl.cache_op.as_index;
-    assign cache_func.invalidate = in[1].instr.ctl.cache_op.invalidate;
-    assign cache_func.writeback = in[1].instr.ctl.cache_op.writeback;
+    assign cache_func.as_index =   in[1].instr.ctl.cache_op.as_index   | in[0].instr.ctl.cache_op.as_index;
+    assign cache_func.invalidate = in[1].instr.ctl.cache_op.invalidate | in[0].instr.ctl.cache_op.invalidate;
+    assign cache_func.writeback =  in[1].instr.ctl.cache_op.writeback  | in[0].instr.ctl.cache_op.writeback;
 
     assign dcache_func = cache_func;
     assign icache_func = cache_func;

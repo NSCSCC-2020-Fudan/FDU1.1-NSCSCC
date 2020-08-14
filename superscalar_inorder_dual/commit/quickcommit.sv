@@ -103,7 +103,7 @@ module quickcommit(
 									.icache_addr,
 									.icache_req(icache_req_s), .icache_en);
 
-	assign dmem_req.addr = (dcache_en) ? (dcache_addr) : (dmem_addr);
+	assign dmem_req.addr = (in[1].instr.ctl.cache_op.d_req | in[0].instr.ctl.cache_op.d_req) ? (dcache_addr) : (dmem_addr);
 	assign imem_req.addr = icache_addr;
 	
 	assign imem_req.req = icache_req_s;

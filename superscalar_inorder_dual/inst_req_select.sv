@@ -21,6 +21,8 @@ module inst_req_select(
     logic finishF_his_, first_cycle_;
     always_comb 
         begin
+            finishF_his_ = finishF_his;
+            first_cycle_ = first_cycle;
             if (~reset || flush || ~stall)
                 begin
                     finishF_his_ = 1'b0;

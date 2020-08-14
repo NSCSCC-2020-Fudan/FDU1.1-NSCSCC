@@ -59,7 +59,8 @@ module issue(
     //issue together
     
     logic PRIV;
-    assign PRIV = aD.instr.ctl.is_priv || bD.instr.ctl.is_priv;
+    assign PRIV =   aD.instr.ctl.is_priv || aD.instr.ctl.cache_op.req       || 
+                  ((bD.instr.ctl.is_priv || bD.instr.ctl.cache_op.req) & ~BJa);
     //an instr changes epc before ERET
     //an instr changes cause/status before exception 
     
@@ -77,6 +78,9 @@ module issue(
     assign issue_en[0] = enb && (valid[headplus1]);
     //assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
     //assign issue_en[0] = (BJa) && (valid[headplus1]);
+
+    (*mark_debug = "true"*) logic debug_issue;
+    assign debug_issue = BJa && issue_en[1] && ~issue_en[0];
     
     
     issue_data_t [1: 0] out_;

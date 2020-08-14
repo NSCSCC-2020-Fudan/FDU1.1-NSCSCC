@@ -786,12 +786,13 @@ module maindecode (
                 ctl.cache_op.req = 1'b1;
                 srcrega = rs;
                 case (instr[20: 16])
-                    5'b0000: begin
+                    5'b00000: begin
                         ctl.cache_op.i_req = 1'b1;
                         ctl.cache_op.as_index = 1'b1;
                         ctl.cache_op.invalidate = 1'b1;
                     end
                     5'b01000: begin
+                        ctl.cache_op.req = 1'b0;
                         /*
                         inst_store_tag
                         */
@@ -806,6 +807,7 @@ module maindecode (
                         ctl.cache_op.as_index = 1'b1;
                     end
                     5'b01001: begin
+                        ctl.cache_op.req = 1'b0;
                         /*
                         data_store_tag
                         */
@@ -817,6 +819,10 @@ module maindecode (
                     5'b10101: begin
                         ctl.cache_op.d_req = 1'b1;
                         ctl.cache_op.writeback = 1'b1;
+                    end
+                    default: begin
+                        exception_ri = 1'b1;
+                        op = RESERVED;
                     end
                 endcase
             end 

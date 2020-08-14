@@ -10,10 +10,10 @@ module pc_cmtselect(
     assign pc_upd = exception_valid | is_eret | branch | jr | jump | tlb_ex;
     assign pc_new = exception_valid      ? pcexception : (
                     is_eret              ? epc         : (
-                    tlb_ex               ? pctlb       : (
                     branch               ? pcbranch    : (
                     jr                   ? pcjr        : (
-                    jump                 ? pcjump      : 
-                                           32'hbfc00000)))));
+                    jump                 ? pcjump      : (
+                    tlb_ex               ? pctlb       : (
+                                                         32'hbfc00000))))));
                                                
 endmodule
