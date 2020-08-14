@@ -244,13 +244,17 @@ module DCache #(
      * cache operations
      */
     logic  cop_busy;
+    logic  cop_flush;
+    logic  cop_update;
     logic  cop_ready;
     idx_t  cop_raw_idx;
     idx_t  cop_idx;
     addr_t cop_flush_addr;
 
     assign cop_busy    = miss_busy;
-    assign cop_ready   = cop.req && !cop_busy;
+    assign cop_flush   = cop.funct.writeback && ram_meta[cop_idx].dirty;
+    assign cop_update  = cop.req && !cop_busy;
+    assign cop_ready   = cop_update && !cop_flush;
     assign cop_raw_idx = idx_t'(req_vaddr.tag);
     assign cop_idx     = cop.funct.as_index ? cop_raw_idx : req_idx;
 
@@ -259,9 +263,7 @@ module DCache #(
     assign cop_flush_addr.offset = 0;
     assign cop_flush_addr.zeros  = 0;
 
-    assign req_to_flush =
-        cop.req && cop.funct.writeback &&
-        ram_meta[cop_idx].dirty && !cop_busy;
+    assign req_to_flush = cop.req && cop_flush && !cop_busy;
 
     /**
      * pipelining & state transitions
@@ -270,7 +272,7 @@ module DCache #(
     assign ram_new_select = req_to_hit ? req_new_select : ram_select;
 
     always_comb
-    unique if (cop_ready) begin
+    unique if (cop_update) begin
         for (int i = 0; i < NUM_WAYS; i++) begin
             if (cop_idx == idx_t'(i)) begin
                 ram_new_meta[i].valid = cop.funct.invalidate ? 0 : ram_meta[i].valid;
@@ -409,7 +411,7 @@ module DCache #(
     /**
      * DBus driver
      */
-    assign dbus_resp.addr_ok = cop.req ? !cop_busy : (req_hit && req_miss_ready);
+    assign dbus_resp.addr_ok = cop.req ? cop_ready : (req_hit && req_miss_ready);
     assign dbus_resp.data_ok = hit_data_ok;
     assign dbus_resp.data    = hit_rdata;
 

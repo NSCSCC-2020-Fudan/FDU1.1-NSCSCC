@@ -68,7 +68,8 @@ WITH {
     p.write(0x110, 0x87654321, 0b1111, 0x10);
     p.cop(0, 0b001, 0);
     p.cop(0x110, 0b001, 0x10);
-    p.tick(512);
+    // p.tick(512);
+    p.wait(512);
     assert(top->cmem->mem[0] == 0x12345678);
     assert(top->cmem->mem[0x110 >> 2] == 0x87654321);
 } AS("physical addr");
@@ -159,7 +160,8 @@ WITH LOG {
 
     p.write(0, 0x19260817, 0b1111);
     p.cop(0, 0b001);
-    p.tick(256);
+    // p.tick(256);
+    p.wait(256);
     assert(top->cmem->mem[0] == 0x19260817);
 
     p.write(48, 0xabcd4321, 0b1111);
@@ -168,13 +170,15 @@ WITH LOG {
     assert(top->inst->dbus_resp_x_addr_ok == 0);
     top->reset_req();
     p.cop(48, 0b001);
-    p.tick(256);
+    // p.tick(256);
+    p.wait(256);
     assert(top->cmem->mem[12] == 0xabcd4321);
 
     // test dirty flag
     top->cmem->mem[12] = 0;
     p.cop(48, 0b001);
-    p.tick(256);
+    // p.tick(256);
+    p.wait(256);
     assert(top->cmem->mem[12] == 0);
 } AS("simple writeback");
 
@@ -187,7 +191,8 @@ WITH SKIP {
         u32 data = randu();
         p.write(_i(i), data, 0b1111);
         p.cop(_i(i), 0b001);
-        p.tick(64);
+        // p.tick(64);
+        p.wait(64);
         assert(top->cmem->mem[i] == data);
     }
 } AS("random writeback");
@@ -196,7 +201,8 @@ WITH LOG {
     Pipeline p(top);
     p.write(4, 0xabcdef12, 0b1111);
     p.cop(4, 0b011);
-    p.tick(256);
+    // p.tick(256);
+    p.wait(256);
     assert(top->cmem->mem[1] == 0xabcdef12);
     top->issue_read(0);
     assert(top->inst->dbus_resp_x_addr_ok == 0);
