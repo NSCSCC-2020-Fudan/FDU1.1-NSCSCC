@@ -35,12 +35,12 @@ module datapath(
         output word_t imem_req_vaddr, dmem_req_vaddr
         
     );
-    ibus_req_t  imem_req;
-    ibus_resp_t imem_resp;
+    ibus_req_t  imem_req, imem_reqF, imem_reqC;
+    ibus_resp_t imem_resp, imem_respF, imem_respC;
     dbus_req_t  dmem_req;
     dbus_resp_t dmem_resp;
     tu_op_req_t  tu_op_req;
-    tu_op_resp_t tu_op_resp;
+    tu_op_resp_t tu_op_resp, tu_op_respF, tu_op_respC;
     logic k0_uncached;
     assign imem_req_vaddr = imem_req.addr;
     assign dmem_req_vaddr = dmem_req.addr;
@@ -112,10 +112,10 @@ module datapath(
                           .fetch_data, .hitF(hitF_out), 
                           .finishF,
                           .pc_predictF, .destpc_predictF,
-                          .imem_req, .imem_resp,
+                          .imem_req(imem_reqF), .imem_resp(imem_respF),
                           .jrp_pushF, .jrp_popF, .pc_jrpredictF,
                           .jrp_topF, .jrp_destpcF, 
-                          .tu_op_resp,
+                          .tu_op_resp(tu_op_respF),
                           .tlb_free);                     
     
     dreg dreg (clk, reset, stallD, flushD,
@@ -148,6 +148,7 @@ module datapath(
     logic [5: 0] ext_intC;
     logic timer_interruptC;
     logic first_cycleC;
+    logic [1: 0] icache_opC;
     bypass_upd_t commitex_bypass, commitdt_bypass;
     creg creg (.clk, .reset, .stallC, .flushC,
                .in(exec_data_out), .out(commit_data_in), .first_cycleC,
@@ -157,8 +158,10 @@ module datapath(
                    			 .in(commit_data_in),
                    			 .out(commit_data_out), 
                    			 .finishC, .pc_mC,
-        					 .dmem_req,
-        					 .dmem_resp,
+        					 .dmem_req(dmem_req),
+        					 .dmem_resp(dmem_resp),
+        					 .imem_req(imem_reqC),
+        					 .imem_resp(imem_respC),
                    			 .fetch(pc_new),
                    			 .bypass0(commitex_bypass), .bypass1(commitdt_bypass),
                    			 .ext_int(ext_intC), 
@@ -175,9 +178,10 @@ module datapath(
                              .cp0w,    
                              .cp0_selC,
                              .cp0_addrC, .cp0_dataC,
-                   			 .tu_op_req, .tu_op_resp,
+                   			 .tu_op_req, .tu_op_resp(tu_op_respC),
                    			 .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC),
-                   			 .tlb_free);                               
+                   			 .tlb_free,
+                             .icache_op(icache_opC));                               
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,
@@ -257,5 +261,10 @@ module datapath(
     assign rt_pc_out = rt_pc;                                                                                                                                    
 
     MMU mmu_inst(.*, .resetn(reset));
+    inst_req_select inst_req_select(.clk, .reset, .stall(~finishC), .flush(flushC),
+                                    .icache_op(icache_opC), .finishF,
+                                    .imem_reqF, .imem_reqC, .imem_req,
+                                    .imem_respF, .imem_respC, .imem_resp,
+                                    .tu_op_respF, .tu_op_respC, .tu_op_resp);
 
 endmodule

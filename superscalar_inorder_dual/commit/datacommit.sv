@@ -32,7 +32,9 @@ module datacommit(
         //output creg_addr_t [1: 0] cp0_addrC,
         input word_t [1: 0] cp0_dataC,
         //cp0
-        output logic tlb_ex
+        output logic tlb_ex,
+        input logic dcache_en, icache_en,
+        input logic dcache_data_ok, icache_data_ok
     );
 
     
@@ -87,22 +89,29 @@ module datacommit(
 	mem_to_reg mem_to_reg1(in[1], mem, mem_out[1]);
     mem_to_reg mem_to_reg0(in[0], mem, mem_out[0]);
     
-    logic data_ok_h;
+    logic dmem_ok_h, dcache_ok_h, icache_ok_h;
     always_ff @(posedge clk)
     	begin
     		if (~reset | ~stall)
     			begin
-    				data_ok_h <= 1'b0;
+    				dmem_ok_h <= 1'b0;
+                    dcache_ok_h <= 1'b0;
+                    icache_ok_h <= 1'b0;
     				dmem_rd_h <= '0;
 				end    				
     		else
     			if (stall)
     				begin
-    					data_ok_h <= data_ok_h | dmem_data_ok;
+    					dmem_ok_h <= dmem_ok_h | dmem_data_ok;
+                        dcache_ok_h <= dcache_ok_h | dcache_data_ok;
+                        icache_ok_h <= icache_ok_h | icache_data_ok;
     					dmem_rd_h <= (dmem_data_ok) ? dmem_rd : (dmem_rd_h);	
     				end 
     	end
-    assign finish_cdata = ~dmem_en | (dmem_data_ok | data_ok_h);
+
+    assign finish_cdata = (~dmem_en   | dmem_data_ok   | dmem_ok_h)   &
+                          (~dcache_en | dcache_data_ok | dcache_ok_h) &
+                          (~icache_en | icache_data_ok | icache_ok_h);
     
     exec_data_t [1: 0] alu_out;
     delayexecute delayexecute(.in, .out(alu_out), 

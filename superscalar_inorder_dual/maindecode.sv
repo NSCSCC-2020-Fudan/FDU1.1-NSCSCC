@@ -780,6 +780,46 @@ module maindecode (
                 srcregb = rt;
                 destreg = '0;
             end
+            `OP_CACHE: begin
+                op = CACHE;
+                ctl.alusrc = IMM;
+                ctl.cache_op.req = 1'b1;
+                srcrega = rs;
+                case (instr[20: 16])
+                    5'b0000: begin
+                        ctl.cache_op.i_req = 1'b1;
+                        ctl.cache_op.as_index = 1'b1;
+                        ctl.cache_op.invalidate = 1'b1;
+                    end
+                    5'b01000: begin
+                        /*
+                        inst_store_tag
+                        */
+                    end
+                    5'b10000: begin
+                        ctl.cache_op.i_req = 1'b1;
+                        ctl.cache_op.invalidate = 1'b1;
+                    end
+                    5'b00001: begin
+                        ctl.cache_op.d_req = 1'b1;
+                        ctl.cache_op.writeback = 1'b1;
+                        ctl.cache_op.as_index = 1'b1;
+                    end
+                    5'b01001: begin
+                        /*
+                        data_store_tag
+                        */
+                    end 
+                    5'b10001: begin
+                        ctl.cache_op.d_req = 1'b1;
+                        ctl.cache_op.invalidate = 1'b1;
+                    end
+                    5'b10101: begin
+                        ctl.cache_op.d_req = 1'b1;
+                        ctl.cache_op.writeback = 1'b1;
+                    end
+                endcase
+            end 
             default: begin
                 exception_ri = 1'b1;
                 op = RESERVED;

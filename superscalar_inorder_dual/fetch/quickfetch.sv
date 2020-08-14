@@ -25,8 +25,6 @@ module quickfetch (
     */
     output ibus_req_t  imem_req,
     input ibus_resp_t imem_resp,
-    output dbus_req_t  dmem_req,
-    input dbus_resp_t dmem_resp,
     //to ibus
     output logic [1: 0] jrp_pushF, jrp_popF,
     output word_t [1: 0] pc_jrpredictF,
@@ -80,7 +78,8 @@ module quickfetch (
                     .destpc_predictF_out(destpc_predict_pcf),
                     .tu_op_resp, 
                     .tlb_invalid(tlb_invalid_pcf), .tlb_refill(tlb_refill_pcf));
-    assign pc = pc_pcf;                    
+    assign pc = pc_pcf;    
+    assign imem_req.cache_op = '0;                
     
     logic finish_instr;
     logic inst_tlb_ex_isf;

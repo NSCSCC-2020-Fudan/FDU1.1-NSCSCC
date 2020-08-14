@@ -1,6 +1,8 @@
 `ifndef __MIPS_SVH
 `define __MIPS_SVH
 
+`include "cache.svh"
+
 `define BPB_ENTRIES         'd64
 `define BPB_ENTRY_WIDTH     'd6
 `define BPB_ENTRY_WIDTH0    'd6
@@ -44,6 +46,11 @@ typedef enum logic [3: 0] {
     MUL_ADD, MUL_SUB, MUL_CLO, MUL_CLZ, MUL_PASS 
 } mulfunc_t;
 
+typedef struct packed{
+    logic as_index, invalidate, writeback;
+    logic i_req, d_req, req;
+} cachefunc_t;
+
 // op
 `define OP_RT           6'b000000
 `define OP_ADDI         6'b001000
@@ -83,6 +90,7 @@ typedef enum logic [3: 0] {
 `define OP_LWR          6'b100110
 `define OP_SWL          6'b101010
 `define OP_SWR          6'b101110
+`define OP_CACHE        6'b101111
 
 
 // funct
@@ -151,7 +159,7 @@ typedef enum logic [6: 0] {
     JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI, ERET,
     CLO, CLZ, MOVN, MOVZ, MADD, MADDU, MSUB, MSUBU, MUL,
     LL, SC, LWL, LWR, SWL, SWR, WAIT_EX, 
-    TLBR, TLBP, TLBWI
+    TLBR, TLBP, TLBWI, CACHE
 } decoded_op_t;//64 left
 
 
@@ -169,6 +177,7 @@ typedef enum logic[2:0] { NOFORWARD, RESULTW, ALUOUTM, HIM, LOM, HIW, LOW, ALUSR
 typedef struct packed {
     alufunc_t alufunc;
     mulfunc_t mulfunc;
+    cachefunc_t cache_op;
     logic memtoreg, memwrite;
     logic regwrite;
     alusrcb_t alusrc;
@@ -232,7 +241,7 @@ typedef struct packed {
     logic[2:0]zero_0;
     logic[15:0]mask;
     /*
-    The Mask field is a bit mask in which a ï¿½?1ï¿½? bit
+    The Mask field is a bit mask in which a ï¿??1ï¿?? bit
     indicates that the corresponding bit of the vir-
     tual address should not participate in the TLB
     match.
@@ -441,6 +450,7 @@ typedef struct packed {
     word_t pcjump, pcbranch;
     control_t ctl;
     shamt_t shamt;
+    logic [4: 0] cache_op;
 } decoded_instr_t;
 
 typedef struct packed {

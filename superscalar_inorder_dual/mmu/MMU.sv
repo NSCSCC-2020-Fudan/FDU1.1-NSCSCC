@@ -32,13 +32,9 @@ module MMU(
     tu_addr_req_t  i_req,  d_req;
     tu_addr_resp_t i_resp, d_resp;
 
-<<<<<<< HEAD
-    assign i_req.req   = imem_req.req && !imem_req.cache_op.req;
-=======
-    assign i_req.req = imem_req.req;
->>>>>>> b141fa7... pass normal-func
+    assign i_req.req   = imem_req.req && !(imem_req.cache_op.req && !imem_req.cache_op.funct.as_index);
     assign i_req.vaddr = imem_req.addr;
-    assign d_req.req   = dmem_req.req && !dmem_req.cache_op.req;
+    assign d_req.req   = dmem_req.req && !(dmem_req.cache_op.req && !dmem_req.cache_op.funct.as_index);
     assign d_req.vaddr = dmem_req.addr;
 
     TranslationUnit tu_inst(

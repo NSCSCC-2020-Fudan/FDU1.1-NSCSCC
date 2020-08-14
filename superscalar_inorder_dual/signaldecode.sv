@@ -48,6 +48,7 @@ module signaldecode (
 	assign dataD.instr_tlb_invalid = dataF.instr_tlb_invalid;
 	assign dataD.instr_tlb_refill = dataF.instr_tlb_refill;
 	assign dataD.cp0_sel = dataF.instr_[2: 0];
+	assign dataD.instr.cache_op = dataF.instr_[20: 16];
 /*
 	srcadmux srcadmux(.regfile(regfile.src1),.m(hazard.aluoutM),.w(hazard.resultW),.alusrcaE(hazard.alusrcaE),
 					  .forward(hazard.forwardAD), .ctl(dataD.instr.ctl), 

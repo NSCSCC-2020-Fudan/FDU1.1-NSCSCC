@@ -1,6 +1,7 @@
 `include "mips.svh"
 `include "tu.svh"
 `include "data_bus.svh"
+`include "instr_bus.svh"
 
 module exceptioncommit(
 		input logic clk, reset, flush, stall, first_cycleC,
@@ -37,7 +38,17 @@ module exceptioncommit(
         output logic is_tlbr, 
         output logic is_tlbp,
         //tlb
-        input logic tlb_free
+        input logic tlb_free,
+        //tlb fetch
+        input logic dcache_addr_ok,
+        output cache_funct_t dcache_func,
+        output word_t dcache_addr,
+        output logic dcache_req, dcache_en,
+        //dcache instr
+        input logic icache_addr_ok,
+        output cache_funct_t icache_func,
+        output word_t icache_addr,
+        output logic icache_req, icache_en
     );
     
     exec_data_t [1: 0] tin;
@@ -60,14 +71,14 @@ module exceptioncommit(
     exception_t [1: 0] _exception_data;
     word_t pcexception;
 
-    logic fc_mask;
+    logic d_fc_mask;
     tu_op_resp_t tu_op_resp_mask;
-    assign fc_mask = first_cycleC & tu_op_resp.d_mapped;
+    assign d_fc_mask = first_cycleC & tu_op_resp.d_mapped;
     always_comb begin
         tu_op_resp_mask = tu_op_resp;
-        tu_op_resp_mask.d_tlb_invalid = tu_op_resp.d_tlb_invalid & ~fc_mask;
-        tu_op_resp_mask.d_tlb_modified = tu_op_resp.d_tlb_modified & ~fc_mask;
-        tu_op_resp_mask.d_tlb_refill = tu_op_resp.d_tlb_refill & ~fc_mask;
+        tu_op_resp_mask.d_tlb_invalid = tu_op_resp.d_tlb_invalid & ~d_fc_mask;
+        tu_op_resp_mask.d_tlb_modified = tu_op_resp.d_tlb_modified & ~d_fc_mask;
+        tu_op_resp_mask.d_tlb_refill = tu_op_resp.d_tlb_refill & ~d_fc_mask;
     end
 
     exception_checker exception_checker1 (.reset, .flush(mask),
@@ -111,27 +122,55 @@ module exceptioncommit(
     assign dmem_wd = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_mem[1].wd) : (_mem[0].wd);
     assign dmem_en = (out[1].instr.ctl.memwrite | out[1].instr.ctl.memtoreg) | 
     				 (out[0].instr.ctl.memwrite | out[0].instr.ctl.memtoreg);
-    assign dmem_write_en = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_write_en[1]) : (_write_en[0]);    				   				 
+    assign dmem_write_en = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (_write_en[1]) : (_write_en[0]);    	
+    
+    assign dcache_addr = in[1].result;
+    assign dcache_en = out[1].instr.ctl.cache_op.d_req;
+    assign icache_addr = in[1].result;
+    assign icache_en = out[1].instr.ctl.cache_op.i_req;
+
+    cache_funct_t cache_func;
+    assign cache_func.as_index = in[1].instr.ctl.cache_op.as_index;
+    assign cache_func.invalidate = in[1].instr.ctl.cache_op.invalidate;
+    assign cache_func.writeback = in[1].instr.ctl.cache_op.writeback;
+
+    assign dcache_func = cache_func;
+    assign icache_func = cache_func;
+
 	
-	logic dmem_addr_ok_h, dmem_req_normal;
+    logic icache_addr_ok_h, dmem_addr_ok_h, dcache_addr_ok_h;
+    logic dmem_req_normal, dcache_req_normal, icache_req_normal;
 	assign dmem_req_normal = dmem_en & ~dmem_addr_ok_h;
-    assign dmem_req = dmem_req_normal & ~fc_mask;
+    assign dcache_req_normal = dcache_en & ~dcache_addr_ok_h;
+    assign icache_req_normal = icache_en & ~icache_addr_ok_h;
+
+    assign dmem_req = dmem_req_normal & ~d_fc_mask;
+    assign dcache_req = dcache_req_normal & ~d_fc_mask;
+    assign icache_req = icache_req_normal;
 
 	always_ff @(posedge clk)
 		begin
 			if (~reset | flush | ~stall)
 				begin
-					dmem_addr_ok_h <= 1'b0;
+					icache_addr_ok_h <= 1'b0;
+                    dmem_addr_ok_h   <= 1'b0;
+                    dcache_addr_ok_h <= 1'b0;
 				end
 			else
 				if (stall)
-					begin
-						dmem_addr_ok_h <= dmem_addr_ok_h | (dmem_addr_ok & ~fc_mask); 
+				    begin
+                        dmem_addr_ok_h   <= dmem_addr_ok_h   | (dmem_addr_ok & ~d_fc_mask);
+                        dcache_addr_ok_h <= dcache_addr_ok_h | (dcache_addr_ok & ~d_fc_mask);
+                        icache_addr_ok_h <= icache_addr_ok_h | icache_addr_ok;
 					end				
 		end    				 
     
-    assign finish_exception = (~dmem_en | ((dmem_addr_ok | dmem_addr_ok_h) & ~fc_mask)) & (~tlb_hazard);
-    assign llwrite = out[1].instr.ctl.llwrite | out[0].instr.ctl.llwrite; 
+    assign finish_exception = (~dmem_en | ((dmem_addr_ok | dmem_addr_ok_h) & ~d_fc_mask))       & 
+                              (~dcache_en | ((dcache_addr_ok | dcache_addr_ok_h) & ~d_fc_mask)) &
+                              (~icache_en | ((icache_addr_ok | icache_addr_ok_h)))              &
+                              (~tlb_hazard);
+
+    assign llwrite = (out[1].instr.ctl.llwrite) | (out[0].instr.ctl.llwrite); 
     assign wait_ex = (out[1].instr.op == WAIT_EX) & (~exception_valid);
     
 endmodule

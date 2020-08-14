@@ -19,6 +19,8 @@ module quickcommit(
         */
         output dbus_req_t  dmem_req,
         input dbus_resp_t dmem_resp,
+        output dbus_req_t  imem_req,
+        input dbus_resp_t imem_resp,
         //dmem
         output pc_data_t fetch,
         //fetch new pc
@@ -51,25 +53,28 @@ module quickcommit(
         input tu_op_resp_t tu_op_resp,
         output logic is_tlbr, 
         output logic is_tlbp,
+		input logic tlb_free,
         //tlb
         input cp0_regs_t cp0_data,
         //cp0
-        input logic tlb_free
+		output logic [1: 0] icache_op
     );
     
     logic llwrite_ex;
     exec_data_t [1: 0] exception_out;
     exception_t exception_data_ex;
     logic exception_valid_ex, exception_valid_dt, finish_exception;
-    logic dmem_en;
+    logic dmem_en, dcache_en, icache_en;
+	logic dmem_req_s, dcache_req_s, icache_req_s;
+	word_t dmem_addr, dcache_addr, icache_addr;
     //logic [1: 0] dmem_size;
     exceptioncommit exceptioncommit(.clk, .reset, .flush(flushC), .stall(~finishC), .first_cycleC,
     								.mask(pc_mC),
 									.in, .out(exception_out),
 									.dmem_addr_ok(dmem_resp.addr_ok), 
-									.dmem_req(dmem_req.req), 
+									.dmem_req(dmem_req_s), 
 									.dmem_wt(dmem_req.is_write), 
-									.dmem_addr(dmem_req.addr), 
+									.dmem_addr, 
 									.dmem_wd(dmem_req.data),
 									.dmem_write_en(dmem_req.write_en),
         							.dmem_en, .dmem_size(dmem_req.size), 
@@ -88,8 +93,24 @@ module quickcommit(
                                     .cp0_index(cp0_data.index),
         							.tu_op_req, .tu_op_resp,
         							.is_tlbr, .is_tlbp,
-        							.tlb_free);
-        							
+        							.tlb_free,
+									.dcache_addr_ok(dmem_resp.addr_ok),
+									.dcache_func(dmem_req.cache_op.funct),
+									.dcache_addr,
+									.dcache_req(dcache_req_s), .dcache_en,
+									.icache_addr_ok(imem_resp.addr_ok),
+									.icache_func(imem_req.cache_op.funct),
+									.icache_addr,
+									.icache_req(icache_req_s), .icache_en);
+
+	assign dmem_req.addr = (dcache_en) ? (dcache_addr) : (dmem_addr);
+	assign imem_req.addr = icache_addr;
+	
+	assign imem_req.req = icache_req_s;
+	assign imem_req.cache_op.req = icache_req_s;
+	assign dmem_req.req = dcache_req_s | dmem_req_s;
+	assign dmem_req.cache_op.req = dcache_req_s;
+
     assign cp0w[1].addr = exception_out[1].cp0_addr;
     assign cp0w[1].wd = exception_out[1].result;
     assign cp0w[1].wen = exception_out[1].instr.ctl.cp0write & finishC;
@@ -99,7 +120,7 @@ module quickcommit(
 	assign cp0_addrC = {exception_out[1].cp0_addr, exception_out[0].cp0_addr};
 	assign cp0_selC = {exception_out[1].cp0_sel, exception_out[0].cp0_sel};
 	
-	word_t dmem_addr_dt, dmem_en_dt;
+	word_t dmem_addr_dt, dmem_en_dt, dcache_en_dt, icache_en_dt;
 	logic [1: 0] dmem_size_dt;
 	exec_data_t [1: 0] cdata_in;
     exception_t exception_data_dt;
@@ -117,7 +138,8 @@ module quickcommit(
 					dmem_size_dt <= '0;
 					dmem_addr_dt <= '0;
 					cp0_dataC_dt <= '0;
-					
+					dcache_en_dt <= '0;
+					icache_en_dt <= '0;
 					llbit <= 1'b0;
 				end
 			else				
@@ -129,6 +151,8 @@ module quickcommit(
 						dmem_en_dt <= dmem_en;
 						dmem_size_dt <= dmem_req.size;
 						dmem_addr_dt <= dmem_req.addr;
+						dcache_en_dt <= dcache_en;
+						icache_en_dt <= icache_en;
 						cp0_dataC_dt <= cp0_dataC;
 						
 						llbit <= llbit || llwrite_ex;
@@ -154,7 +178,11 @@ module quickcommit(
         				  .reg_addrC, .reg_dataC, .hiloC,
 						  //.cp0_addrC, 
 						  .cp0_dataC(cp0_dataC_dt),
-						  .tlb_ex);
+						  .tlb_ex,
+						  .dcache_en(dcache_en_dt),
+						  .icache_en(icache_en_dt),
+						  .dcache_data_ok(dmem_resp.data_ok),
+						  .icache_data_ok(imem_resp.data_ok));
 	
 	assign finishC = finish_exception & finish_cdata;   
 	assign exception_valid = exception_valid_dt;	
@@ -164,5 +192,6 @@ module quickcommit(
     assign jrp_reset = pc_mC;
     assign jrp_top = cdata_in[1].jrtop;
     
+	assign icache_op = {icache_en, icache_en_dt};
            
 endmodule
