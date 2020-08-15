@@ -3,8 +3,8 @@
 
 module quickcommit(
         input logic clk, reset, flushC,
-        (*mark_debug = "true"*) input exec_data_t [1: 0] in,
-        (*mark_debug = "true"*) output exec_data_t [1: 0] out,
+        input exec_data_t [1: 0] in,
+        output exec_data_t [1: 0] out,
         //pipeline
         input logic first_cycleC, 
         output logic finishC, pc_mC,
@@ -22,7 +22,7 @@ module quickcommit(
         output ibus_req_t  imem_req,
         input ibus_resp_t imem_resp,
         //dmem
-        (*mark_debug = "true"*) output pc_data_t fetch,
+        output pc_data_t fetch,
         //fetch new pc
         output bypass_upd_t bypass0, bypass1,
         //data forward
@@ -62,7 +62,7 @@ module quickcommit(
     
     logic llwrite_ex;
     exec_data_t [1: 0] exception_out;
-    (*mark_debug = "true"*) exception_t exception_data_ex;
+    exception_t exception_data_ex;
     logic exception_valid_ex, exception_valid_dt, finish_exception;
     logic dmem_en, dcache_en, icache_en;
 	logic dmem_req_s, dcache_req_s, icache_req_s;
@@ -119,12 +119,16 @@ module quickcommit(
     assign cp0w[0].wen = exception_out[0].instr.ctl.cp0write & finishC & ~pc_mC;    
 	assign cp0_addrC = {exception_out[1].cp0_addr, exception_out[0].cp0_addr};
 	assign cp0_selC = {exception_out[1].cp0_sel, exception_out[0].cp0_sel};
+	assign reg_addrC[3: 0] = {in[1].srcrega, in[1].srcregb, in[0].srcrega, in[0].srcregb};
+	assign reg_addrC[4] = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (in[1].destreg) : (in[0].destreg);
 	
-	word_t dmem_addr_dt, dmem_en_dt, dcache_en_dt, icache_en_dt;
+	word_t dmem_addr_dt;
+	logic dmem_en_dt, dcache_en_dt, icache_en_dt;
 	logic [1: 0] dmem_size_dt;
 	exec_data_t [1: 0] cdata_in;
     exception_t exception_data_dt;
-    word_t [1: 0] cp0_dataC_dt;
+    word_t [1: 0] cp0_dataC_dt, hiloC_dt;
+	word_t [4: 0] reg_dataC_dt;
 	
 	logic llbit;
 	always_ff @(posedge clk)
@@ -138,6 +142,8 @@ module quickcommit(
 					dmem_size_dt <= '0;
 					dmem_addr_dt <= '0;
 					cp0_dataC_dt <= '0;
+					reg_dataC_dt <= '0;
+					hiloC_dt <= '0;
 					dcache_en_dt <= '0;
 					icache_en_dt <= '0;
 					llbit <= 1'b0;
@@ -154,7 +160,8 @@ module quickcommit(
 						dcache_en_dt <= dcache_en;
 						icache_en_dt <= icache_en;
 						cp0_dataC_dt <= cp0_dataC;
-						
+						reg_dataC_dt <= reg_dataC;
+						hiloC_dt <= hiloC;
 						llbit <= llbit || llwrite_ex;
 					end
 		end        							
@@ -174,8 +181,10 @@ module quickcommit(
         				  .dmem_rd(dmem_resp.data),
         				  .dmem_data_ok(dmem_resp.data_ok),
         				  .finish_cdata,
-        				  .cp0_epc(cp0_data.epc),
-        				  .reg_addrC, .reg_dataC, .hiloC,
+        				  .cp0_epc(cp0_data.epc), // ??
+        				  //.reg_addrC, 
+						  .reg_dataC(reg_dataC_dt), 
+						  .hiloC(hiloC_dt),
 						  //.cp0_addrC, 
 						  .cp0_dataC(cp0_dataC_dt),
 						  .tlb_ex,

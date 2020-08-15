@@ -4,7 +4,7 @@
 `include "instr_bus.svh"
 
 module datapath(
-        input logic clk, reset,
+        (*mark_debug = "true"*) input logic clk, reset,
         input logic [5: 0] ext_int,
         /*
         output word_t iaddr,  
@@ -78,7 +78,7 @@ module datapath(
     cp0_cause_t cp0_causeW, cp0_causeI, cp0_cause;
     cp0_status_t cp0_statusW, cp0_statusI, cp0_status;
     
-    logic hitF;
+    logic hitF, finishpipeF;
     pc_data_t pc_new;
     (*mark_debug = "true"*) word_t pc;
     
@@ -119,7 +119,8 @@ module datapath(
                           .jrp_pushF, .jrp_popF, .pc_jrpredictF,
                           .jrp_topF, .jrp_destpcF, 
                           .tu_op_resp(tu_op_respF),
-                          .tlb_free);                     
+                          .tlb_free,
+                          .finishpipeF);                     
     
     dreg dreg (clk, reset, stallD, flushD,
                fetch_data, decode_data_in,
@@ -209,6 +210,7 @@ module datapath(
     retirebypass retirebypass(.reg_addrC, .reg_dataC,
                               .hilodataC(hiloC),
                               .retire(retire_bypass),
+                              .commit(commitdt_bypass),
                               .reg_addrR(reg_addrRP),
                               .reg_dataR(reg_dataRP), 
                               .hiR(hiW), .loR(loW));                   
@@ -265,7 +267,8 @@ module datapath(
 
     MMU mmu_inst(.*, .resetn(reset));
     inst_req_select inst_req_select(.clk, .reset, .stall(~finishC), .flush(flushC),
-                                    .icache_op(icache_opC), .finishF,
+                                    .icache_op(icache_opC), 
+                                    .finishF(finishpipeF),
                                     .imem_reqF, .imem_reqC, .imem_req,
                                     .imem_respF, .imem_respC, .imem_resp,
                                     .tu_op_respF, .tu_op_respC, .tu_op_resp);

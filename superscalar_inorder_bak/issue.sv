@@ -70,7 +70,7 @@ module issue(
 	logic LWLR;
 	assign LWLR = aD.instr.ctl.regwrite && aD.destreg == bD.destreg && (bD.instr.op == LWL || bD.instr.op == LWR);   			   
     
-    assign enb = ~(BJ || RAW || MM || PRIV || DMULT || LWLR);
+    assign enb = ~(BJ || RAW || MM || PRIV || DMULT);
     //assign enb = 1'b0;
 
     logic [1: 0] issue_en;

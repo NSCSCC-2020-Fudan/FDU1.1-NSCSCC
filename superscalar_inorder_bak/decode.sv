@@ -1,7 +1,7 @@
 `include "mips.svh"
 
 module decode(
-        input fetch_data_t [1: 0] in,
+        (*mark_debug = "true"*) input fetch_data_t [1: 0] in,
         input logic [1: 0] hitF,
         output decode_data_t [1: 0] out,
         output logic [1: 0] hitD
