@@ -64,7 +64,7 @@ module quickcommit(
     exec_data_t [1: 0] exception_out;
     exception_t exception_data_ex;
     logic exception_valid_ex, exception_valid_dt, finish_exception;
-    logic dmem_en, dcache_en, icache_en;
+    logic dmem_en, dcache_en, dcache_occur, icache_en, icache_occur;
 	logic dmem_req_s, dcache_req_s, icache_req_s;
 	word_t dmem_addr, dcache_addr, icache_addr;
     //logic [1: 0] dmem_size;
@@ -97,11 +97,11 @@ module quickcommit(
 									.dcache_addr_ok(dmem_resp.addr_ok),
 									.dcache_func(dmem_req.cache_op.funct),
 									.dcache_addr,
-									.dcache_req(dcache_req_s), .dcache_en,
+									.dcache_req(dcache_req_s), .dcache_occur, .dcache_en,
 									.icache_addr_ok(imem_resp.addr_ok),
 									.icache_func(imem_req.cache_op.funct),
 									.icache_addr,
-									.icache_req(icache_req_s), .icache_en);
+									.icache_req(icache_req_s), .icache_occur, .icache_en);
 
 	assign dmem_req.addr = (in[1].instr.ctl.cache_op.d_req | in[0].instr.ctl.cache_op.d_req) ? (dcache_addr) : (dmem_addr);
 	assign imem_req.addr = icache_addr;
@@ -201,6 +201,6 @@ module quickcommit(
     assign jrp_reset = pc_mC;
     assign jrp_top = cdata_in[1].jrtop;
     
-	assign icache_op = {icache_en, icache_en_dt};
+	assign icache_op = {icache_occur, icache_en_dt};
            
 endmodule

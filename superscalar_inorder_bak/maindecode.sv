@@ -752,6 +752,11 @@ module maindecode (
                         srcregb = rt;
                         destreg = rd;
                     end
+                    `F_SYNC: begin
+                        /*
+                            SYNC AS NOP
+                        */
+                    end
                     default: begin
                         exception_ri = 1'b1;
                         op = RESERVED;
@@ -763,8 +768,8 @@ module maindecode (
                 endcase
             end
             `OP_LL: begin
-                op = LL;
-                ctl.llwrite = 1'b1;
+                op = LW;                //LL -> LW
+//                ctl.llwrite = 1'b1;
                 ctl.regwrite = 1'b1;
                 ctl.memtoreg = 1'b1;
                 ctl.alusrc = IMM;
@@ -773,7 +778,7 @@ module maindecode (
                 destreg = rt;
             end
             `OP_SC: begin
-                op = SC;
+                op = SW;                //SC -> SW
                 ctl.memwrite = 1'b1;
                 ctl.alusrc = IMM;
                 srcrega = rs;
@@ -792,7 +797,9 @@ module maindecode (
                         ctl.cache_op.invalidate = 1'b1;
                     end
                     5'b01000: begin
-                        ctl.cache_op.req = 1'b0;
+                        ctl.cache_op.i_req = 1'b1;
+                        ctl.cache_op.as_index = 1'b1;
+                        ctl.cache_op.invalidate = 1'b1;
                         /*
                         inst_store_tag
                         */
@@ -807,7 +814,9 @@ module maindecode (
                         ctl.cache_op.as_index = 1'b1;
                     end
                     5'b01001: begin
-                        ctl.cache_op.req = 1'b0;
+                        ctl.cache_op.d_req = 1'b1;
+                        ctl.cache_op.as_index = 1'b1;
+                        ctl.cache_op.invalidate = 1'b1;
                         /*
                         data_store_tag
                         */

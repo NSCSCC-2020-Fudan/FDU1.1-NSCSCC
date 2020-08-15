@@ -6,7 +6,8 @@ module dreg(
         input fetch_data_t [1: 0] in,
         output fetch_data_t [1: 0] out,
         input logic [1: 0] hitF,
-        output logic [1: 0] hitD
+        output logic [1: 0] hitD,
+        input logic wait_ex
     );
     
     always_ff @(posedge clk)
@@ -44,7 +45,8 @@ module creg(
         input logic [5: 0] ext_int_in,
         output logic [5: 0] ext_int_out,
         input logic timer_interrupt_in,
-        output logic timer_interrupt_out
+        output logic timer_interrupt_out,
+        input logic wait_ex
     );
     
     always_ff @(posedge clk)
@@ -77,8 +79,8 @@ module creg(
                             begin
                                 out <= out;
                                 first_cycleC <= '0;
-                                ext_int_out <= ext_int_out;
-                                timer_interrupt_out <= timer_interrupt_out;
+                                ext_int_out <= (wait_ex) ? (ext_int_in) : (ext_int_out);
+                                timer_interrupt_out <= (wait_ex) ? (timer_interrupt_out) : (timer_interrupt_out);
                             end
                     end                                                
         end

@@ -157,7 +157,8 @@ module datapath(
     creg creg (.clk, .reset, .stallC, .flushC,
                .in(exec_data_out), .out(commit_data_in), .first_cycleC,
                .ext_int_in(ext_int), .ext_int_out(ext_intC),
-               .timer_interrupt_in(timer_interrupt), .timer_interrupt_out(timer_interruptC));
+               .timer_interrupt_in(timer_interrupt), .timer_interrupt_out(timer_interruptC),
+               .wait_ex);
 	quickcommit quickcommit (.clk, .reset, .flushC, .first_cycleC,
                    			 .in(commit_data_in),
                    			 .out(commit_data_out), 

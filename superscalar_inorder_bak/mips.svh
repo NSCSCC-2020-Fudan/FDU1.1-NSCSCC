@@ -124,6 +124,7 @@ typedef struct packed{
 `define F_SYSCALL       6'b001100
 `define F_MOVZ          6'b001010
 `define F_MOVN          6'b001011 
+`define F_SYNC          6'b001111
 
 `define M_MUL           6'b011000
 `define M_CLO           6'b100001

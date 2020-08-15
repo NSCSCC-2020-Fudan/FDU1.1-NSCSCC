@@ -43,12 +43,12 @@ module exceptioncommit(
         input logic dcache_addr_ok,
         output cache_funct_t dcache_func,
         output word_t dcache_addr,
-        output logic dcache_req, dcache_en,
+        output logic dcache_req, dcache_occur, dcache_en,
         //dcache instr
         input logic icache_addr_ok,
         output cache_funct_t icache_func,
         output word_t icache_addr,
-        output logic icache_req, icache_en
+        output logic icache_req, icache_occur, icache_en
     );
     
     exec_data_t [1: 0] tin;
@@ -127,8 +127,10 @@ module exceptioncommit(
     
     assign dcache_addr = (in[1].instr.ctl.cache_op.d_req) ? (in[1].result) : (in[0].result);
     assign dcache_en = out[1].instr.ctl.cache_op.d_req | out[0].instr.ctl.cache_op.d_req;
+    assign dcache_occur = in[1].instr.ctl.cache_op.d_req | in[0].instr.ctl.cache_op.d_req;
     assign icache_addr = (in[1].instr.ctl.cache_op.i_req) ? (in[1].result) : (in[0].result);
     assign icache_en = out[1].instr.ctl.cache_op.i_req | out[0].instr.ctl.cache_op.i_req;
+    assign icache_occur = in[1].instr.ctl.cache_op.i_req | in[0].instr.ctl.cache_op.i_req;
 
     cache_funct_t cache_func;
     assign cache_func.as_index =   in[1].instr.ctl.cache_op.as_index   | in[0].instr.ctl.cache_op.as_index;
