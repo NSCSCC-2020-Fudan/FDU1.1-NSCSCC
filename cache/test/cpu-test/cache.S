@@ -42,10 +42,10 @@ Disassembly of section .text:
   68:	00431021 	addu	v0,v0,v1
   6c:	24a50040 	addiu	a1,a1,64
   70:	3c0fa000 	lui	t7,0xa000
-  74:	01e37821 	addu	t7,t7,v1
-  78:	bde90000 	cache	0x9,0(t7)
+  74:	bde90000 	cache	0x9,0(t7)
+  78:	bde80000 	cache	0x8,0(t7)
   7c:	1000fff6 	b	58 <AHA3>
-  80:	bde80000 	cache	0x8,0(t7)
+  80:	01e37821 	addu	t7,t7,v1
 
 00000084 <AHA4>:
   84:	03e00008 	jr	ra
@@ -65,9 +65,9 @@ Disassembly of section .text:
   ac:	01e37821 	addu	t7,t7,v1
   b0:	bde00000 	cache	0x0,0(t7)
   b4:	00431021 	addu	v0,v0,v1
-  b8:	24a50040 	addiu	a1,a1,64
+  b8:	bde10000 	cache	0x1,0(t7)
   bc:	1000fff6 	b	98 <AHA7>
-  c0:	bde10000 	cache	0x1,0(t7)
+  c0:	24a50040 	addiu	a1,a1,64
 
 000000c4 <AHA8>:
   c4:	03e00008 	jr	ra
@@ -101,10 +101,10 @@ Disassembly of section .text:
  10c:	00021880 	sll	v1,v0,0x2
  110:	00831821 	addu	v1,a0,v1
  114:	24050123 	li	a1,291
- 118:	24420001 	addiu	v0,v0,1
- 11c:	bc700000 	cache	0x10,0(v1)
+ 118:	bc700000 	cache	0x10,0(v1)
+ 11c:	bc750000 	cache	0x15,0(v1)
  120:	1000fff8 	b	104 <AHA15>
- 124:	bc750000 	cache	0x15,0(v1)
+ 124:	24420001 	addiu	v0,v0,1
 
 00000128 <AHA16>:
  128:	03e00008 	jr	ra
@@ -133,7 +133,7 @@ Disassembly of section .text:
 
 0000016c <test2>:
  16c:	00001821 	move	v1,zero
- 170:	00001821 	move	v1,zero
+ 170:	00001021 	move	v0,zero
  174:	24050001 	li	a1,1
  178:	00002021 	move	a0,zero
 
@@ -153,7 +153,7 @@ Disassembly of section .text:
 
 000001a4 <test3>:
  1a4:	24030001 	li	v1,1
- 1a8:	00001821 	move	v1,zero
+ 1a8:	00001021 	move	v0,zero
 
 000001ac <AHA27>:
  1ac:	286c2401 	slti	t4,v1,9217

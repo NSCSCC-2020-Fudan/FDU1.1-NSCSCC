@@ -32,11 +32,11 @@ AHA3:
         addu    $2,$2,$3
         addiu   $5,$5,64
         lui     $t7, 0xa000
-        addu    $t7,$t7,$3
         # cache   0b01001, 0($t7)
         cache 0x9, 0($t7)
         # cache 0b01000, 0($t7)
         cache 0x8, 0($t7)
+        addu    $t7,$t7,$3
         b       AHA3
 AHA4:
         j       $31
@@ -56,9 +56,9 @@ AHA7:
         # cache   0b00000, 0($t7)
         cache 0x0, 0($t7)
         addu    $2,$2,$3
-        addiu   $5,$5,64
         # cache   0b00001, 0($t7)
         cache 0x1, 0($t7)
+        addiu   $5,$5,64
         b       AHA7
 
 AHA8:
@@ -100,11 +100,11 @@ AHA15:
         # li      $5,291
         addiu $5,$0,291
         # sw      $5,0($3)
-        addiu   $2,$2,1
         # cache   0b10000, 0($3)
         cache 0x10,0($3)
         # cache   0b10101, 0($3)
         cache 0x15,0($3)
+        addiu   $2,$2,1
         b       AHA15
 
 AHA16:
@@ -139,7 +139,7 @@ test2:
         # move    $3,$0
         addu $3,$0,$0
         # move    $2,$0
-        addu $3,$0,$0
+        addu $2,$0,$0
         # li      $5,1                        # 0x1
         addiu $5,$0,1
         # move    $4,$0
@@ -163,7 +163,7 @@ test3:
         # li      $3,1                        # 0x1
         addiu $3,$0,1
         # move    $2,$0
-        addu $3,$0,$0
+        addu $2,$0,$0
 AHA27:
         slti     $t4,$3,9217
         # li      $4,9216           # 0x2400
