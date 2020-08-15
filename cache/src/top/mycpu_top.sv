@@ -53,11 +53,11 @@ module mycpu_top(
     output creg_addr_t debug_wb_rf_wnum,
     output word_t debug_wb_rf_wdata
 );
-    ibus_req_t  icache_req;
-    ibus_resp_t icache_resp;
-    dbus_req_t  dcache_req,     uncached_req;
-    dbus_resp_t dcache_resp,    uncached_resp;
-    addr_t      imem_req_vaddr, dmem_req_vaddr;
+    (*mark_debug = "true"*) ibus_req_t  icache_req;
+    (*mark_debug = "true"*) ibus_resp_t icache_resp;
+    (*mark_debug = "true"*) dbus_req_t  dcache_req,     uncached_req;
+    (*mark_debug = "true"*) dbus_resp_t dcache_resp,    uncached_resp;
+    (*mark_debug = "true"*) addr_t      imem_req_vaddr, dmem_req_vaddr;
 
     mycpu #(.DO_ADDR_TRANSLATION(0)) mycpu(
         .clk(aclk), .resetn(aresetn), .*

@@ -3,8 +3,8 @@
 
 module cp0(
         input logic clk, reset,
-        input rf_w_t [1: 0] cwrite,//write
-        input logic[1:0][2:0] sel,
+        (*mark_debug = "true"*) input rf_w_t [1: 0] cwrite,//write
+        (*mark_debug = "true"*) input logic[1:0][2:0] sel,
         input creg_addr_t [1: 0] ra,
         output word_t [1: 0] rd,
         //read or write
@@ -17,8 +17,8 @@ module cp0(
         output cp0_regs_t cp0_data,
         //bypass
         input tu_op_resp_t tlb_resp,
-        input logic is_tlbr,
-        input logic is_tlbp,
+        (*mark_debug = "true"*) input logic is_tlbr,
+        (*mark_debug = "true"*) input logic is_tlbp,
         /*
         output cp0_entryhi_t cp0_entryhi,
         output cp0_entrylo_t cp0_entrylo0, cp0_entrylo1,

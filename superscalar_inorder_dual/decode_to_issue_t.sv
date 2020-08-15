@@ -38,7 +38,8 @@ module decode_to_issue_t(
     assign out.srclo = lo;
     assign out.jrtop = in.jrtop;
     
-    assign out.state.readya = reg_readya & ~in.instr.ctl.cp0toreg;
+    assign out.state.readya = (reg_readya && ~in.instr.ctl.cp0toreg) | 
+                              (is_link    && (in.srcrega == 5'd31));
     assign out.state.readyb = reg_readyb;
     assign out.state.ready = 1'b0;
     

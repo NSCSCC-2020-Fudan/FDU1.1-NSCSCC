@@ -835,5 +835,6 @@ module maindecode (
                 destreg = 'b0;
             end
         endcase
+        ctl.delayen = 1'b0;
 	end
 endmodule

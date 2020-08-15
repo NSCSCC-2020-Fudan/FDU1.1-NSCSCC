@@ -4,7 +4,7 @@
 `include "instr_bus.svh"
 
 module datapath(
-        input logic clk, reset,
+        (*mark_debug = "true"*) input logic clk, reset,
         input logic [5: 0] ext_int,
         /*
         output word_t iaddr,  
@@ -35,12 +35,15 @@ module datapath(
         output word_t imem_req_vaddr, dmem_req_vaddr
         
     );
-    ibus_req_t  imem_req, imem_reqF, imem_reqC;
-    ibus_resp_t imem_resp, imem_respF, imem_respC;
-    dbus_req_t  dmem_req;
-    dbus_resp_t dmem_resp;
-    tu_op_req_t  tu_op_req;
-    tu_op_resp_t tu_op_resp, tu_op_respF, tu_op_respC;
+    (*mark_debug = "true"*) ibus_req_t  imem_req;
+    ibus_req_t imem_reqF, imem_reqC;
+    (*mark_debug = "true"*) ibus_resp_t imem_resp;
+    ibus_resp_t imem_respF, imem_respC;
+    (*mark_debug = "true"*) dbus_req_t  dmem_req;
+    (*mark_debug = "true"*) dbus_resp_t dmem_resp;
+    (*mark_debug = "true"*) tu_op_req_t  tu_op_req;
+    (*mark_debug = "true"*) tu_op_resp_t tu_op_resp;
+    tu_op_resp_t tu_op_respF, tu_op_respC;
     logic k0_uncached;
     assign imem_req_vaddr = imem_req.addr;
     assign dmem_req_vaddr = dmem_req.addr;
@@ -51,9 +54,9 @@ module datapath(
     
     bypass_upd_t exec_bypass, commit_bypass, retire_bypass;
     
-    logic finishF, finishE, finishC;
-    logic stallD, flushD, stallI, flushI, flushE, stallF;
-    logic stallE, stallC, flushC, stallR, flushR;
+    (*mark_debug = "true"*) logic finishF, finishE, finishC;
+    (*mark_debug = "true"*) logic stallD, flushD, stallI, flushI, flushE, stallF;
+    (*mark_debug = "true"*) logic stallE, stallC, flushC, stallR, flushR;
     logic data_hazardI, queue_ofI, pc_mC, pc_new_commit;
     assign flushE_out = flushE; 
     assign stallF_out = stallF;

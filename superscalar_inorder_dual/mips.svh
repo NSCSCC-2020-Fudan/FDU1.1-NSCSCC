@@ -151,15 +151,14 @@ typedef enum logic[2:0] { T_BEQ, T_BNE, T_BGEZ, T_BLTZ, T_BGTZ, T_BLEZ } branch_
 
 typedef enum logic [6: 0] { 
     // ADDI, ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, 
-    ADDU, RESERVED,
-    BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, J, JAL, 
-    LB, LBU, LH, LHU, LW, SB, SH, SW, MFC0, MTC0, 
-    ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, MULTU, 
-    AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, SRL, 
-    JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI, ERET,
-    CLO, CLZ, MOVN, MOVZ, MADD, MADDU, MSUB, MSUBU, MUL,
-    LL, SC, LWL, LWR, SWL, SWR, WAIT_EX, 
-    TLBR, TLBP, TLBWI, CACHE
+    ADDU, RESERVED, BEQ, BNE, BGEZ, BGTZ, BLEZ, BLTZ, BGEZAL, BLTZAL, 
+    J, JAL, LB, LBU, LH, LHU, LW, SB, SH, SW, 
+    MFC0, MTC0, ADD, SUB, SUBU, SLT, SLTU, DIV, DIVU, MULT, 
+    MULTU, AND, NOR, OR, XOR, SLLV, SLL, SRAV, SRA, SRLV, 
+    SRL, JR, JALR, MFHI, MFLO, MTHI, MTLO, BREAK, SYSCALL, LUI, 
+    ERET, CLO, CLZ, MOVN, MOVZ, MADD, MADDU, MSUB, MSUBU, MUL,
+    LL, SC, LWL, LWR, SWL, SWR, WAIT_EX, TLBR, TLBP, TLBWI, 
+    CACHE
 } decoded_op_t;//64 left
 
 
@@ -241,7 +240,7 @@ typedef struct packed {
     logic[2:0]zero_0;
     logic[15:0]mask;
     /*
-    The Mask field is a bit mask in which a ï¿??1ï¿?? bit
+    The Mask field is a bit mask in which a ï¿½??1ï¿½?? bit
     indicates that the corresponding bit of the vir-
     tual address should not participate in the TLB
     match.
@@ -457,7 +456,6 @@ typedef struct packed {
     word_t instr_;
     word_t pcplus4;
     logic exception_instr, instr_tlb_invalid, instr_tlb_refill;
-    logic tlb_refill_instr;
     logic en;
     bpb_result_t pred;
     logic [`JR_ENTRY_WIDTH - 1: 0] jrtop;

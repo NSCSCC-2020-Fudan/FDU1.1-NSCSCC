@@ -3,7 +3,7 @@
 
 module quickcommit(
         input logic clk, reset, flushC,
-        input exec_data_t [1: 0] in,
+        (*mark_debug = "true"*) input exec_data_t [1: 0] in,
         output exec_data_t [1: 0] out,
         //pipeline
         input logic first_cycleC, 
@@ -19,10 +19,10 @@ module quickcommit(
         */
         output dbus_req_t  dmem_req,
         input dbus_resp_t dmem_resp,
-        output dbus_req_t  imem_req,
-        input dbus_resp_t imem_resp,
+        output ibus_req_t  imem_req,
+        input ibus_resp_t imem_resp,
         //dmem
-        output pc_data_t fetch,
+        (*mark_debug = "true"*) output pc_data_t fetch,
         //fetch new pc
         output bypass_upd_t bypass0, bypass1,
         //data forward
@@ -62,7 +62,7 @@ module quickcommit(
     
     logic llwrite_ex;
     exec_data_t [1: 0] exception_out;
-    exception_t exception_data_ex;
+    (*mark_debug = "true"*) exception_t exception_data_ex;
     logic exception_valid_ex, exception_valid_dt, finish_exception;
     logic dmem_en, dcache_en, icache_en;
 	logic dmem_req_s, dcache_req_s, icache_req_s;

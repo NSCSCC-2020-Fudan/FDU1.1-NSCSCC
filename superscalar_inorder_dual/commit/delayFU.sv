@@ -34,7 +34,7 @@ module delayFU(
     */
     //mult mult(clk, reset, flushE, alusrcaE, alusrcbE, op, hi, lo, multok);
     word_t result_alu, result;
-    assign result = (in.instr.ctl.delayen) ? (result_alu) : (in.result);
+    assign result = (~in.state.ready) ? (result_alu) : (in.result);
     ALU ALU (alusrcaE, alusrcbE, func, result_alu, exception_of);
     
     assign out.taken = in.taken;
@@ -64,8 +64,8 @@ module delayFU(
     word_t pcplus8;
     adder adderpcplus8(in.pcplus4, 32'b0100, pcplus8);
     
-    assign out.hiresult = (in.instr.ctl.delayen) ? (result_alu) : (in.hiresult);//mul/div or HTHI 
-    assign out.loresult = (in.instr.ctl.delayen) ? (result_alu) : (in.loresult);//mul/div or HTHI
+    assign out.hiresult = (~in.state.ready) ? (result_alu) : (in.hiresult);//mul/div or HTHI 
+    assign out.loresult = (~in.state.ready) ? (result_alu) : (in.loresult);//mul/div or HTHI
     assign out.result = result;
     assign out.exception_of = in.exception_of;
     assign out.instr_tlb_invalid = in.instr_tlb_invalid;

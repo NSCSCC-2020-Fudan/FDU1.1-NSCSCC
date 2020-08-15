@@ -49,8 +49,8 @@ module quickfetch (
     logic [1: 0] ien;     
     assign ien = hitF; 
     logic [1: 0] mask;     
-    word_t pcplus4_pcf, pcplus8_pcf, pc_pcf;
-    word_t pcplus4_isf, pcplus8_isf, pc_isf, pc_seq;
+    (*mark_debug = "true"*) word_t pc_pcf, pc_isf;
+    word_t pcplus4_isf, pcplus4_pcf, pcplus8_isf, pc_seq, pcplus8_pcf;
     bpb_result_t destpc_predict_sel, last_predict, next_predict;
     assign pc_seq = (destpc_predict_sel.taken) ? (destpc_predict_sel.destpc) : (
                     (pcplus8_pcf[2])           ? (pcplus4_pcf)               : (pcplus8_pcf));
