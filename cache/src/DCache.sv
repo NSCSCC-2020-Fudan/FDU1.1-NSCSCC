@@ -385,12 +385,12 @@ module DCache #(
         // to miss stage
         if (req_to_miss) begin
             miss_state      <= READ;
-            // miss_addr       <= req_paddr;
-            miss_addr       <= {req_paddr.tag, req_paddr.index, offset_t'(0), zeros_t'(0)};  // for INCR burst
+            miss_addr       <= req_paddr;
+            // miss_addr       <= {req_paddr.tag, req_paddr.index, offset_t'(0), zeros_t'(0)};  // for INCR burst
             miss_pos.idx    <= req_victim_idx;
             miss_pos.index  <= req_iaddr.index;
-            // miss_pos.offset <= req_iaddr.offset;
-            miss_pos.offset <= 0;  // for INCR burst
+            miss_pos.offset <= req_iaddr.offset;
+            // miss_pos.offset <= 0;  // for INCR burst
             miss_ready      <= 0;
             // miss_vwrten     <= 0;
             miss_vrecord    <= ram_meta[req_victim_idx];
@@ -430,6 +430,6 @@ module DCache #(
      * unused (for Verilator)
      */
     logic __unused_ok = &{1'b0,
-        req_vaddr, dbus_req.size, req_paddr,
+        req_vaddr, dbus_req.size, /*req_paddr,*/
     1'b0};
 endmodule

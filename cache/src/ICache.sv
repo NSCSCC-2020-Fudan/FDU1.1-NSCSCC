@@ -363,16 +363,16 @@ module ICache #(
         // to miss stage
         miss_busy <= miss_avail ? req_to_miss : 1;
         if (req_to_miss) begin
-            // miss_addr         <= req_paddr;
+            miss_addr         <= req_paddr;
             // for INCR burst
-            miss_addr         <= {req_paddr.tag, req_paddr.index, offset_t'(0), align_t'(0)};
+            // miss_addr         <= {req_paddr.tag, req_paddr.index, offset_t'(0), align_t'(0)};
             miss_pos.idx      <= req_victim_idx;
             miss_pos.index    <= req_iaddr.index;
-            // miss_count.offset <= req_iaddr.offset;
-            // miss_count.shamt  <= req_paddr.aligned.shamt;
+            miss_count.offset <= req_iaddr.offset;
+            miss_count.shamt  <= req_paddr.aligned.shamt;
             // for INCR burst
-            miss_count.offset <= 0;
-            miss_count.shamt  <= 0;
+            // miss_count.offset <= 0;
+            // miss_count.shamt  <= 0;
             miss_mark         <= 0;
         end
     end else begin
@@ -402,6 +402,6 @@ module ICache #(
      * unused (for Verilator)
      */
     logic __unused_ok = &{1'b0,
-        req_vaddr, unused_data, ibus_req, req_paddr,
+        req_vaddr, unused_data, ibus_req, /*req_paddr,*/
     1'b0};
 endmodule
