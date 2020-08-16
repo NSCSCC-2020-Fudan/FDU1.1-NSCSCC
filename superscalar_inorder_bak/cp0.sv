@@ -225,5 +225,5 @@ module cp0(
     assign cp0_entrylo1 = co0.entrylo1;
     assign cp0_index = cp0_index;
     */
-    assign k0_uncached = cp0.config_.K0 == 3'b011;
+    assign k0_uncached = cp0.config_.K0 != 3'b011;
 endmodule
