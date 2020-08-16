@@ -200,6 +200,7 @@ typedef struct packed {
     logic mul_div_r;
     logic llwrite, is_priv;
     logic delayen;
+    logic is_sc;
 } control_t;
 
 typedef logic [4:0] cp0_addr_t;

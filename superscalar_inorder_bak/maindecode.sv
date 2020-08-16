@@ -781,10 +781,12 @@ module maindecode (
             `OP_SC: begin
                 op = SW;                //SC -> SW
                 ctl.memwrite = 1'b1;
+                ctl.is_sc = 1'b1;
+                ctl.regwrite = 1'b1;
                 ctl.alusrc = IMM;
                 srcrega = rs;
                 srcregb = rt;
-                destreg = '0;
+                destreg = rt;
             end
             `OP_CACHE: begin
                 op = CACHE;

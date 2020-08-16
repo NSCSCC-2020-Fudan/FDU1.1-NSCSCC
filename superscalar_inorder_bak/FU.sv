@@ -91,7 +91,7 @@ module FU(
     
     assign out.state.readya = in.state.readya;
     assign out.state.readyb = in.state.readyb;
-    assign out.state.ready = in.state.readya & in.state.readyb & (~(in.instr.ctl.memtoreg || in.instr.op == SC));
+    assign out.state.ready = in.state.readya & in.state.readyb & (~(in.instr.ctl.memtoreg || in.instr.ctl.is_sc));
     
     assign out.instr_tlb_invalid = in.instr_tlb_invalid;   
     assign out.instr_tlb_refill = in.instr_tlb_refill;                          

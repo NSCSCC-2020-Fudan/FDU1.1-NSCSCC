@@ -19,7 +19,8 @@ module mem_to_reg(
     assign out.srcrega = in.srcrega;
     assign out.srcregb = in.srcregb;
     assign out.cp0_sel = in.cp0_sel;
-    assign out.result = (in.instr.ctl.memtoreg) ? (mem.rd) : (in.result);
+    assign out.result = (in.instr.ctl.memtoreg) ? (mem.rd)   : (
+                        (in.instr.ctl.is_sc)    ? (32'b0001) : (in.result));
     assign out.hiresult = in.hiresult;
     assign out.loresult = in.loresult;
     assign out.in_delay_slot = in.in_delay_slot;
