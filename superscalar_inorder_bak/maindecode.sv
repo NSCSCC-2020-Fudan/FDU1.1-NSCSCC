@@ -15,6 +15,7 @@ module maindecode (
     assign func = instr[5:0];
     always_comb begin
         exception_ri = 1'b0;
+        op = SLL;
         ctl = '0;
         srcrega = '0;
         srcregb = '0;
