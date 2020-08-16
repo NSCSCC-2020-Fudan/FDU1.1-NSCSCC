@@ -2,6 +2,14 @@
 
 <img src="assets/architecture.svg" width="100%" />
 
+访存一级的设计旨在站在 CPU 的角度尽可能简化访存接口，同时保证足够的性能。从总体结构上讲，访存部分的各个模块全部封装在 CacheLayer 这个模块内部，同时在与 CPU 连接的地方设置 MMU，负责地址翻译和 cached/uncached 访存的分发和仲裁。CacheLayer 对外只暴露一个 AXI3 总线接口，对 CPU 一侧则提供一个指令总线（IBus），用于提供双发射的支持，以及两个数据（DBus）总线，用于普通的数据访存指令（lw/sw）。
+
+Cache 方面则主要由指令 cache、数据 cache 和 uncached 访存队列构成。二级 cache 在一开始设计的时候是有的，后来通过软件模拟性能测试的 trace 后发现，足够大的两个一级 cache 可以达到 99% 的命中率，而由于整个 CPU 对外只有一个 32 位宽的 AXI 总线，因此二级 cache 变得没有什么意义。访问指令 cache 和数据 cache 需要经过指令总线和数据总线，它们都是类 SRAM 总线的变种，用于简化 cache 这边与 CPU 的交互。Cache 与外部交互则通过 cache 总线实现。Cache 总线是对 AXI burst 传输类型的抽象，有着和类 SRAM 总线相似的接口，同时避免了 AXI 总线信号的臃肿。Cache 总线通过将访存切割为多个 AXI 事务，支持非常长的 burst 传输。最后数据 cache、指令 cache 和 uncached 访存队列各暴露一个 AXI3 接口，由 AXI Crossbar 这个 IP 核负责总线仲裁，从而保证 CPU 对外只有一个 AXI 接口。
+
+数据 cache 和指令 cache 在结构上基本一致，都是两级流水线的结构，4 路或者 8 路组相联。两个 cache 都支持虚拟索引物理标签特性（VIPT），用于减少因地址翻译和分发造成的延时。同时支持 hit under miss 特性（非阻塞 cache），即当有某个访存出现 cache miss 时，只要 cache 中的相关数据准备好了，就可以立刻返回，不需要等待 cache 完成整条 cache line 的替换，这样可以减少因 cache miss 而导致的 IPC 损失。同时，我们的 cache 可以使用 AXI 中的 WRAP 突发传送模式，从而进一步优化 cache 未命中时的延时。两个 cache 使用的替换算法是基于树的 pLRU。pLRU 算法与真正的 LRU 算法相比，性能差距不大，但是可以节约硬件资源。我们使用 LUTRAM 存储 cache 中的标签，并且使用 BRAM 来存储 cache 中的数据。最后，指令 cache 为 8 路组相联，大小为 32KB，数据 cache 为 4 路组相联，大小为 16KB。在性能测试中，这样的配置可以达到很高的命中率，为 CPU 的双发提供基础。
+
+指令 cache 和数据 cache 均支持基本的 cache 指令，包括 Index Invalidate/Writeback、Hit Invalidate/Writeback。对于 cache 指令中的 Store Tag 操作，由于 MIPS 的规定中只要求 TagHi 和 TagLo 能实现清零，所以我们将 Store Tag 简单的实现为了 Index Invalidate。
+
 ## 文件结构
 
 * `assets/`：非源码的资源文件。
