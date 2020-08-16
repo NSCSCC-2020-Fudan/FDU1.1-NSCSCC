@@ -6,7 +6,7 @@ module writedata_format (
         output dbus_wrten_t dmem_write_en
     );
     
-    op_t op;
+    decoded_op_t op;
     assign op = in.instr.op;
     logic [1: 0] dmem_size_w, dmem_size_r;
     assign dmem_size_w = (op == SW) ? 2'b10 : (op == SH ? 2'b01:2'b00);

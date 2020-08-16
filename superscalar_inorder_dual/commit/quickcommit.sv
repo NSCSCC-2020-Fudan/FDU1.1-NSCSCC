@@ -43,8 +43,8 @@ module quickcommit(
 		input word_t [1: 0] cp0_dataC,
         //cp0 read/write
         output logic wait_ex, tlb_ex,
-        output creg_addr_t [3: 0] reg_addrC,
-        input word_t [3: 0] reg_dataC,
+        output creg_addr_t [4: 0] reg_addrC,
+        input word_t [4: 0] reg_dataC,
         input word_t [1: 0] hiloC,
         //delay execute
         output tu_op_req_t tu_op_req,
