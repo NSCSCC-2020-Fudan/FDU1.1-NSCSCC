@@ -68,6 +68,12 @@ module ALU (
             ALU_PASSB: begin
                 c = b;
             end
+            ALU_MOVN: begin
+                c = a;
+            end
+            ALU_MOVZ: begin
+                c = a;
+            end
             default: begin
                 c = '0;
             end

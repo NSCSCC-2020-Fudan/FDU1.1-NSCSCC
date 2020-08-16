@@ -45,7 +45,7 @@ module exception_checker(
     assign dcache_en = data.instr.ctl.cache_op.d_req;
     assign icache_en = data.instr.ctl.cache_op.i_req;
               
-    (*mark_debug = "true"*) exception_pipeline_t pipe;             
+    exception_pipeline_t pipe;             
     assign pipe.exc_info.tr = 1'b0;
     assign pipe.exc_info.cpu = 1'b0;
     assign pipe.exc_info.mod = tu_op_resp.d_tlb_modified & data_is_write;

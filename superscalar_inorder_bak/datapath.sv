@@ -4,7 +4,7 @@
 `include "instr_bus.svh"
 
 module datapath(
-        (*mark_debug = "true"*) input logic clk, reset,
+        input logic clk, reset,
         input logic [5: 0] ext_int,
         /*
         output word_t iaddr,  

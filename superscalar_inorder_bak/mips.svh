@@ -91,6 +91,7 @@ typedef struct packed{
 `define OP_SWL          6'b101010
 `define OP_SWR          6'b101110
 `define OP_CACHE        6'b101111
+`define OP_PREF         6'b110011
 
 
 // funct

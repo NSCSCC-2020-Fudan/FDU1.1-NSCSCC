@@ -836,6 +836,11 @@ module maindecode (
                     end
                 endcase
             end 
+            `OP_PREF: begin
+                /*
+                    PREF AS NOP
+                */
+            end
             default: begin
                 exception_ri = 1'b1;
                 op = RESERVED;

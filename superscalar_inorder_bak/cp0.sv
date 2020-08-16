@@ -152,7 +152,7 @@ module cp0(
                         cp0_new.entryhi.asid = cwrite[0].wd[7:0];
                 end 
                 5'd11:  cp0_new.compare = cwrite[0].wd;
-                5'd02:
+                5'd12:
                 begin
                         cp0_new.status.IM = cwrite[0].wd[15:8];
                         cp0_new.status.EXL = cwrite[0].wd[1];

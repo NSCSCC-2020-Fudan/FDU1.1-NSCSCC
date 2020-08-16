@@ -72,8 +72,8 @@ module FU(
     always_comb
         begin
             out.instr = in.instr;
-            out.instr.ctl.regwrite = (in.instr.op == MOVZ) ? (alusrcbE == 0) : (
-                                     (in.instr.op == MOVN) ? (alusrcbE != 0) : (in.instr.ctl.regwrite));  
+            out.instr.ctl.regwrite = (in.instr.op == MOVZ) ? (alusrcbE == 32'b0) : (
+                                     (in.instr.op == MOVN) ? (alusrcbE != 32'b0) : (in.instr.ctl.regwrite));  
         end
     assign out.pcplus4 = in.pcplus4;
     assign out.exception_instr = in.exception_instr;

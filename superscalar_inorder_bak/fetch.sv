@@ -4,7 +4,7 @@ module fetch (
     input logic clk, reset, flushF, stallF,
     //updata
     input pc_data_t fetch,
-    (*mark_debug = "true"*) output word_t pc,
+    output word_t pc,
     input logic pc_new_commit, 
     //to branch_control
     output word_t addr,
@@ -27,14 +27,14 @@ module fetch (
     logic [1: 0] state; 
     logic [1: 0] ien;
     word_t [1: 0] instr;
-    (*mark_debug = "true"*) word_t pcplus4, pcplus8, pcplus, pc_new;
+    word_t pcplus4, pcplus8, pcplus, pc_new;
     
-    (*mark_debug = "true"*) logic pc_upd;
+    logic pc_upd;
     pcselect pcselect(fetch.exception_valid, fetch.is_eret, fetch.branch, fetch.jump, fetch.jr,
                       fetch.pcexception, fetch.epc, fetch.pcbranch, fetch.pcjump, fetch.pcjr, pcplus, 
                       pc_new, pc_upd);
     
-    (*mark_debug = "true"*) bpb_result_t last_predict, next_predict;                      
+    bpb_result_t last_predict, next_predict;                      
     logic fetch_commit_conflict;                             
     always_ff @(posedge clk, posedge reset)
         begin

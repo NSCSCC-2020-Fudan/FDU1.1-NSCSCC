@@ -4,7 +4,7 @@
 module quickcommit(
         input logic clk, reset, flushC,
         input exec_data_t [1: 0] in,
-        output exec_data_t [1: 0] out,
+        (*mark_debug = "true"*) output exec_data_t [1: 0] out,
         //pipeline
         input logic first_cycleC, 
         output logic finishC, pc_mC,
@@ -22,7 +22,7 @@ module quickcommit(
         output ibus_req_t  imem_req,
         input ibus_resp_t imem_resp,
         //dmem
-        output pc_data_t fetch,
+        (*mark_debug = "true"*) output pc_data_t fetch,
         //fetch new pc
         output bypass_upd_t bypass0, bypass1,
         //data forward
