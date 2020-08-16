@@ -52,8 +52,8 @@ module CrossbarWrap(
 
     assign s_axi_awid    = `pack(req, aw, id   );
     assign s_axi_awaddr  = `pack(req, aw, addr );
-    // assign s_axi_awlen   = `pack(req, aw, len  );
-    assign s_axi_awlen   = {1'b0, req[2].aw.len, 1'b0, req[1].aw.len, 1'b0, req[0].aw.len};
+    assign s_axi_awlen   = `pack(req, aw, len  );
+    // assign s_axi_awlen   = {1'b0, req[2].aw.len, 1'b0, req[1].aw.len, 1'b0, req[0].aw.len};
     assign s_axi_awsize  = `pack(req, aw, size );
     assign s_axi_awburst = `pack(req, aw, burst);
     assign s_axi_awlock  = `pack(req, aw, lock );
@@ -77,8 +77,8 @@ module CrossbarWrap(
 
     assign s_axi_arid    = `pack(req, ar, id   );
     assign s_axi_araddr  = `pack(req, ar, addr );
-    // assign s_axi_arlen   = `pack(req, ar, len  );
-    assign s_axi_arlen   = {1'b0, req[2].ar.len, 1'b0, req[1].ar.len, 1'b0, req[0].ar.len};
+    assign s_axi_arlen   = `pack(req, ar, len  );
+    // assign s_axi_arlen   = {1'b0, req[2].ar.len, 1'b0, req[1].ar.len, 1'b0, req[0].ar.len};
     assign s_axi_arsize  = `pack(req, ar, size );
     assign s_axi_arburst = `pack(req, ar, burst);
     assign s_axi_arlock  = `pack(req, ar, lock );
