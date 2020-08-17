@@ -63,6 +63,16 @@ module DCache #(
     output cbus_req_t  cbus_req,
     input  cbus_resp_t cbus_resp
 );
+    (* mark_debug = "true" *) int x070042c0_cnt;
+
+    always_ff @(posedge clk)
+    if (resetn) begin
+        if (dbus_req.req && dbus_resp.addr_ok && dbus_req.addr == 32'h070042c0)
+            x070042c0_cnt <= x070042c0_cnt + 1;
+    end else begin
+        x070042c0_cnt <= 32'hc0000000;
+    end
+
     // shortuct for cache operations
     cache_op_t cop;
     assign cop.req   = dbus_req.req && dbus_req.cache_op.req;
