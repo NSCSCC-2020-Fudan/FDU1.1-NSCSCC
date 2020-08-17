@@ -26,19 +26,14 @@ module MMU(
     input  dbus_resp_t uncached_resp,
     input logic k0_uncached
 );
-    // address translation
+    /**
+     * address translation
+     */
     tu_addr_req_t  i_req,  d_req;
     tu_addr_resp_t i_resp, d_resp;
 
-    assign i_req.req = imem_req.req;
+    assign i_req.req   = imem_req.req;
     assign i_req.vaddr = imem_req.addr;
-    assign imem_resp   = icache_resp;
-
-    always_comb begin
-        icache_req      = imem_req;
-        icache_req.addr = i_resp.paddr;
-    end
-
     assign d_req.req   = dmem_req.req;
     assign d_req.vaddr = dmem_req.addr;
 
@@ -50,8 +45,25 @@ module MMU(
         .k0_uncached
     );
 
-    // dispatch dcache/uncached accesses
-    // NOTE: two stage pipeline here
+    logic i_uncached, d_uncached;
+    assign i_uncached = i_resp.is_uncached;
+    assign d_uncached = d_resp.is_uncached;
+
+    /**
+     * dispatch icache access
+     */
+    assign imem_resp   = icache_resp;
+
+    always_comb begin
+        icache_req      = imem_req;
+        icache_req.addr = i_resp.paddr;
+    end
+
+    /**
+     * dispatch dcache/uncached accesses
+     *
+     * NOTE: two stage pipeline here
+     */
     // split variables
     logic       dmem_addr_ok;
     logic       dmem_data_ok;
@@ -70,12 +82,14 @@ module MMU(
     logic real_addr_ok;  // real "addr_ok" in stage 1
     logic cur_ready;     // can stage 1 step into stage 2?
     logic last_ready;    // stage 2 ok in current clock cycle?
+    logic req_ready;     // dcache/uncached switch
 
-    assign real_addr_ok = d_resp.is_uncached ? uncached_resp.addr_ok : dcache_resp.addr_ok;
+    assign real_addr_ok = d_uncached ? uncached_resp.addr_ok : dcache_resp.addr_ok;
     assign cur_ready    = last_ready && (cur_finished || real_addr_ok);
     assign last_ready   = last_finished || dmem_data_ok;
+    assign req_ready    = d_uncached == last_d_uncached || last_finished;
 
-    assign dmem_addr_ok = cur_ready;
+    assign dmem_addr_ok = cur_ready && req_ready;
 
     always_comb begin
         dcache_req = 0;
@@ -83,14 +97,16 @@ module MMU(
         // dmem_resp = 0;
 
         // AND with "!cur_finished": in case CPU does not deassert "req".
-        if (d_resp.is_uncached) begin
-            uncached_req      = dmem_req;
-            uncached_req.req  = dmem_req.req && !cur_finished;
-            uncached_req.addr = d_resp.paddr;
-        end else begin
-            dcache_req      = dmem_req;
-            dcache_req.req  = dmem_req.req && !cur_finished;
-            dcache_req.addr = d_resp.paddr;
+        if (req_ready) begin
+            if (d_uncached) begin
+                uncached_req      = dmem_req;
+                uncached_req.req  = dmem_req.req && !cur_finished;
+                uncached_req.addr = d_resp.paddr;
+            end else begin
+                dcache_req      = dmem_req;
+                dcache_req.req  = dmem_req.req && !cur_finished;
+                dcache_req.addr = d_resp.paddr;
+            end
         end
 
         if (last_d_uncached) begin
@@ -104,17 +120,17 @@ module MMU(
 
     always_ff @(posedge clk)
     if (resetn) begin
-        if (dmem_req.req) begin
+        if (!last_finished)
+            last_finished <= dmem_resp.data_ok;
+
+        if (dmem_req.req && req_ready) begin
             if (cur_ready) begin
                 cur_finished    <= 0;
                 last_finished   <= 0;
-                last_d_uncached <= d_resp.is_uncached;
+                last_d_uncached <= d_uncached;
             end else if (!cur_finished)
                 cur_finished <= real_addr_ok;
         end
-
-        if (!last_finished)
-            last_finished <= dmem_resp.data_ok;
     end else begin
         cur_finished    <= 0;
         last_finished   <= 1;
@@ -125,6 +141,6 @@ module MMU(
      * unused
      */
     logic __unused_ok = &{1'b0,
-        i_resp.is_uncached,
+        i_uncached,
     1'b0};
 endmodule
