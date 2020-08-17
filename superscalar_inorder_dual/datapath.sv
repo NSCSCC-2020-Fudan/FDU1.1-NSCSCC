@@ -202,9 +202,10 @@ module datapath(
     retirebypass retirebypass(.reg_addrC, .reg_dataC,
                               .hilodataC(hiloC),
                               .retire(retire_bypass),
+                              .commit(commitdt_bypass),
                               .reg_addrR(reg_addrRP),
                               .reg_dataR(reg_dataRP), 
-                              .hiR(hiW), .loR(loW));                   
+                              .hiR(hiW), .loR(loW));                  
     
     control control (.clk, .reset,
                      .finishF, .finishE, .finishC, .data_hazardI, .queue_ofI, .pcF(pc_mC), 

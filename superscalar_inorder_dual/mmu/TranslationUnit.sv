@@ -59,7 +59,7 @@ module TranslationUnit(
         .k0_uncached
     );
     logic[2:0] d_cache_flag;
-    assign d_resp.is_uncached = d_uncached || (d_mapped && d_cache_flag != 3'd3);
+    assign d_resp.is_uncached = ~d_mapped ? d_uncached : d_cache_flag != 3'd3;
     tlbwrite_t tlbw;
     assign tlbw.valid = op_req.is_tlbwi;
     assign tlbw.addr = op_req.index.index;

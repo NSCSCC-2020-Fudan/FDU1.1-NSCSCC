@@ -14,6 +14,7 @@ module maindecode (
     func_t func;
     assign func = instr[5:0];
     always_comb begin
+        op = ADDU;
         exception_ri = 1'b0;
         ctl = '0;
         srcrega = '0;
@@ -752,6 +753,9 @@ module maindecode (
                         srcregb = rt;
                         destreg = rd;
                     end
+                    `F_SYNC:begin
+                        
+                    end
                     default: begin
                         exception_ri = 1'b1;
                         op = RESERVED;
@@ -779,6 +783,9 @@ module maindecode (
                 srcrega = rs;
                 srcregb = rt;
                 destreg = '0;
+            end
+            `OP_CACHE, `OP_PERF: begin
+                op = ADDU;
             end
             default: begin
                 exception_ri = 1'b1;

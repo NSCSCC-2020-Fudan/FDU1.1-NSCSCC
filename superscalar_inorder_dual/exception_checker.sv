@@ -21,7 +21,7 @@ module exception_checker(
     exec_data_t _out_; 
     
     exec_data_t data;
-    assign data = (~reset) ? ('0) : (in);
+    assign data = (in);
     assign _out_ = (exception_valid_) ? ('0) : (data);
     
     decoded_op_t op;

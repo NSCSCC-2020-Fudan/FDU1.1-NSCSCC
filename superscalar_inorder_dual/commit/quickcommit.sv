@@ -92,18 +92,22 @@ module quickcommit(
         							
     assign cp0w[1].addr = exception_out[1].cp0_addr;
     assign cp0w[1].wd = exception_out[1].result;
-    assign cp0w[1].wen = exception_out[1].instr.ctl.cp0write & finishC;
+    assign cp0w[1].wen = exception_out[1].instr.ctl.cp0write & finishC & ~pc_mC;
     assign cp0w[0].addr = exception_out[0].cp0_addr;
     assign cp0w[0].wd = exception_out[0].result;
-    assign cp0w[0].wen = exception_out[0].instr.ctl.cp0write & finishC;    
+    assign cp0w[0].wen = exception_out[0].instr.ctl.cp0write & finishC & ~pc_mC;    
 	assign cp0_addrC = {exception_out[1].cp0_addr, exception_out[0].cp0_addr};
 	assign cp0_selC = {exception_out[1].cp0_sel, exception_out[0].cp0_sel};
+	assign reg_addrC[3: 0] = {in[1].srcrega, in[1].srcregb, in[0].srcrega, in[0].srcregb};
+	assign reg_addrC[4] = (in[1].instr.ctl.memwrite | in[1].instr.ctl.memtoreg) ? (in[1].destreg) : (in[0].destreg);
 	
-	word_t dmem_addr_dt, dmem_en_dt;
+	word_t dmem_addr_dt;
+	logic dmem_en_dt;
 	logic [1: 0] dmem_size_dt;
 	exec_data_t [1: 0] cdata_in;
     exception_t exception_data_dt;
-    word_t [1: 0] cp0_dataC_dt;
+    word_t [1: 0] cp0_dataC_dt, hiloC_dt;
+	word_t [4: 0] reg_dataC_dt;
 	
 	logic llbit;
 	always_ff @(posedge clk)
@@ -117,7 +121,8 @@ module quickcommit(
 					dmem_size_dt <= '0;
 					dmem_addr_dt <= '0;
 					cp0_dataC_dt <= '0;
-					
+					reg_dataC_dt <= '0;
+					hiloC_dt <= '0;
 					llbit <= 1'b0;
 				end
 			else				
@@ -130,7 +135,8 @@ module quickcommit(
 						dmem_size_dt <= dmem_req.size;
 						dmem_addr_dt <= dmem_req.addr;
 						cp0_dataC_dt <= cp0_dataC;
-						
+						reg_dataC_dt <= reg_dataC;
+						hiloC_dt <= hiloC;
 						llbit <= llbit || llwrite_ex;
 					end
 		end        							
@@ -150,8 +156,10 @@ module quickcommit(
         				  .dmem_rd(dmem_resp.data),
         				  .dmem_data_ok(dmem_resp.data_ok),
         				  .finish_cdata,
-        				  .cp0_epc(cp0_data.epc),
-        				  .reg_addrC, .reg_dataC, .hiloC,
+        				  .cp0_epc(cp0_data.epc), // ??
+        				  //.reg_addrC, 
+						  .reg_dataC(reg_dataC_dt), 
+						  .hiloC(hiloC_dt),
 						  //.cp0_addrC, 
 						  .cp0_dataC(cp0_dataC_dt),
 						  .tlb_ex);
