@@ -394,6 +394,7 @@ module maindecode (
                         ctl.alufunc = ALU_PASSA;
                         ctl.regwrite = 1'b1;
                         ctl.cp0toreg = 1'b1;
+                        ctl.is_priv = 1'b1;
                         srcrega = '0;
                         srcregb = '0;
                         destreg = rt;
@@ -793,6 +794,7 @@ module maindecode (
                 ctl.alusrc = IMM;
                 ctl.cache_op.req = 1'b1;
                 srcrega = rs;
+                ctl.is_priv = 1'b1;
                 case (instr[20: 16])
                     5'b00000: begin
                         ctl.cache_op.i_req = 1'b1;

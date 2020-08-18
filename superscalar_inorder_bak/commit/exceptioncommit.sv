@@ -48,7 +48,9 @@ module exceptioncommit(
         input logic icache_addr_ok,
         output cache_funct_t icache_func,
         output word_t icache_addr,
-        output logic icache_req, icache_occur, icache_en
+        output logic icache_req, icache_occur, icache_en,
+
+        input logic is_usermode
     );
     
     exec_data_t [1: 0] tin;
@@ -89,7 +91,8 @@ module exceptioncommit(
                                           .exception_data(_exception_data[1]),
                                           ._out(out[1]), //.llbit,
                                           .cp0_status, .cp0_cause,
-                                          .tu_op_resp(tu_op_resp_mask));
+                                          .tu_op_resp(tu_op_resp_mask),
+                                          .is_usermode);
     exception_checker exception_checker0 (.reset, .flush((_exception_valid[1]) | (in[1].instr.op == ERET) | (mask)),
                                           .in(in[0]),
                                           .ext_int, .timer_interrupt,
@@ -97,7 +100,8 @@ module exceptioncommit(
                                           .exception_data(_exception_data[0]),
                                           ._out(out[0]), //.llbit,
                                           .cp0_status, .cp0_cause,
-                                          .tu_op_resp(tu_op_resp_mask));
+                                          .tu_op_resp(tu_op_resp_mask),
+                                          .is_usermode);
                                           
     assign exception_valid = _exception_valid[1] | _exception_valid[0];
     assign exception_data = (_exception_valid[1]) ? (_exception_data[1]) : (_exception_data[0]);    

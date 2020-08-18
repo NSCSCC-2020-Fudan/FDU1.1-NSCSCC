@@ -24,11 +24,14 @@ module cp0(
         output cp0_entrylo_t cp0_entrylo0, cp0_entrylo1,
         output cp0_index_t cp0_index,
         */
-        output logic k0_uncached 
+        output logic k0_uncached, is_usermode 
     );
 
     cp0_regs_t cp0, cp0_new;
     word_t wd;
+    (*mark_debug = "true"*) word_t c_compare, c_count;
+    assign c_compare = cp0.compare;
+    assign c_count = cp0.count;
     always_ff @(posedge clk) begin
         if (~reset) begin
             cp0 <= `CP0_INIT;
@@ -95,7 +98,7 @@ module cp0(
     always_ff @(posedge clk) begin
         if (~reset) begin
             timer_interrupt <= 1'b0;
-        end else if (cp0.count == cp0.compare - 1) begin
+        end else if (cp0.count == cp0.compare && cp0.compare != 32'b0) begin
             timer_interrupt <= 1'b1;
         end else if ((cwrite[1].wen & cwrite[1].addr == 5'd11) | (cwrite[0].wen & cwrite[0].addr == 5'd11)) begin
             timer_interrupt <= 1'b0;
@@ -124,7 +127,9 @@ module cp0(
                 5'd11:  cp0_new.compare = cwrite[1].wd;
                 5'd12:
                 begin
+                        cp0_new.status.CU = cwrite[1].wd[31:28];
                         cp0_new.status.IM = cwrite[1].wd[15:8];
+                        cp0_new.status.UM = cwrite[1].wd[5];
                         cp0_new.status.EXL = cwrite[1].wd[1];
                         cp0_new.status.IE = cwrite[1].wd[0];
                 end
@@ -154,7 +159,9 @@ module cp0(
                 5'd11:  cp0_new.compare = cwrite[0].wd;
                 5'd12:
                 begin
+                        cp0_new.status.CU = cwrite[0].wd[31:28];
                         cp0_new.status.IM = cwrite[0].wd[15:8];
+                        cp0_new.status.UM = cwrite[0].wd[5];
                         cp0_new.status.EXL = cwrite[0].wd[1];
                         cp0_new.status.IE = cwrite[0].wd[0];
                 end
@@ -226,4 +233,5 @@ module cp0(
     assign cp0_index = cp0_index;
     */
     assign k0_uncached = cp0.config_.K0 != 3'b011;
+    assign is_usermode = cp0.status[4:1] == 4'b1000;
 endmodule

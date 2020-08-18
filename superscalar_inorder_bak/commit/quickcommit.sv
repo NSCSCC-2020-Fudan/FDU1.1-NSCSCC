@@ -57,7 +57,9 @@ module quickcommit(
         //tlb
         input cp0_regs_t cp0_data,
         //cp0
-		output logic [1: 0] icache_op
+		output logic [1: 0] icache_op,
+
+		input logic is_usermode
     );
     
     logic llwrite_ex;
@@ -101,7 +103,7 @@ module quickcommit(
 									.icache_addr_ok(imem_resp.addr_ok),
 									.icache_func(imem_req.cache_op.funct),
 									.icache_addr,
-									.icache_req(icache_req_s), .icache_occur, .icache_en);
+									.icache_req(icache_req_s), .icache_occur, .icache_en, .is_usermode);
 
 	assign dmem_req.addr = (in[1].instr.ctl.cache_op.d_req | in[0].instr.ctl.cache_op.d_req) ? (dcache_addr) : (dmem_addr);
 	assign imem_req.addr = icache_addr;

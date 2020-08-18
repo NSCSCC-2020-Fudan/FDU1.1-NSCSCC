@@ -59,7 +59,7 @@ module exception(
         assign exc_info = pipe.exc_info;
 
     assign exception_valid = ((|exc_info) | interrupt_valid) & reset;
-    assign exception.location = tlb_refill ? 32'hbfc00200 : `EXC_ENTRY;
+    assign exception.location = (tlb_refill & (~cp0_status.EXL)) ? 32'hbfc00200 : `EXC_ENTRY;
     assign exception.valid = (exception_valid);
     assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exc_code);
     assign exception.pc = pc;
@@ -77,6 +77,6 @@ module exception(
     assign pc = pipe.pc;
     assign in_delay_slot = pipe.in_delay_slot;
     
-    assign pcexception = tlb_refill ? 32'hbfc00200 : `EXC_ENTRY;
+    assign pcexception = (tlb_refill & (~cp0_status.EXL)) ? 32'hbfc00200 : `EXC_ENTRY;
     
 endmodule

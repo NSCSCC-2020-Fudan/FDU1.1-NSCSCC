@@ -109,6 +109,7 @@ module datapath(
     word_t [1: 0] hiloRP, hiloC;
     
     logic wait_ex, tlb_ex, tlb_free;
+    logic is_usermode;
 
     quickfetch quickfetch(.clk, .reset, .flushF(1'b0), .stallF,
                           .fetch(pc_new), .pc, .pc_new_commit,
@@ -186,7 +187,8 @@ module datapath(
                    			 .tu_op_req, .tu_op_resp(tu_op_respC),
                    			 .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC),
                    			 .tlb_free,
-                             .icache_op(icache_opC));                               
+                             .icache_op(icache_opC),
+                             .is_usermode);                               
     
     rreg rreg (clk, reset, stallR, flushR,
                commit_data_out,
@@ -239,7 +241,7 @@ module datapath(
             .exception(exceptionE),
             .cp0_data,
             .tlb_resp(tu_op_resp), 
-            .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC), .k0_uncached);        
+            .is_tlbr(is_tlbrC), .is_tlbp(is_tlbpC), .k0_uncached, .is_usermode);        
     
     /*            
     cp0status_bypass cp0status_bypass(exec_bypass, commitex_bypass, commitdt_bypass, retire_bypass, 

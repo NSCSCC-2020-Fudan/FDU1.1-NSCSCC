@@ -30,9 +30,9 @@ module FU(
     logic multmask;
     assign multsrca = alusrcaE;
     assign multsrcb = alusrcbE;
-    assign mult_op = (multype || divtype)                                         ? (op)    : ( 
-                     ((in.instr.op == MADD || in.instr.op == MSUB) & ~multmask)   ? (MULT)  : (
-                     ((in.instr.op == MADDU || in.instr.op == MSUBU) & ~multmask) ? (MULTU) : (ADDU)));
+    assign mult_op = (multype || divtype)                                                               ? (op)    : ( 
+                     ((in.instr.op == MADD || in.instr.op == MSUB || in.instr.op == MUL) & ~multmask)   ? (MULT)  : (
+                     ((in.instr.op == MADDU || in.instr.op == MSUBU) & ~multmask)                       ? (MULTU) : (ADDU)));
     assign multen = in.instr.ctl.mul_div_r;
 
     word_t result_cl, result_alu, result;
