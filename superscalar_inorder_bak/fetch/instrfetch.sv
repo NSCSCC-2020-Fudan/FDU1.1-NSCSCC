@@ -51,7 +51,8 @@ module instrfetch(
                 begin
                     finish_his_ = 1'b1;
                     data_his_ = inst_ibus_data;
-                    ien_his_ = {1'b1, ~inst_ibus_index};
+                    //ien_his_ = {1'b1, ~inst_ibus_index};
+                    ien_his_ = {1'b1, 1'b0};
                 end else begin
                     data_his_ = data_his;
                 end
@@ -76,7 +77,8 @@ module instrfetch(
 
                     finish_his <= 1'b0;
                     data_his <= '0;
-                    ien_his <= 2'b11;
+                    //ien_his <= 2'b11;
+                    ien_his <= 2'b10;
                     destpc_predict_np <= '0;
                     last_predict <= '0;
                 end

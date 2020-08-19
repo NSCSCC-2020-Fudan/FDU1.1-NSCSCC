@@ -790,6 +790,7 @@ module maindecode (
                 destreg = rt;
             end
             `OP_CACHE: begin
+                /*
                 op = CACHE;
                 ctl.alusrc = IMM;
                 ctl.cache_op.req = 1'b1;
@@ -805,9 +806,9 @@ module maindecode (
                         ctl.cache_op.i_req = 1'b1;
                         ctl.cache_op.as_index = 1'b1;
                         ctl.cache_op.invalidate = 1'b1;
-                        /*
-                        inst_store_tag
-                        */
+                        
+                        // inst_store_tag
+                        
                     end
                     5'b10000: begin
                         ctl.cache_op.i_req = 1'b1;
@@ -823,9 +824,9 @@ module maindecode (
                         ctl.cache_op.d_req = 1'b1;
                         ctl.cache_op.as_index = 1'b1;
                         ctl.cache_op.invalidate = 1'b1;
-                        /*
-                        data_store_tag
-                        */
+                        
+                        // data_store_tag
+                        
                     end 
                     5'b10001: begin
                         ctl.cache_op.d_req = 1'b1;
@@ -841,6 +842,7 @@ module maindecode (
                         op = RESERVED;
                     end
                 endcase
+                */
             end 
             `OP_PREF: begin
                 /*

@@ -53,8 +53,12 @@ module quickfetch (
     (*mark_debug = "true"*) word_t pc_pcf, pc_isf;
     word_t pcplus4_isf, pcplus4_pcf, pcplus8_isf, pc_seq, pcplus8_pcf;
     bpb_result_t destpc_predict_sel, last_predict, next_predict;
+    /*
     assign pc_seq = (destpc_predict_sel.taken) ? (destpc_predict_sel.destpc) : (
                     (pcplus8_pcf[2])           ? (pcplus4_pcf)               : (pcplus8_pcf));
+    */
+    assign pc_seq = (destpc_predict_sel.taken) ? (destpc_predict_sel.destpc) : (
+                    (pcplus8_pcf[2])           ? (pcplus4_pcf)               : (pcplus4_pcf));
     
     word_t pc_new;
     assign stop = stallF;
