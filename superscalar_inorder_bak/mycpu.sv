@@ -137,13 +137,13 @@ module mycpu #(
                           .cpu_data_ok(d_data_ok), .req(data_req));
 	*/                          
         
-    rfwrite_queue rfwrite_queue(.clk, .reset(resetn),
-                                .rfw(rfw_out), .rt_pc(rt_pc_out),
-                                .rfw_out(rfwrite), .rt_pc_out(debug_wb_pc));
+    // rfwrite_queue rfwrite_queue(.clk, .reset(resetn),
+    //                             .rfw(rfw_out), .rt_pc(rt_pc_out),
+    //                             .rfw_out(rfwrite), .rt_pc_out(debug_wb_pc));
     
-    assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
-    assign debug_wb_rf_wnum = rfwrite.addr;
-    assign debug_wb_rf_wdata = rfwrite.wd;
+    // assign debug_wb_rf_wen = {4{rfwrite.wen && (rfwrite.addr != 0)}};
+    // assign debug_wb_rf_wnum = rfwrite.addr;
+    // assign debug_wb_rf_wdata = rfwrite.wd;
     
     //assign inst_ibus_addr = inst_addr;
     

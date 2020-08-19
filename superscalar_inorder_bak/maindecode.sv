@@ -817,6 +817,7 @@ module maindecode (
                         ctl.cache_op.d_req = 1'b1;
                         ctl.cache_op.writeback = 1'b1;
                         ctl.cache_op.as_index = 1'b1;
+                        ctl.cache_op.invalidate = 1'b1;
                     end
                     5'b01001: begin
                         ctl.cache_op.d_req = 1'b1;
@@ -833,6 +834,7 @@ module maindecode (
                     5'b10101: begin
                         ctl.cache_op.d_req = 1'b1;
                         ctl.cache_op.writeback = 1'b1;
+                        ctl.cache_op.invalidate = 1'b1; // ??
                     end
                     default: begin
                         exception_ri = 1'b1;

@@ -52,7 +52,7 @@ module bpbdecode(
 	assign pcbranch = pcplus4 + {ext_imm[29:0], 2'b00};
     assign destpc = (j_pc)  ? (pcjump)    : ( 
                     (b_pc)  ? (pcbranch)  : (
-                    (jr_pc) ? (jr_destpc) : ('0)));
+                    (jr_pc) ? (jr_destpc) : (32'h80000000)));
     
     assign out.destpc = destpc;                    
     //assign out.destpc = (destpc[31: 28] == 4'b0000) ? (pcplus4) : (destpc);   
@@ -62,5 +62,5 @@ module bpbdecode(
     assign jr_top_minus = jr_topF_in - 2'b01;
     assign jr_topF_out = (~(jr_push ^ jr_pop)) ? (jr_topF_in)   : (
                           (jr_push)             ? (jr_top_plus)  : (
-                          (jr_pop)              ? (jr_top_minus) : ('0)));
+                          (jr_pop)              ? (jr_top_minus) : (32'h80000000)));
 endmodule

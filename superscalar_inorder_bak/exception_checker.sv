@@ -48,7 +48,7 @@ module exception_checker(
               
     exception_pipeline_t pipe;             
     assign pipe.exc_info.tr = 1'b0;
-    assign pipe.exc_info.cpu = is_usermode & (data.instr.ctl.is_priv | data.instr.ctl.is_cop1);
+    assign pipe.exc_info.cpu = (is_usermode & data.instr.ctl.is_priv) | data.instr.ctl.is_cop1;
     assign pipe.exc_info.mod = tu_op_resp.d_tlb_modified & data_is_write;
     assign pipe.exc_info.load_tlb = tu_op_resp.d_tlb_invalid & (data_is_read | dcache_en) | 
     								tu_op_resp.i_tlb_invalid & (icache_en);//to be continue

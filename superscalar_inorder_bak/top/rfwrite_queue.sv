@@ -8,11 +8,11 @@ module rfwrite_queue(
         output word_t rt_pc_out 
     );
     
-    logic [5: 0] head, headplus1, headplus2; 
-    logic [5: 0] tail, tailplus1, tailplus2;
-    logic [63: 0] en_queue;
-    rf_w_t [63: 0] rf_queue;
-    word_t [63: 0] pc_queue;
+    logic [9: 0] head, headplus1, headplus2; 
+    logic [9: 0] tail, tailplus1, tailplus2;
+    logic [1023: 0] en_queue;
+    rf_w_t [1023: 0] rf_queue;
+    word_t [1023: 0] pc_queue;
     
     assign headplus1 = head + 3'b001;
     assign tailplus1 = tail + 3'b001;
