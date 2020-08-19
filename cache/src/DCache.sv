@@ -79,27 +79,25 @@ module DCache #(
         .DATA_WIDTH($bits(meta_t)),
         .ADDR_WIDTH(INDEX_BITS)
     ) ram_meta_inst(
-        .clk(clk), .resetn(resetn), .write_en(1),
+        .clk, .resetn, .write_en(1),
         .addr(dbus_req_vaddr.index),
         .data_in(ram_new_meta),
         .data_out(ram_meta)
     );
-    LUTRAM #(
+    FFRAM #(
         .DATA_WIDTH($bits(bundle_t)),
-        .ADDR_WIDTH(INDEX_BITS),
-        .ENABLE_BYTE_WRITE(0)
+        .ADDR_WIDTH(INDEX_BITS)
     ) ram_tags_inst(
-        .clk(clk), .write_en(1),
+        .clk, .resetn, .write_en(1),
         .addr(dbus_req_vaddr.index),
         .data_in(ram_new_tags),
         .data_out(ram_tags)
     );
-    LUTRAM #(
+    FFRAM #(
         .DATA_WIDTH($bits(select_t)),
-        .ADDR_WIDTH(INDEX_BITS),
-        .ENABLE_BYTE_WRITE(0)
+        .ADDR_WIDTH(INDEX_BITS)
     ) ram_select_inst(
-        .clk(clk), .write_en(1),
+        .clk, .resetn, .write_en(1),
         .addr(dbus_req_vaddr.index),
         .data_in(ram_new_select),
         .data_out(ram_select)
