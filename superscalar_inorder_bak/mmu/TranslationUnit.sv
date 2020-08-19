@@ -9,8 +9,8 @@ module TranslationUnit(
 
     // address translation requests
     input logic k0_uncached,
-    input  tu_addr_req_t  i_req,  d_req,
-    output tu_addr_resp_t i_resp, d_resp,
+    (*mark_debug = "true"*)input  tu_addr_req_t  i_req,  d_req,
+    (*mark_debug = "true"*)output tu_addr_resp_t i_resp, d_resp,
 
     // TU interactions
     input  tu_op_req_t  op_req,

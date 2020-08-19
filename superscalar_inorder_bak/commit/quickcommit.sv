@@ -3,8 +3,8 @@
 
 module quickcommit(
         input logic clk, reset, flushC,
-        input exec_data_t [1: 0] in,
-        (*mark_debug = "true"*) output exec_data_t [1: 0] out,
+        (*mark_debug = "true"*) input exec_data_t [1: 0] in,
+        output exec_data_t [1: 0] out,
         //pipeline
         input logic first_cycleC, 
         output logic finishC, pc_mC,
@@ -59,9 +59,13 @@ module quickcommit(
         //cp0
 		output logic [1: 0] icache_op,
 
-		input logic is_usermode
+		input logic is_usermode, bev_valid
     );
     
+	(*mark_debug = "true"*) word_t [1: 0] pcplus4_out;
+	assign pcplus4_out[1] = out[1].pcplus4;
+	assign pcplus4_out[0] = out[0].pcplus4;
+	
     logic llwrite_ex;
     exec_data_t [1: 0] exception_out;
     exception_t exception_data_ex;
@@ -103,7 +107,7 @@ module quickcommit(
 									.icache_addr_ok(imem_resp.addr_ok),
 									.icache_func(imem_req.cache_op.funct),
 									.icache_addr,
-									.icache_req(icache_req_s), .icache_occur, .icache_en, .is_usermode);
+									.icache_req(icache_req_s), .icache_occur, .icache_en, .is_usermode, .bev_valid);
 
 	assign dmem_req.addr = (in[1].instr.ctl.cache_op.d_req | in[0].instr.ctl.cache_op.d_req) ? (dcache_addr) : (dmem_addr);
 	assign imem_req.addr = icache_addr;

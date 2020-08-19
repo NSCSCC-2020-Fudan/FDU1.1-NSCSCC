@@ -50,7 +50,7 @@ module exceptioncommit(
         output word_t icache_addr,
         output logic icache_req, icache_occur, icache_en,
 
-        input logic is_usermode
+        input logic is_usermode, bev_valid
     );
     
     exec_data_t [1: 0] tin;
@@ -92,7 +92,7 @@ module exceptioncommit(
                                           ._out(out[1]), //.llbit,
                                           .cp0_status, .cp0_cause,
                                           .tu_op_resp(tu_op_resp_mask),
-                                          .is_usermode);
+                                          .is_usermode, .bev_valid);
     exception_checker exception_checker0 (.reset, .flush((_exception_valid[1]) | (in[1].instr.op == ERET) | (mask)),
                                           .in(in[0]),
                                           .ext_int, .timer_interrupt,
@@ -101,7 +101,7 @@ module exceptioncommit(
                                           ._out(out[0]), //.llbit,
                                           .cp0_status, .cp0_cause,
                                           .tu_op_resp(tu_op_resp_mask),
-                                          .is_usermode);
+                                          .is_usermode, .bev_valid);
                                           
     assign exception_valid = _exception_valid[1] | _exception_valid[0];
     assign exception_data = (_exception_valid[1]) ? (_exception_data[1]) : (_exception_data[0]);    
@@ -175,9 +175,9 @@ module exceptioncommit(
     assign finish_exception = (~dmem_en | ((dmem_addr_ok | dmem_addr_ok_h) & ~d_fc_mask))       & 
                               (~dcache_en | ((dcache_addr_ok | dcache_addr_ok_h) & ~d_fc_mask)) &
                               (~icache_en | ((icache_addr_ok | icache_addr_ok_h)))              &
-                              (~tlb_hazard);
+                              (~tlb_hazard) & (~wait_ex);
 
     assign llwrite = (out[1].instr.ctl.llwrite) | (out[0].instr.ctl.llwrite); 
-    assign wait_ex = (out[1].instr.op == WAIT_EX) & (~exception_valid);
+    assign wait_ex = (out[1].instr.op == WAIT_EX || out[0].instr.op == WAIT_EX) & (~exception_valid);
     
 endmodule

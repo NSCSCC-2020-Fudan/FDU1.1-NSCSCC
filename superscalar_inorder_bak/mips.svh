@@ -92,6 +92,7 @@ typedef struct packed{
 `define OP_SWR          6'b101110
 `define OP_CACHE        6'b101111
 `define OP_PREF         6'b110011
+`define OP_COP1         6'b010001
 
 
 // funct
@@ -201,6 +202,7 @@ typedef struct packed {
     logic llwrite, is_priv;
     logic delayen;
     logic is_sc;
+    logic is_cop1;
 } control_t;
 
 typedef logic [4:0] cp0_addr_t;
@@ -491,6 +493,7 @@ typedef struct packed {
     logic in_delay_slot;
     exc_code_t code;
     word_t badvaddr;
+    logic is_cop1;
 } exception_t;
 
 typedef struct packed{

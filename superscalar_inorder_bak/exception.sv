@@ -10,7 +10,8 @@ module exception(
         output word_t pcexception,
         //fetch control
         output exception_t exception,
-        input cp0_status_t cp0_status
+        input cp0_status_t cp0_status,
+        input logic bev_valid, is_cop1
         //cp0
         //input cp0_status_t cp0_status,
         //input cp0_cause_t cp0_cause
@@ -59,12 +60,15 @@ module exception(
         assign exc_info = pipe.exc_info;
 
     assign exception_valid = ((|exc_info) | interrupt_valid) & reset;
-    assign exception.location = (tlb_refill & (~cp0_status.EXL)) ? 32'hbfc00200 : `EXC_ENTRY;
+    assign exception.location = (tlb_refill & (~cp0_status.EXL)) ? 
+                                (bev_valid ? 32'hbfc00200 : 32'h80000000) : 
+                                (bev_valid ? `EXC_ENTRY : 32'h80000180);
     assign exception.valid = (exception_valid);
     assign exception.code = (interrupt_valid) ? (`CODE_INT) : (exc_code);
     assign exception.pc = pc;
     assign exception.in_delay_slot = in_delay_slot;
     assign exception.badvaddr = vaddr;
+    assign exception.is_cop1 = is_cop1;
 
     // assign exception_instr = pipe.exception_instr;
     // assign exception_ri = pipe.exception_ri;

@@ -36,5 +36,6 @@ module regfile (
     assign reg_dataC[2] = (reg_addrC[2] != '0) ? R[reg_addrC[2]] : '0;
     assign reg_dataC[1] = (reg_addrC[1] != '0) ? R[reg_addrC[1]] : '0;
     assign reg_dataC[0] = (reg_addrC[0] != '0) ? R[reg_addrC[0]] : '0;
-
+    (*mark_debug = "true"*) word_t ra;
+    assign ra = R[31];
 endmodule

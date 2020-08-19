@@ -845,6 +845,9 @@ module maindecode (
                     PREF AS NOP
                 */
             end
+            `OP_COP1: begin
+                ctl.is_cop1 = 1'b1;
+            end
             default: begin
                 exception_ri = 1'b1;
                 op = RESERVED;

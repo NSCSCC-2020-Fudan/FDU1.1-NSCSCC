@@ -80,7 +80,7 @@ module creg(
                                 out <= out;
                                 first_cycleC <= '0;
                                 ext_int_out <= (wait_ex) ? (ext_int_in) : (ext_int_out);
-                                timer_interrupt_out <= (wait_ex) ? (timer_interrupt_out) : (timer_interrupt_out);
+                                timer_interrupt_out <= (wait_ex) ? (timer_interrupt_in) : (timer_interrupt_out);
                             end
                     end                                                
         end

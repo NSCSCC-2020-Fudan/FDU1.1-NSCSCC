@@ -13,7 +13,7 @@ module exception_checker(
         input cp0_status_t cp0_status,
         input cp0_cause_t cp0_cause,
         input tu_op_resp_t tu_op_resp,
-        input logic is_usermode
+        input logic is_usermode, bev_valid
     );
     
     logic exception_valid_;
@@ -48,7 +48,7 @@ module exception_checker(
               
     exception_pipeline_t pipe;             
     assign pipe.exc_info.tr = 1'b0;
-    assign pipe.exc_info.cpu = is_usermode & data.instr.ctl.is_priv;
+    assign pipe.exc_info.cpu = is_usermode & (data.instr.ctl.is_priv | data.instr.ctl.is_cop1);
     assign pipe.exc_info.mod = tu_op_resp.d_tlb_modified & data_is_write;
     assign pipe.exc_info.load_tlb = tu_op_resp.d_tlb_invalid & (data_is_read | dcache_en) | 
     								tu_op_resp.i_tlb_invalid & (icache_en);//to be continue
@@ -76,7 +76,9 @@ module exception_checker(
                          .exception_valid(exception_valid_), 
                          .pcexception(pcexception_), 
                          .exception(exception_data_), 
-                         .cp0_status);  
+                         .cp0_status,
+                         .bev_valid,
+                         .is_cop1(data.instr.ctl.is_cop1));  
                          
     assign exception_valid = (~flush && data.valid) ? (exception_valid_) : (1'b0);
     assign pcexception = (~flush && data.valid) ? (pcexception_) : ('0);

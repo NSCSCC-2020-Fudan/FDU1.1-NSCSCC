@@ -34,7 +34,6 @@ module jrstack(
                 begin
                     top_ = topminus1;
                     valid_[topplus1] = 1'b0;
-                    jr_stack_[top] = '0;
                 end
             if (pop & push)
                 begin

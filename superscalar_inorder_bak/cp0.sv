@@ -24,7 +24,7 @@ module cp0(
         output cp0_entrylo_t cp0_entrylo0, cp0_entrylo1,
         output cp0_index_t cp0_index,
         */
-        output logic k0_uncached, is_usermode 
+        (*mark_debug = "true"*)output logic k0_uncached, is_usermode, bev_valid 
     );
 
     cp0_regs_t cp0, cp0_new;
@@ -127,7 +127,8 @@ module cp0(
                 5'd11:  cp0_new.compare = cwrite[1].wd;
                 5'd12:
                 begin
-                        cp0_new.status.CU = cwrite[1].wd[31:28];
+                        cp0_new.status.CU[0] = cwrite[1].wd[28];
+                        cp0_new.status.BEV = cwrite[1].wd[22];
                         cp0_new.status.IM = cwrite[1].wd[15:8];
                         cp0_new.status.UM = cwrite[1].wd[5];
                         cp0_new.status.EXL = cwrite[1].wd[1];
@@ -159,7 +160,8 @@ module cp0(
                 5'd11:  cp0_new.compare = cwrite[0].wd;
                 5'd12:
                 begin
-                        cp0_new.status.CU = cwrite[0].wd[31:28];
+                        cp0_new.status.CU[0] = cwrite[0].wd[28];
+                        cp0_new.status.BEV = cwrite[0].wd[22];
                         cp0_new.status.IM = cwrite[0].wd[15:8];
                         cp0_new.status.UM = cwrite[0].wd[5];
                         cp0_new.status.EXL = cwrite[0].wd[1];
@@ -200,6 +202,9 @@ module cp0(
             cp0_new.cause.exccode = exception.code;
 
             cp0_new.status.EXL = 1'b1;
+            if (exception.code == `CODE_CPU) begin
+                cp0_new.cause.CE[0] = exception.is_cop1;
+            end
             if (exception.code == `CODE_ADEL || exception.code == `CODE_ADES) begin
                 cp0_new.badvaddr = exception.badvaddr;
             end
@@ -232,6 +237,7 @@ module cp0(
     assign cp0_entrylo1 = co0.entrylo1;
     assign cp0_index = cp0_index;
     */
-    assign k0_uncached = cp0.config_.K0 != 3'b011;
+    assign k0_uncached = cp0.config_.K0 == 3'b010;
     assign is_usermode = cp0.status[4:1] == 4'b1000;
+    assign bev_valid = cp0.status.BEV;
 endmodule
