@@ -74,10 +74,10 @@ module issue(
     //assign enb = 1'b0;
 
     logic [1: 0] issue_en;
-    assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
-    assign issue_en[0] = enb && (valid[headplus1]);
     //assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
-    //assign issue_en[0] = (BJa) && (valid[headplus1]);
+    //assign issue_en[0] = enb && (valid[headplus1]);
+    assign issue_en[1] = ~(BJa && ~valid[headplus1]) && (valid[head]);
+    assign issue_en[0] = (BJa) && (valid[headplus1]);
 
     (*mark_debug = "true"*) logic debug_issue;
     assign debug_issue = BJa && issue_en[1] && ~issue_en[0];
