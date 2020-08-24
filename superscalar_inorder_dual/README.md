@@ -1,12 +1,12 @@
 # CPU主体部分
 
-<img src="assets\pipeline.JPG" alt="pipeline" style="zoom:50%;" />
+<img src="assets/pipeline.JPG" alt="pipeline" style="zoom:50%;" />
 
 ## 概述
 
 我们**一个朴素的双发射MIPS处理器**的CPU主体部分采用了八级流水设计，为顺序双发射。
 
-![simplified_pipeline](assets\simplified_pipeline.png)
+![simplified_pipeline](assets/simplified_pipeline.png)
 
 各流水线阶段分别为：Fetch取指阶段、Decode译码阶段、Issue发射阶段、Execute执行阶段、Commit提交阶段、Retire退休阶段，其中Fetch取指阶段与Commit执行阶段为两级流水。
 
@@ -34,7 +34,7 @@
 
 ### 取指阶段
 
-![fetch](assets\fetch.png)
+![fetch](assets/fetch.png)
 
 #### 取指的两级设计
 
@@ -70,7 +70,7 @@ CPU的指令Cache设计为两级流水，其特点为：在第i个时钟周期�
 
 ### 发射阶段
 
-![issue](assets\issue.png)
+![issue](assets/issue.png)
 
 发射阶段实现了一个四端口（两个连续的读端口，两个连续的写端口）的队列。队列的两个指针分别指向第一个读端口和第一个写端口的下标。该队列的读写逻辑为先读后写，这样就避免了当读写指针有重叠时某条指令会加入队列后直接弹出的情况。详见`issue.sv`。
 
@@ -103,7 +103,7 @@ CPU的指令Cache设计为两级流水，其特点为：在第i个时钟周期�
 
 ### 提交阶段
 
-![commit](assets\commit.png)
+![commit](assets/commit.png)
 
 提交阶段需要负责访存，因此也使用了两级流水的结构来完成。主体为`commit/quickcommit.sv`。
 
