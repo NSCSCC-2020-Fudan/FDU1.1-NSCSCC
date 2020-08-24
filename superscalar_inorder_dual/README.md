@@ -1,4 +1,4 @@
-# 一个朴素的双发射MIPS处理器
+# CPU主体部分
 
 <img src="assets\pipeline.JPG" alt="pipeline" style="zoom:50%;" />
 
@@ -8,7 +8,7 @@
 
 ## 概述
 
-我们**一个朴素的双发射MIPS处理器**采用了八级流水设计，为顺序双发射。
+我们**一个朴素的双发射MIPS处理器**的CPU主体部分采用了八级流水设计，为顺序双发射。
 
 ![simplified_pipeline](assets\simplified_pipeline.png)
 
