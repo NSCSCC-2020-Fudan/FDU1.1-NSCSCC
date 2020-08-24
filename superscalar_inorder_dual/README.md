@@ -2,10 +2,6 @@
 
 <img src="assets\pipeline.JPG" alt="pipeline" style="zoom:50%;" />
 
-[TOC]
-
-
-
 ## 概述
 
 我们**一个朴素的双发射MIPS处理器**的CPU主体部分采用了八级流水设计，为顺序双发射。
@@ -37,6 +33,8 @@
 ## 流水线设计
 
 ### 取指阶段
+
+![fetch](assets\fetch.png)
 
 #### 取指的两级设计
 
